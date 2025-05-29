@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, message, Space, Input, Select } from "antd";
-import { usePermission } from "../../../hooks/UsePermission";
+import { usePermission } from "../../../hooks/usePermission";
 import PermissionModal from "../../../components/policy/permission/PermissionModal";
 import PermissionTable from "../../../components/policy/permission/PermissionTable";
 import { useAuth } from "../../../hooks/UseAuth";
