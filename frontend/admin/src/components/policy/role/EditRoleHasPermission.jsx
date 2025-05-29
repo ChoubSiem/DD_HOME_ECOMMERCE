@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Tag, Space, Checkbox, Spin, Row, Col, Divider,message  } from 'antd';
 import { LockOutlined, SaveOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons';
-import { usePermission } from '../../../hooks/UsePermission';
+import { usePermission } from '../../../hooks/usePermission';
 import { usePolicy } from '../../../hooks/usePolicy';
 import { useParams,useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
