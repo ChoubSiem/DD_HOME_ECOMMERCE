@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Modal, Input, Select, DatePicker, Checkbox, message } from 'antd';
-import { usePermission } from "../../../hooks/UsePermission";
+import { usePermission } from "../../../hooks/usePermission";
 const { Option } = Select;
 import Cookies from "js-cookie"
 
