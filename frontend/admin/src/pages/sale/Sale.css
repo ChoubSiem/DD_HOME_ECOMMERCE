@@ -1,0 +1,39 @@
+.filter-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.filter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+}
+
+/* Advanced Filter Animation */
+.advanced-filter {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease;
+  opacity: 0;
+}
+
+.advanced-filter.show {
+  max-height: 500px; /* Adjust based on content height */
+  opacity: 1;
+  padding-top: 16px;
+  /* border-top: 1px solid #f0f0f0; */
+  margin-top: 16px;
+}
+
+.rdt_Pagination{
+  border-top: none !important;
+
+}

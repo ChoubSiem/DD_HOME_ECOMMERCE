@@ -1,0 +1,70 @@
+.product-management {
+  padding: 20px;
+}
+
+.product-header-card {
+  margin-bottom: 20px;
+}
+
+.product-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-filter-card {
+  margin-bottom: 20px;
+}
+
+.product-filter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-filter-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.product-advanced-filters {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.product-table-card {
+  margin-bottom: 20px;
+}
+
+.product-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-cell span {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.product-row-active {
+  background-color: #f6ffed;
+}
+
+.product-row-inactive {
+  background-color: #fff2f0;
+}
+
+.ant-table-row:hover {
+  cursor: pointer;
+}
+.ant-form-item {
+  width: 100%;
+}
+.product-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: white; /* optional: makes the header readable when scrolling */
+}

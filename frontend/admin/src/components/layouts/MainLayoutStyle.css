@@ -1,0 +1,115 @@
+/* Override the active menu item's color */
+.ant-menu-item-selected {
+    background-color: #52c41a !important; /* Green background */
+    color: #fff !important; /* White text */
+    border-radius: 1px !important; 
+    height: 30px !important; 
+
+  }
+  .ant-layout{
+    background: #dcdcdc;
+  }
+  .ant-layout-header{
+    background: #333;
+  }
+  
+  .ant-menu-item-selected::after {
+    border-right: 3px solid #52c41a !important; /* Green indicator */
+    border-radius: 1px !important; 
+    height: 30px !important; 
+
+  }
+  
+  .ant-menu-item-selected {
+    height: 30px !important; 
+    border-radius: 20px !important; 
+  }
+.ant-menu-item {
+    transition: none !important; 
+  }
+  
+  .ant-menu-item-selected {
+    transition: none !important; 
+  }
+  
+  .ant-menu-item::after {
+    transition: none !important; 
+  }
+
+.ant-layout-sider::-webkit-scrollbar {
+    width: 3px; 
+  }
+  
+  .ant-layout-sider::-webkit-scrollbar-track {
+    background: #f0f0f0; 
+  }
+  
+  .ant-layout-sider::-webkit-scrollbar-thumb {
+    background: white; 
+    border-radius: 3px; 
+  }
+  
+  .ant-layout-sider::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
+  .ant-layout-footer{
+    background: #000;
+    height: 46px;
+  }
+  /* Unit Table Styling */
+.unit-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.unit-cell span {
+  font-size: 12px;
+  color: #666;
+}
+
+.unit-row.active {
+  background-color: rgba(0, 128, 0, 0.1); /* Light green */
+}
+
+.unit-row.inactive {
+  background-color: rgba(255, 0, 0, 0.1); /* Light red */
+}
+
+/* Header Styling */
+.header-card {
+  margin-bottom: 20px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Filter Bar Styling */
+.filter-card {
+  margin-bottom: 20px;
+}
+
+.filter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.notification-popover .ant-popover-inner-content {
+  padding: 0;
+}
+
+.notification-popover .ant-list-item {
+  transition: background-color 0.3s;
+}
+
+.notification-popover .ant-list-item:hover {
+  background-color: #f5f5f5 !important;
+}

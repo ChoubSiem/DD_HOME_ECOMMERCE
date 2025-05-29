@@ -1,0 +1,9 @@
+form{
+    display: flex;
+    flex-wrap: wrap;
+    /* gap: 50px; */
+    justify-content: space-around;
+}
+.filter-item{
+    display: flex;flex-direction: column;
+}

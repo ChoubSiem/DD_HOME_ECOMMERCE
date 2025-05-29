@@ -1,0 +1,39 @@
+.add-payment-modal .ant-modal-content {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .add-payment-modal .ant-modal-header {
+    border-bottom: 1px solid #d9d9d9;
+  }
+  
+  .add-payment-modal .ant-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #52c41a;
+  }
+  
+  .add-payment-modal .ant-descriptions-title {
+    font-size: 16px !important;
+    color: #52c41a !important;
+  }
+  
+  .add-payment-modal .ant-descriptions-item-label {
+    font-weight: 600;
+    background: #fafafa;
+  }
+  
+  .add-payment-modal .ant-form-item-label > label {
+    font-weight: 600;
+    color: #595959;
+  }
+  
+  .add-payment-modal .ant-input-prefix {
+    margin-right: 8px;
+    color: #595959;
+  }
+  
+  .add-payment-modal .ant-btn-primary {
+    background-color: #52c41a !important;
+    border-color: #52c41a !important;
+  }

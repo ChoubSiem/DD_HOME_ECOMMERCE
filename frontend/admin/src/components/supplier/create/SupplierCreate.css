@@ -1,0 +1,36 @@
+
+.supplier-modal .ant-modal-header {
+  background: #52c41a;
+  color: #fff;
+  border-radius: 8px 8px 0 0;
+}
+
+.supplier-modal .ant-modal-title {
+  color: #fff;
+  font-weight: 500;
+}
+
+.supplier-modal .ant-modal-content {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.supplier-modal .ant-modal-body {
+  padding: 24px;
+}
+
+.supplier-modal .ant-form-item-label > label {
+  color: #333;
+  font-weight: 500;
+}
+
+.supplier-modal .ant-btn-primary {
+  background: #52c41a;
+  border-color: #52c41a;
+  transition: all 0.3s ease;
+}
+
+.supplier-modal .ant-btn-primary:hover {
+  background: #73d13d;
+  border-color: #73d13d;
+}

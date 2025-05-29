@@ -1,0 +1,205 @@
+/* Print-specific page settings */
+@page {
+  size: A4;
+  margin: 15mm;
+}
+
+@page A5 {
+  size: A5;
+  margin: 10mm;
+}
+
+/* General print media styles */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12pt;
+    color: #1f1f1f;
+    background: #fff;
+    visibility: visible !important;
+  }
+
+  * {
+    box-sizing: border-box;
+    visibility: visible !important;
+  }
+}
+
+/* Main container for print content */
+.print-container {
+  width: 100%;
+  max-width: 180mm;
+  margin: 0 auto;
+  padding: 10mm;
+  background: #fff;
+  position: relative;
+}
+
+/* Header section with logo and title */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e8e8e8;
+}
+
+.logo {
+  height: 50px;
+  object-fit: contain;
+}
+
+.title {
+  font-size: 18pt;
+  font-weight: 700;
+  color: #1f1f1f;
+  margin: 0;
+}
+
+/* Summary section with key metrics */
+.summary-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f6ffed;
+  border-radius: 8px;
+  border: 1px solid #b7eb8f;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-icon {
+  font-size: 20px;
+  color: #52c41a;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #4b5563;
+  margin-right: 4px;
+}
+
+.summary-value {
+  color: #1f1f1f;
+  font-size: 11pt;
+}
+
+/* Highlight total sales */
+.summary-item.total-sales .summary-value {
+  color: #52c41a;
+  font-weight: 500;
+}
+
+/* Denomination section */
+.denomination-section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #e6f7ff;
+  border-radius: 8px;
+  border: 1px solid #91d5ff;
+}
+
+.denomination-section h3 {
+  font-size: 14pt;
+  margin-bottom: 12px;
+  color: #1890ff;
+}
+
+.denomination-section p {
+  margin: 4px 0;
+  color: #1f1f1f;
+}
+
+/* Table styling for invoices */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 24px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+th {
+  background: #fafafa;
+  font-weight: 600;
+  color: #1f1f1f;
+  text-transform: uppercase;
+  font-size: 10pt;
+}
+
+td {
+  color: #4b5563;
+  font-size: 11pt;
+}
+
+/* Alternating row colors */
+tr:nth-child(even) {
+  background: #f6ffed;
+}
+
+/* Total row styling */
+.total-row {
+  background: #e6f7ff !important;
+  font-weight: 600;
+}
+
+.total-row td {
+  color: #1f1f1f;
+}
+
+/* Center-align specific columns */
+td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
+  text-align: center;
+}
+
+/* Status column styling */
+td.status-completed {
+  color: #52c41a;
+  font-weight: 500;
+}
+
+td.status-pending {
+  color: #d97706;
+  font-weight: 500;
+}
+
+/* Responsive adjustments for A5 */
+@media print and (size: A5) {
+  .print-container {
+    max-width: 128mm;
+  }
+
+  .title {
+    font-size: 16pt;
+  }
+
+  .summary-section {
+    grid-template-columns: 1fr;
+  }
+
+  th, td {
+    font-size: 10pt;
+    padding: 8px 10px;
+  }
+
+  .denomination-section h3 {
+    font-size: 12pt;
+  }
+}

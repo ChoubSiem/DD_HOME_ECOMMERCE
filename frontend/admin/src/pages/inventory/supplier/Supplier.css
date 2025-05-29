@@ -1,0 +1,63 @@
+.supplier-management {
+  padding: 20px;
+}
+
+.supplier-header-card {
+  margin-bottom: 20px;
+}
+
+.supplier-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.supplier-filter-card {
+  margin-bottom: 20px;
+}
+
+.supplier-filter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.supplier-filter-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.supplier-table-card {
+  margin-bottom: 20px;
+}
+
+.supplier-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.supplier-cell span {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.supplier-row-active {
+  background-color: #f6ffed;
+}
+
+.supplier-row-inactive {
+  background-color: #fff2f0;
+}
+
+.supplier-form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.supplier-form-item {
+  flex: 1;
+}
+
+.ant-table-row:hover {
+  cursor: pointer;
+}

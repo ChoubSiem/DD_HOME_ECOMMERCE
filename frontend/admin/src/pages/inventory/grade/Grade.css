@@ -1,0 +1,45 @@
+/* Service Grade Table Styling */
+.grade-cell {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .grade-cell span {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .grade-row.active {
+    background-color: rgba(0, 128, 0, 0.1); /* Light green */
+  }
+  
+  .grade-row.inactive {
+    background-color: rgba(255, 0, 0, 0.1); /* Light red */
+  }
+  
+  /* Header Styling */
+  .header-card {
+    margin-bottom: 20px;
+  }
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* Filter Bar Styling */
+  .filter-card {
+    margin-bottom: 20px;
+  }
+  
+  .filter-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .filter-controls {
+    display: flex;
+    gap: 10px;
+  }

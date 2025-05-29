@@ -1,0 +1,70 @@
+.not-found-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 2rem;
+    background: #f8f9fa;
+  }
+  
+  .error-code {
+    font-size: 8rem;
+    font-weight: 900;
+    color: #343a40;
+    margin: 0;
+    line-height: 1;
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .illustration {
+    width: 200px;
+    margin: 2rem 0;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  
+  .title {
+    font-size: 2rem;
+    color: #212529;
+    margin-bottom: 1rem;
+  }
+  
+  .description {
+    color: #6c757d;
+    max-width: 500px;
+    margin-bottom: 2rem;
+  }
+  
+  .go-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #212529;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  }
+  
+  .go-back-btn:hover {
+    background: #343a40;
+    transform: translateY(-2px);
+  }
+  
+  /* Animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+.go-back-btn:focus{
+    outline: none;
+}

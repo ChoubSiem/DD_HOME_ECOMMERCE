@@ -1,0 +1,65 @@
+.pos-sale-management {
+  padding: 24px;
+  background: #f0f2f5;
+}
+
+.header-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+}
+
+.header-content h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header-content p {
+  margin: 4px 0 0;
+  color: #595959;
+}
+
+.filter-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.filter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.table-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.table-card .ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-card .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.table-card .ant-table-tbody > tr:hover > td {
+  background: #e6f7ff;
+}

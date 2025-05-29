@@ -1,0 +1,21 @@
+/* Add these styles to enhance the chart appearance */
+.g2-tooltip {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+  }
+  
+  .g2-tooltip-title {
+    font-weight: bold !important;
+  }
+  
+  .g2-tooltip-list-item {
+    margin-bottom: 4px !important;
+  }
+  
+  .g2-legend {
+    padding-bottom: 16px !important;
+  }
+  
+  .g2-legend-item {
+    margin-right: 16px !important;
+  }

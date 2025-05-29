@@ -1,0 +1,90 @@
+.form-row{
+    display: flex;
+    justify-content: space-between;
+  }
+  /* Enhanced Filter Container Styles */
+  .filter-container {
+    opacity: 0;
+    transform: translateY(-10px); /* More subtle initial offset */
+    visibility: hidden;
+    max-height: 0; /* Better than height for smoother transitions */
+    overflow: hidden;
+    will-change: opacity, transform, max-height; /* Optimize animations */
+    transition: 
+      opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s linear 0.3s;
+  }
+  
+  .filter-container.show {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    max-height: 1000px; /* Adjust based on your content */
+    transition: 
+      opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s linear 0s;
+  }
+  
+  /* Improved Form Layout */
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    /* gap: 16px; */
+    margin-bottom: 16px;
+  }
+  
+  .advanced-filter .form-row .ant-form-item {
+    min-width: 200px; /* Prevent items from getting too narrow */
+    margin-bottom: 0; /* Remove default bottom margin */
+  }
+  
+  /* Enhanced Container Styling */
+  .advanced-filter-container {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  
+  /* Improved Action Buttons */
+  .filter-actions {
+    display: flex;
+    justify-content: flex-end; /* Align to right */
+    gap: 12px; /* Better than space-between for 2 buttons */
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .advanced-filter .form-row .ant-form-item {
+      flex: 1 1 100%; /* Full width on mobile */
+    }
+    
+    .filter-actions {
+      flex-direction: column-reverse; /* Stack buttons on mobile */
+      gap: 8px;
+    }
+  }
+  
+  /* Input Field Enhancements */
+  .advanced-filter .ant-input,
+  .advanced-filter .ant-picker,
+  .advanced-filter .ant-select-selector {
+    border-radius: 4px !important;
+    height: 40px !important;
+    align-items: center !important;
+  }
+  
+  /* Label Styling */
+  .advanced-filter .ant-form-item-label > label {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  

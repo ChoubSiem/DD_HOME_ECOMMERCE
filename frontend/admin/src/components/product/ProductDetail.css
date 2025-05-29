@@ -1,0 +1,17 @@
+/* If the above solution doesn't work completely, add this to your CSS */
+.ant-modal-content {
+    border-radius: 0 !important;
+  }
+  
+  .ant-modal-header {
+    border-radius: 0 !important;
+  }
+  
+  .ant-modal-body {
+    border-radius: 0 !important;
+    /* background: #000; */
+}
+  .ant-descriptions-view {
+    
+    border-radius: 0 !important;
+  }

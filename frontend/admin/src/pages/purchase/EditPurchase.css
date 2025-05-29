@@ -1,0 +1,69 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9fafb;
+  color: #333;
+}
+
+/* Full-Width Container */
+.add-purchase-container {
+  padding: 20px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.total-amount {
+  margin-top: 10px;
+  text-align: right;
+  font-size: 16px;
+  font-weight: bold;
+  color: #52c41a;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.ant-btn-primary {
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+.ant-btn-primary:hover {
+  background-color: #389e0d;
+  border-color: #389e0d;
+}
+
+.editable-row {
+  cursor: pointer;
+}
+
+.editable-row:hover {
+  background-color: #f0f9ff;
+}
+.search-bar{
+  display: flex;
+  flex-direction: column;
+  /* justify-content: space-between; */
+  width: 100%;
+  /* background: #000; */
+}

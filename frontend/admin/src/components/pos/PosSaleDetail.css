@@ -1,0 +1,163 @@
+.sales-modal .ant-modal-content {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .invoice-container {
+    padding: 20px;
+    background: #fff;
+  }
+  
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .company-logo img {
+    max-width: 90px;
+  }
+  
+  .header-info {
+    margin-left: 20px;
+  }
+  
+  .document-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: #52c41a;
+  }
+  
+  .document-reference {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #595959;
+  }
+  
+  .header-right {
+    text-align: right;
+  }
+  
+  .document-date {
+    font-size: 14px;
+    color: #595959;
+    margin: 0 0 8px 0;
+  }
+  
+  .invoice-body {
+    margin-bottom: 20px;
+  }
+  
+  .section-divider {
+    margin: 20px 0;
+  }
+  
+  .items-table .ant-table {
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+  }
+  
+  .items-table .ant-table-thead > tr > th {
+    background: #fafafa;
+    font-weight: 600;
+  }
+  
+  .items-table .ant-table-tbody > tr:hover > td {
+    background: #e6f7ff;
+  }
+  
+  .table-row {
+    font-size: 14px;
+  }
+  
+  .notes-section {
+    margin-top: 20px;
+  }
+  
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .notes-content {
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+  }
+  
+  .note-text {
+    margin: 0;
+    font-size: 14px;
+    color: #595959;
+  }
+  
+  .invoice-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #d9d9d9;
+    padding-top: 20px;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .close-button {
+    border-color: red !important;
+    color: red !important;
+  }
+  
+  .print-button,
+  .edit-button {
+    border-color: #52c41a !important;
+    color: #52c41a !important;
+  }
+  
+  .edit-button.ant-btn-primary {
+    background: #52c41a !important;
+    color: #fff !important;
+  }
+  
+  /* Print styles */
+  @media print {
+    .invoice-container {
+      padding: 0;
+      border: none;
+    }
+  
+    .invoice-header,
+    .invoice-body,
+    .invoice-footer {
+      width: 100%;
+      margin: 0;
+    }
+  
+    .action-buttons {
+      display: none;
+    }
+  
+    .ant-modal {
+      display: none;
+    }
+  
+    .items-table .ant-table {
+      border: 1px solid #000;
+    }
+  
+    .items-table .ant-table-thead > tr > th {
+      background: #fff;
+      border-bottom: 1px solid #000;
+    }
+  
+    .items-table .ant-table-tbody > tr > td {
+      border: 1px solid #000;
+    }
+  }

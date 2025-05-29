@@ -1,0 +1,402 @@
+:root {
+    --primary-red: #e63946;
+    --primary-green: #52c41a ;
+    --dark-gray: #52c41a;
+    --light-gray: #f9fafb;
+    --error-red: #ef4444;
+    --white: #f9fafb;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --border-radius: 5px;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+  }
+  
+  .container {
+    min-height: 60vh;
+    display: flex;
+    width: "100%";
+    /* justify-content: center; */
+    /* align-items: center; */
+    /* background: linear-gradient(135deg, var(--light-gray) 0%, var(--white) 100%); */
+    /* padding: 2rem; */
+    background: #000;
+    border-radius: 0;
+  }
+  
+  .card-form {
+    /* background: var(--white); */
+    /* border-radius: var(--border-radius); */
+    /* box-shadow: var(--shadow); */
+    /* padding: 3rem; */
+    width: 100%;
+    /* max-width: ""; */
+    transition: var(--transition);
+    animation: fadeIn 0.5s ease-out;
+    background: #000;
+    border-radius: 0;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .header {
+    margin-bottom: 2.5rem;
+    padding: 10px;
+  }
+  
+  .header h2 {
+    color: var(--dark-gray);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .header-subtitle {
+    color: var(--primary-green);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  .form {
+    width: 100%;
+    
+  }
+  
+  .form-layout {
+    display: flex;
+    gap: 3rem;
+  }
+  /* Add these to your EmployeeForm.css */
+
+.relationship-group {
+    grid-column: 1 / -1;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    color: black;
+
+  }
+  
+  
+  .hint {
+    display: block;
+    color: #64748b;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    select[multiple] {
+        height: 200px;
+        min-height: 200px;
+      }
+    
+    .relationship-group {
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+  }
+  
+  .form-content {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .image-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border-left: 1px solid #e2e8f0;
+  }
+  
+  .image-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+  }
+  .select{
+    /* background: #000; */
+    /* height: auto; */
+    min-height: 50px;
+    border: 1px solid var(--primary-green);
+    border-radius: 5px;
+
+  }
+  /* Select Input Styling */
+.form-select {
+  width: 100%;
+}
+
+.form-select .ant-select-selector {
+  min-height: 50px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--primary-green) !important;
+  background-color: #f8fafc !important;
+  padding: 0 12px !important;
+  font-size: 0.9375rem;
+  color: #4a5568;
+}
+
+.form-select .ant-select-selection-placeholder {
+  color: #a0aec0 !important;
+}
+
+.form-select .ant-select-arrow {
+  color: #718096;
+}
+
+/* Focus state */
+.form-select.ant-select-focused .ant-select-selector {
+  border-color: var(--primary-green) !important;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2) !important;
+  background-color: #ffffff !important;
+}
+
+/* Error state */
+.select-error .ant-select-selector {
+  border-color: #e53e3e !important;
+}
+
+.select-error.ant-select-focused .ant-select-selector {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2) !important;
+}
+
+/* Dropdown styling */
+.select-dropdown {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+}
+
+.select-dropdown .ant-select-item {
+  padding: 10px 12px;
+  font-size: 0.9375rem;
+}
+
+.select-dropdown .ant-select-item-option-selected {
+  background-color: #ebf8ff;
+  color: #3182ce;
+}
+
+.select-dropdown .ant-select-item-option-active {
+  background-color: #f8fafc;
+}
+  .image-preview {
+    width: 400px;
+    height: 400px;
+    overflow: hidden;
+    border: 3px solid var(--primary-green);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--light-gray);
+    transition: var(--transition);
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .image-preview:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  .preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .icon {
+    width: 64px;
+    height: 64px;
+    color: var(--primary-green);
+    opacity: 0.5;
+  }
+  
+  .upload-label {
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  
+  .upload-btn {
+    display: inline-block;
+    background: var(--primary-red);
+    color: var(--white);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .upload-btn:hover {
+    background: #c62828;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .hidden-input {
+    display: none;
+  }
+  
+/* Add to your EmployeeForm.css */
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+  
+  /* Keep your existing form-group styles */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-group label {
+    color: var(--dark-gray);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  
+  /* .form-input {
+    padding: 0.85rem;
+    border: 1px solid var(--dark-gray);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: var(--transition);
+    background-color: #f8fafc;
+    width: 100%;
+} */
+ 
+#username,#phone,#password{
+    
+    border: 1px solid var(--dark-gray);
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    background-color: var(--white);
+    box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.2);
+  }
+
+  
+  .form-input.error {
+    border-color: var(--error-red);
+  }
+  
+  .error-msg {
+    color: var(--error-red);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+  
+  .form-footer {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
+  .submit-btn-employee {
+    background: var(--primary-green);
+    color: var(--white);
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: auto;
+  }
+  
+  .submit-btn:hover {
+    background: #21867a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+    
+    .form-card {
+      padding: 1.5rem;
+    }
+  
+    .form-layout {
+      flex-direction: column;
+      gap: 2rem;
+    }
+  
+    .image-section {
+      border-left: none;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 2rem;
+      padding-bottom: 1rem;
+    }
+  
+    .header h2 {
+      font-size: 1.7rem;
+    }
+  
+    .image-preview {
+      width: 150px;
+      height: 150px;
+    }
+  }
+  

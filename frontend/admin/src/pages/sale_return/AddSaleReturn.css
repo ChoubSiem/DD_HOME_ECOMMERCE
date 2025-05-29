@@ -1,0 +1,13 @@
+.search-bar{
+    /* background: #000; */
+    gap: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+.search{
+    /* background: #000; */
+    width: 100%;
+}
+.input{
+    width: 100%;
+}

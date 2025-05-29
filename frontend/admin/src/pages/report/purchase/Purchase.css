@@ -1,0 +1,56 @@
+.purchase-reports {
+    padding: 20px;
+  }
+  
+  .report-header {
+    margin-bottom: 20px;
+  }
+  
+  .report-header h1 {
+    margin-bottom: 8px;
+  }
+  
+  .report-filters {
+    margin-bottom: 20px;
+  }
+  
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .report-table {
+    margin-bottom: 20px;
+    border-radius: 0;
+  }
+  
+  .purchase-detail .ant-statistic {
+    margin-bottom: 16px;
+  }
+  
+  .purchase-detail .ant-statistic-title {
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.65);
+  }
+  
+  .purchase-detail .ant-table {
+    margin: 16px 0;
+  }
+  
+  @media (max-width: 992px) {
+    .summary-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .summary-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .summary-cards {
+  width: 100%;
+}

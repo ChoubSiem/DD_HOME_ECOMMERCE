@@ -1,0 +1,46 @@
+.dashboard-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .card-icon {
+    font-size: 24px;
+    margin-right: 12px;
+  }
+  
+  .card-icon-blue {
+    color: #1890ff;
+  }
+  
+  .card-title {
+    margin: 0;
+    font-size: 16px;
+    color: rgba(0,0,0,0.45);
+  }
+  
+  .card-amount {
+    font-size: 24px;
+    margin: 0 0 8px 0;
+    font-weight: 500;
+  }
+  
+  .card-trend {
+    margin: 0;
+    font-size: 14px;
+  }
+  
+  .card-trend.positive {
+    color: #52c41a;
+  }
+  
+  .card-trend.negative {
+    color: #f5222d;
+  }

@@ -1,0 +1,67 @@
+.category-management {
+  padding: 20px;
+}
+
+.category-header-card {
+  margin-bottom: 30px;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  border-bottom: 1px solid green;
+}
+
+.category-header-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-filter-card {
+  margin-bottom: 20px;
+}
+
+.category-filter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-filter-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.category-advanced-filters {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.category-table-card {
+  margin-bottom: 20px;
+}
+
+.category-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-cell span {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.category-row-active {
+  background-color: #f6ffed;
+}
+
+.category-row-inactive {
+  background-color: #fff2f0;
+}
+
+.ant-table-row:hover {
+  cursor: pointer;
+}
+.ant-form-item {
+  width: 100%;
+}

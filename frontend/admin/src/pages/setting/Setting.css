@@ -1,0 +1,11 @@
+.setting {
+    width: 100%; /* Ensure the parent container spans the full width */
+    padding: 20px; /* Optional: Add padding for spacing */
+    box-sizing: border-box; /* Include padding in the width calculation */
+  }
+  
+  .setting-card {
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box; /* Include padding and borders in the width calculation */
+    border: none;
+  }

@@ -1,0 +1,22 @@
+/* Add to your AddPos.css */
+.item-pricing {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .item-price {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .item-price::after {
+    content: " / " attr(data-unit);
+    font-weight: normal;
+    color: #666;
+    font-size: 0.9em;
+  }
+  
+  .item-discount {
+    color: #52c41a;
+    font-size: 0.8em;
+  }

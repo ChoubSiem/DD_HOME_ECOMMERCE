@@ -1,0 +1,134 @@
+.permission-dashboard {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+    padding: 16px;
+  }
+  
+  /* Full width container styles */
+  .dashboard-header-container .ant-card-body,
+  .filter-bar-container .ant-card-body,
+  .advanced-filter-container .ant-card-body,
+  .permissions-table-container .ant-card-body {
+    padding: 16px 24px;
+  }
+  
+  .dashboard-header-container {
+    margin-bottom: 16px;
+  }
+  
+  .filter-bar-container {
+    margin-bottom: 16px;
+  }
+  
+  .permissions-table-container {
+    width: 100%;
+  }
+  
+  /* Header styles */
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  
+  .dashboard-header p {
+    color: rgba(0, 0, 0, 0.45);
+    margin: 0;
+  }
+  
+  /* Filter bar styles */
+  .filter-bar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  /* Advanced filter styles */
+  .advanced-filter {
+    padding: 8px 0;
+  }
+  
+  .filter-section {
+    margin-bottom: 16px;
+  }
+  
+  .filter-section h3 {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.85);
+    margin-bottom: 8px;
+  }
+  
+  .category-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+  
+  /* Table styles */
+  .ant-table {
+    border-radius: 8px;
+  }
+  
+  .ant-table-thead > tr > th {
+    background: #fafafa !important;
+    font-weight: 600 !important;
+  }
+  
+  .active-row {
+    background-color: rgba(24, 144, 255, 0.02);
+  }
+  
+  .inactive-row {
+    background-color: rgba(255, 77, 79, 0.02);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    
+    .filter-bar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    
+    .filter-bar .ant-input-search,
+    .filter-bar .ant-select {
+      width: 100% !important;
+    }
+    
+    .permissions-table-container .ant-table {
+      overflow-x: auto;
+    }
+    
+    .permissions-table-container .ant-table-thead > tr > th,
+    .permissions-table-container .ant-table-tbody > tr > td {
+      white-space: nowrap;
+    }
+  }
+  .last-one{
+    width: 100%;
+    /* background: #000; */
+  }
+  /* .ant-checkbox-wrapper{
+    width: 100%;
+  } */

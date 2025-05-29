@@ -1,0 +1,26 @@
+.role-permissions-container {
+    padding: 20px;
+  }
+  
+  .role-toolbar {
+    margin-bottom: 20px;
+  }
+  
+  .permissions-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .ant-table .ant-tag {
+    margin-right: 0;
+  }
+  
+  .role-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .role-form .ant-form-item {
+    margin-bottom: 16px;
+  }

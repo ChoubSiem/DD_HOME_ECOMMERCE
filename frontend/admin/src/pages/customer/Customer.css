@@ -1,0 +1,10 @@
+.form-control{
+    /* background: #000; */
+    display: flex;
+    /* flex-wrap: wrap; */
+    align-items: start;
+}
+.form-control .ant-form-item{
+    /* background: #000; */
+    width: 40%;
+}

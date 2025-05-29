@@ -1,0 +1,211 @@
+/* Move all your CSS styles here */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.form-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.header-subtitle {
+  margin: 8px 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-layout {
+  display: flex;
+  gap: 24px;
+}
+
+.form-content {
+  flex: 1;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-group {
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-input.error {
+  border-color: #ff4d4f;
+}
+
+.error-msg {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.select {
+  width: 100%;
+}
+
+.relationship-group {
+  margin-top: 16px;
+}
+
+.hint {
+  color: #888;
+  font-size: 12px;
+  display: block;
+  margin-top: 4px;
+}
+
+.form-footer {
+  margin-top: 24px;
+  text-align: right;
+}
+
+.submit-btn {
+  background: #1890ff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.submit-btn:hover {
+  background: #40a9ff;
+}
+
+.submit-btn:disabled {
+  background: #d9d9d9;
+  cursor: not-allowed;
+}
+
+.image-section {
+  width: 300px;
+}
+
+.image-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  font-size: 48px;
+  color: #999;
+}
+
+.upload-label {
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.upload-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  color: #333;
+  font-size: 14px;
+}
+
+.upload-btn:hover {
+  background: #e0e0e0;
+}
+
+.hidden-input {
+  display: none;
+}
+
+.remove-image-btn {
+  background: none;
+  border: none;
+  color: #ff4d4f;
+  cursor: pointer;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.remove-image-btn:hover {
+  text-decoration: underline;
+}
+
+.image-hint {
+  color: #888;
+  font-size: 12px;
+  text-align: center;
+}

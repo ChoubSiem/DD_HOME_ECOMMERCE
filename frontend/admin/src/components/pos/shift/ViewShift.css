@@ -1,0 +1,94 @@
+/* Print-specific page settings */
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+@page A5 {
+  size: A5;
+  margin: 10mm;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .print-content, .print-content * {
+    visibility: visible;
+  }
+  
+  .print-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Page size options */
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+  
+  @page a5 {
+    size: A5;
+    margin: 8mm;
+  }
+  
+  /* Adjust layout for printing */
+  .print-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
+  
+  .print-logo {
+    height: 50px;
+    margin-right: 15px;
+  }
+  
+  .print-title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .print-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 4px;
+  }
+  
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+  }
+  
+  .print-table th, 
+  .print-table td {
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: left;
+  }
+  
+  .print-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .print-total-row {
+    font-weight: bold;
+    background-color: #f9f9f9;
+  }
+}

@@ -1,0 +1,38 @@
+.view-payment-modal .ant-modal-content {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .view-payment-modal .ant-modal-header {
+    border-bottom: 1px solid #d9d9d9;
+  }
+  
+  .view-payment-modal .ant-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #52c41a;
+  }
+  
+  .view-payment-modal .ant-descriptions-title {
+    font-size: 16px !important;
+    color: #52c41a !important;
+  }
+  
+  .view-payment-modal .ant-descriptions-item-label {
+    font-weight: 600;
+    background: #fafafa;
+  }
+  
+  .view-payment-modal .payments-table .ant-table {
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+  }
+  
+  .view-payment-modal .payments-table .ant-table-thead > tr > th {
+    background: #fafafa;
+    font-weight: 600;
+  }
+  
+  .view-payment-modal .payments-table .ant-table-tbody > tr:hover > td {
+    background: #e6f7ff;
+  }

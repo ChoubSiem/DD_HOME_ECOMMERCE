@@ -1,0 +1,48 @@
+.adjustment-report {
+    padding: 20px;
+  }
+  
+  .report-header {
+    margin-bottom: 20px;
+  }
+  
+  .report-header .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .report-filters {
+    margin-bottom: 20px;
+  }
+  
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .report-table {
+    margin-bottom: 20px;
+  }
+  
+  .adjustment-detail .ant-descriptions {
+    margin-bottom: 16px;
+  }
+  
+  .adjustment-detail .ant-table {
+    margin: 16px 0;
+  }
+  
+  @media (max-width: 992px) {
+    .summary-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .summary-cards {
+      grid-template-columns: 1fr;
+    }
+  }

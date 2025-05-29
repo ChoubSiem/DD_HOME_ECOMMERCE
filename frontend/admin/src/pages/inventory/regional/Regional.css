@@ -1,0 +1,35 @@
+/* General Layout */
+.regional-management {
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Header Card */
+.regional-header-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+}
+
+.regional-header-content h1 {
+  font-weight: 600;
+}
+
+.regional-header-content p {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Toolbar Card */
+.regional-toolbar-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+}
+
+/* Table Card */
+.regional-table-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

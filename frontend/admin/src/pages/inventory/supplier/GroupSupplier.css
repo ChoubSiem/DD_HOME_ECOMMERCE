@@ -1,0 +1,54 @@
+.supplier-group-management {
+  padding: 20px;
+}
+
+.supplier-group-header-card {
+  margin-bottom: 20px;
+}
+
+.supplier-group-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.supplier-group-filter-card {
+  margin-bottom: 20px;
+}
+
+.supplier-group-filter-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.supplier-group-filter-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.supplier-group-table-card {
+  margin-bottom: 20px;
+}
+
+.supplier-group-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.supplier-group-cell span {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.supplier-group-row-active {
+  background-color: #f6ffed;
+}
+
+.supplier-group-row-inactive {
+  background-color: #fff2f0;
+}
+
+.ant-table-row:hover {
+  cursor: pointer;
+}

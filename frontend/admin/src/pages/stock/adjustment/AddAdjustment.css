@@ -1,0 +1,30 @@
+.ant-table-thead > tr > th {
+    background-color: #52c41a !important;
+    color: white !important; 
+  }
+.ant-table {
+    border-radius: 0 !important;
+  }
+  
+  .ant-table-container {
+    border-radius: 0 !important;
+  }
+  
+  .ant-table-thead > tr > th:first-child,
+  .ant-table-thead > tr > th:last-child,
+  .ant-table-tbody > tr > td:first-child,
+  .ant-table-tbody > tr > td:last-child {
+    border-radius: 0 !important;
+  }
+  .search-bar .search-product.ant-select .ant-select-selector {
+    border-radius: 0 !important;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 15px;
+  }
+  .form-field {
+    flex: 1;
+  }
+  

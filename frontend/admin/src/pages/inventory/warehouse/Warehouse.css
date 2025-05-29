@@ -1,0 +1,35 @@
+/* General Layout */
+.warehouse-management {
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Header Card */
+.warehouse-header-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+}
+
+.warehouse-header-content h1 {
+  font-weight: 600;
+}
+
+.warehouse-header-content p {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Toolbar Card */
+.warehouse-toolbar-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+}
+
+/* Table Card */
+.warehouse-table-card {
+  border-radius: 8px;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+}

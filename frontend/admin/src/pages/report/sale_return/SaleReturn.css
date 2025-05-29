@@ -1,0 +1,66 @@
+.sales-return-report {
+    padding: 20px;
+  }
+  
+  .report-header {
+    margin-bottom: 20px;
+  }
+  
+  .report-tabs {
+    margin-bottom: 20px;
+  }
+  
+  .report-tabs .ant-tabs-nav {
+    margin: 0;
+  }
+  
+  .report-filters {
+    margin-bottom: 20px;
+  }
+  
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .returns-table,
+  .items-table,
+  .analytics {
+    margin-bottom: 20px;
+  }
+  
+  .reason-chart,
+  .status-chart {
+    height: 100%;
+  }
+  
+  .return-detail .ant-descriptions {
+    margin-bottom: 16px;
+  }
+  
+  .return-detail .ant-table {
+    margin: 16px 0;
+  }
+  
+  @media (max-width: 992px) {
+    .summary-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .analytics .ant-col {
+      margin-bottom: 16px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .summary-cards {
+      grid-template-columns: 1fr;
+    }
+    
+    .analytics .ant-col {
+      width: 100%;
+      max-width: 100%;
+    }
+  }

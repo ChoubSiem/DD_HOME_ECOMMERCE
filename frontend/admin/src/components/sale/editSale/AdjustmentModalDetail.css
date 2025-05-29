@@ -1,0 +1,318 @@
+Base Styles
+.adjustment-modal {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  .invoice-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  
+  /* Header Styles */
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .company-logo {
+    width: 60px;
+    height: 60px;
+    background: #1890ff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 20px;
+  }
+  
+  .header-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .document-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: #222;
+    letter-spacing: 0.5px;
+  }
+  
+  .document-reference {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .document-date {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+  
+  /* Body Styles */
+  .invoice-body {
+    flex: 1;
+  }
+  
+  .section-divider {
+    margin: 0 0 24px 0;
+    border-color: #f0f0f0;
+  }
+  
+  /* Summary Section */
+  .summary-section {
+    margin-bottom: 24px;
+  }
+  
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  
+  .summary-card {
+    padding: 16px;
+    background: #fafafa;
+    border-radius: 4px;
+    border-left: 4px solid #e0e0e0;
+  }
+  
+  .summary-label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  
+  .summary-value {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  /* Status Cards */
+  .status-card {
+    border-left-width: 4px;
+  }
+  
+  .status-completed {
+    border-left-color: #52c41a;
+  }
+  
+  .status-pending {
+    border-left-color: #faad14;
+  }
+  
+  .status-unknown, .status-cancelled {
+    border-left-color: #ff4d4f;
+  }
+  
+  .status-completed .status-value {
+    color: #52c41a;
+  }
+  
+  .status-pending .status-value {
+    color: #faad14;
+  }
+  
+  .status-unknown .status-value, .status-cancelled .status-value {
+    color: #ff4d4f;
+  }
+  
+  /* Notes Section */
+  .notes-section {
+    margin-bottom: 24px;
+  }
+  
+  .section-title.ant-divider {
+    font-size: 14px;
+    color: #666;
+    margin: 24px 0 12px;
+    font-weight: 500;
+  }
+  
+  .notes-content {
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border-left: 4px solid #1890ff;
+  }
+  
+  .note-text {
+    margin: 0;
+    font-size: 14px;
+    color: #444;
+    line-height: 1.5;
+  }
+  
+  /* Items Section */
+  .items-table .ant-table {
+    font-size: 14px;
+  }
+  
+/* Table Styles */
+.items-table .ant-table {
+    font-size: 14px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .items-table .ant-table-container {
+    border-radius: 8px;
+  }
+  
+  .items-table .ant-table-thead > tr > th {
+    background-color: #52c41a !important; /* Green color */
+    color: white !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+    border-bottom: none;
+  }
+  
+  .items-table .ant-table-thead > tr > th:first-child {
+    border-top-left-radius: 8px;
+  }
+  
+  .items-table .ant-table-thead > tr > th:last-child {
+    border-top-right-radius: 8px;
+  }
+  
+  .items-table .ant-table-tbody > tr > td {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px 16px;
+  }
+  
+  .items-table .ant-table-tbody > tr:last-child > td {
+    border-bottom: none;
+  }
+  
+  .items-table .table-row:hover > td {
+    background-color: #f7fafc !important;
+  }
+  
+  /* Ensure print styles also show the green header */
+  @media print {
+    .items-table .ant-table-thead > tr > th {
+      background-color: #52c41a !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color: white !important;
+    }
+  }
+  
+  /* Table Cell Styles */
+  .product-name {
+    font-weight: 500;
+  }
+  
+  .quantity-value, .stock-value {
+    font-weight: 500;
+    font-family: 'Roboto Mono', monospace;
+  }
+  
+  .adjustment-type {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+  
+  .add-type {
+    color: #52c41a;
+  }
+  
+  .remove-type {
+    color: #ff4d4f;
+  }
+  
+  .unit-value {
+    color: #666;
+  }
+  
+  /* Footer Styles */
+  .invoice-footer {
+    padding: 16px 24px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .print-button, .close-button, .edit-button {
+    flex: 1;
+    height: 40px;
+    font-weight: 500;
+  }
+  
+  .print-button {
+    border-color: #52c41a;
+  }
+  
+  .close-button {
+    border-color: #d9d9d9;
+  }
+  
+  .edit-button {
+    background: #52c41a;
+    border: none;
+  }
+  
+  /* Print Styles */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    
+    .adjustment-modal,
+    .adjustment-modal * {
+      visibility: visible;
+    }
+    
+    .adjustment-modal {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .invoice-footer {
+      display: none;
+    }
+    
+    .ant-modal-close {
+      display: none;
+    }
+    
+    .invoice-header {
+      background-color: transparent !important;
+      border-bottom: 2px solid #000 !important;
+    }
+    
+    .items-table .ant-table-thead > tr > th {
+      background-color: #f0f0f0 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }

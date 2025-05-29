@@ -1,0 +1,37 @@
+/* General Layout */
+.company-management {
+  padding: 24px;
+  /* background-color: #f5f5f5; */
+  min-height: 100vh;
+}
+
+/* Header Card */
+.company-header-card {
+  margin-bottom: 30px;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  border-bottom: 1px solid green;
+}
+
+.company-header-content h1 {
+  font-weight: 600;
+}
+
+.company-header-content p {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Toolbar Card */
+.company-toolbar-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+}
+
+/* Table Card */
+.company-table-card {
+  border-radius: 8px;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+}

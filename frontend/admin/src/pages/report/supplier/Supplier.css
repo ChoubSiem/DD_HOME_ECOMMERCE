@@ -1,0 +1,55 @@
+.supplier-purchase-report {
+    padding: 20px;
+  }
+  
+  .report-header {
+    margin-bottom: 20px;
+  }
+  
+  .report-tabs {
+    margin-bottom: 20px;
+  }
+  
+  .report-tabs .ant-tabs-nav {
+    margin: 0;
+  }
+  
+  .report-filters {
+    margin-bottom: 20px;
+  }
+  
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .recent-purchases {
+    margin-bottom: 20px;
+  }
+  
+  .supplier-analysis,
+  .detailed-purchases {
+    margin-bottom: 20px;
+  }
+  
+  .purchase-detail .ant-descriptions {
+    margin-bottom: 16px;
+  }
+  
+  .purchase-detail .ant-table {
+    margin: 16px 0;
+  }
+  
+  @media (max-width: 992px) {
+    .summary-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .summary-cards {
+      grid-template-columns: 1fr;
+    }
+  }

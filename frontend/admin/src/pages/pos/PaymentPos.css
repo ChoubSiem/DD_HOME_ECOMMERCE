@@ -1,0 +1,353 @@
+/* Base Styles */
+.pos-payment-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    height: 80vh;
+    padding: 20px;
+  }
+  
+  .payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  .payment-header h2 {
+    color: #2c3e50;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .order-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    color: #7f8c8d;
+    font-size: 14px;
+  }
+  
+  /* Card Styles */
+  .order-card, .payment-card, .customer-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 16px;
+    border: none;
+  }
+  
+  .order-card .ant-card-head, 
+  .payment-card .ant-card-head, 
+  .customer-card .ant-card-head {
+    border-bottom: 1px solid #e8e8e8;
+    padding: 0 16px;
+  }
+  
+  .order-card .ant-card-head-title, 
+  .payment-card .ant-card-head-title, 
+  .customer-card .ant-card-head-title {
+    font-weight: 500;
+    color: #34495e;
+  }
+  
+  /* Order Items */
+  .order-items {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px dashed #e8e8e8;
+  }
+  
+  .item-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .item-name {
+    font-weight: 500;
+  }
+  
+  .item-quantity {
+    color: #7f8c8d;
+    font-size: 13px;
+  }
+  
+  .item-price {
+    font-weight: 600;
+  }
+  
+  /* Order Totals */
+  .order-totals {
+    margin-top: 16px;
+  }
+  
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+  
+  .grand-total {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #e8e8e8;
+  }
+  
+  .custom-divider {
+    margin: 16px 0;
+  }
+  
+  /* Payment Methods */
+  .payment-methods {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+  
+  .payment-method {
+    flex: 1;
+    text-align: center;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+  }
+  
+  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+    background: #52c41a;
+    border-color: #52c41a;
+    color: white;
+  }
+  
+  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
+    background: #52c41a;
+    border-color: #52c41a;
+    color: white;
+  }
+  
+  /* Cash Payment */
+  .cash-payment-details {
+    margin-top: 16px;
+  }
+  
+  .amount-due, .change-due {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+  
+  .amount {
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .amount-input {
+    margin: 12px 0;
+    height: 40px;
+  }
+  
+  /* Mobile Payment */
+  .mobile-payment-details {
+    margin-top: 16px;
+  }
+  
+  .bank-selector {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  
+  .qr-code-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+  }
+  
+  .qr-code {
+    width: 150px;
+    height: 150px;
+    background-color: #f0f0f0;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7f8c8d;
+  }
+  
+  .transaction-input {
+    margin-top: 16px;
+  }
+  
+  /* Customer Section */
+  .customer-selector {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .customer-dropdown {
+    flex: 1;
+  }
+  
+  .add-customer-btn {
+    width: 80px;
+  }
+  
+  /* Complete Payment Button */
+  .complete-payment-btn {
+    height: 50px;
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 16px;
+    background: linear-gradient(135deg, #52c41a, #52c41a);
+    border: none;
+    transition: all 0.3s;
+  }
+  
+  .complete-payment-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    background: linear-gradient(135deg, #52c41a, #52c41a);
+  }
+  
+  /* Modal Styles */
+  .customer-modal .ant-modal-content {
+    border-radius: 10px;
+  }
+  
+  .ant-btn-primary {
+    background: #52c41a;
+    border-color: #52c41a;
+  }
+  
+  .ant-btn-primary:hover, .ant-btn-primary:focus {
+    background: #52c41a;
+    border-color: #52c41a;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 992px) {
+    .payment-content {
+      flex-direction: column;
+    }
+    
+    .order-summary-section, .payment-options-section {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  .denomination-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 12px 0;
+  }
+  
+  .denomination-buttons button {
+    height: 40px;
+    font-weight: bold;
+  }
+  
+  .cash-payment-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .customer-info {
+  margin-bottom: 16px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.customer-name {
+  font-weight: bold;
+  margin: 0 8px;
+}
+
+.item-discount {
+  color: #f5222d;
+  font-size: 0.9em;
+  margin-left: 8px;
+}
+.installment-options {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
+}
+
+.installment-details {
+  margin-top: 16px;
+}
+
+.installment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.installment-summary {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.installment-row .amount {
+  font-weight: bold;
+}
+
+.installment-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.next-payment-section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  margin-top: 20px;
+}
+
+.next-payment-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.next-payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.next-payment-label {
+  flex: 1;
+  color: #555;
+  font-weight: 500;
+}
+
+.next-payment-picker,
+.next-payment-input {
+  flex: 1;
+  max-width: 250px;
+}
