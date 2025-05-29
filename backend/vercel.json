@@ -11,7 +11,9 @@
     "APP_URL": "https://your-vercel-deployment.vercel.app"
   },
 "routes": [
-    { "src": "/api/(.*)", "dest": "backend/api/index.php" },
-    { "src": "/(.*)", "dest": "frontend/dist/$1" }
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/admin/$1"
+    }
   ]
 }
