@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
-import "./NotFound.css";
+import "./Notfound.css";
 
 function NotFoundPage() {
   const navigate = useNavigate();
