@@ -128,7 +128,7 @@ const CloseShiftModal = ({ open, onClose, shiftData, token, userData, warehouseI
       <body>
         <div class="print-container">
           <div class="header">
-            <img src="http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg" class="logo" alt="Logo" onerror="this.src='https://via.placeholder.com/50';">
+            <img src="" class="logo" alt="Logo" onerror="this.src='https://via.placeholder.com/50';">
             <div class="title">${shiftData?.data.warehouse || 'Warehouse'} - Shift Summary</div>
           </div>
           <div class="summary-section">
@@ -275,7 +275,7 @@ const CloseShiftModal = ({ open, onClose, shiftData, token, userData, warehouseI
           }}
         >
           <img
-            src="http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg"
+            src=""
             alt="Logo"
             style={{ height: 60, objectFit: 'contain' }}
           />

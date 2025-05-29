@@ -1,6 +1,6 @@
 import React from "react";
 import { ShopOutlined } from '@ant-design/icons';
-import logo from 'http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg';
+// import logo from 'http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg';
 
 const InvoiceTemplate = React.forwardRef(({ sale, customer, items }, ref) => {
   return (
@@ -11,7 +11,6 @@ const InvoiceTemplate = React.forwardRef(({ sale, customer, items }, ref) => {
       fontSize: '12px'
     }}>
       <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-        <img src='http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg' alt="logo" />
         <h2 style={{ margin: '5px 0', fontSize: '16px' }}>DD Home</h2>
         <p style={{ margin: '2px 0', fontSize: '10px' }}>ឌីឌី ហូម</p>
         <p style={{ margin: '2px 0', fontSize: '10px' }}>123 Business Street</p>

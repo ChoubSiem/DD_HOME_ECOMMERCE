@@ -554,7 +554,7 @@ const handleDownloadPDF = () => {
               }}
             >
               <img
-                src="http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg"
+                src=""
                 alt="Company Logo"
                 style={{ height: '50px', marginRight: '16px' }}
               />

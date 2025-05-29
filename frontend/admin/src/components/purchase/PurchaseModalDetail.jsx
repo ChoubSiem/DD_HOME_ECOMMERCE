@@ -108,7 +108,6 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
           <div className="header-left">
             <div className="company-logo">
               <img
-                src="http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg"
                 alt="Logo"
                 style={{ width: '90px', marginRight: '20px' }}
               />

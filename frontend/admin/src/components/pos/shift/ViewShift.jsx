@@ -222,7 +222,7 @@ const ViewShiftModal = ({ open, onClose, warehouseId, token, onShiftClosed }) =>
             }}
           >
             <img
-              src="http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg"
+              src=""
               alt="Chomrourn Phal Logo"
               style={{ height: 60, objectFit: 'contain' }}
             />
