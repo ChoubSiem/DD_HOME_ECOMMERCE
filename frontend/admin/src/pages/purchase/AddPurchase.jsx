@@ -14,7 +14,7 @@ import {
 import { SearchOutlined, PlusOutlined, DeleteOutlined, EditOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import PurchaseDetailCard from "../../components/purchase/addPurchase/PurchaseDetailCard";
 import NoteSection from "../../components/purchase/addPurchase/NoteSection";
-import PurchaseSearchBar from "../../components/purchase/addPurchase/purchaseSearchBar";
+import PurchaseSearchBar from "../../components/purchase/addPurchase/PurchaseSearchBar";
 import ActionButtons from "../../components/purchase/addPurchase/ActionButton";
 import { useProductTerm } from "../../hooks/UserProductTerm";
 import { useUser } from "../../hooks/UserUser";
