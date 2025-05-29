@@ -1,16 +1,12 @@
 {
-"version": 2,
+  "version": 2,
   "builds": [
-    { "src": "frontend/package.json", "use": "@vercel/static-build" },
-    { "src": "backend/api/index.php", "use": "vercel-php@0.7.3" }
+    {
+      "src": "frontend/admin/package.json",
+      "use": "@vercel/static-build"
+    }
   ],
-  "env": {
-    "APP_ENV": "production",
-    "APP_DEBUG": "true",
-    "APP_KEY": "base64:9Njng9qX5hlKhlZRyMXU+1LeHAjAobPC2EURK9Foc08=",
-    "APP_URL": "https://your-vercel-deployment.vercel.app"
-  },
-"routes": [
+  "routes": [
     {
       "src": "/(.*)",
       "dest": "/frontend/admin/$1"
