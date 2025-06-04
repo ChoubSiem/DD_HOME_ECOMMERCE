@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { data } from 'react-router-dom';
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = 'http://159.65.134.127/api';
 
 export const fetchUsers = async (token) => {
   
