@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_URL = 'http://159.65.134.127/api';
+const API_URL = 'https://backend.ddhomekh.com/api';
 
 
 export const loginUser = async ({ phone, password }) => {

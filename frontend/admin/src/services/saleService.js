@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { data } from 'react-router-dom';
-const API_URL = 'http://159.65.134.127/api';
+const API_URL = 'https://backend.ddhomekh.com/api';
 
 
 export const getPosSales = async (warehouseId,token) => {  

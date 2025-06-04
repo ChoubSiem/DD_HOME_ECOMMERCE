@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_BASE = 'http://159.65.134.127/api';
+const API_BASE = 'https://backend.ddhomekh.com/api';
 
 export const fetchWarehouse = async (token) => {
   
