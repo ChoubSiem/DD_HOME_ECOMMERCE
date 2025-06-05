@@ -67,7 +67,7 @@ import Setting from "./pages/setting/Setting";
 import PaymentPos from "./pages/pos/PaymentPos";
 import { useProfileStore } from './stores/ProfileStore';
 
-import { useEffect } from "react";
+import React , { useEffect } from "react";
 import ProtectedRoute from './components/route/ProtectedRoute';
 import ProductGroup from "./pages/product_group/ProductGroup";
 import EmployeeCreate from "./components/policy/employee/create/EmployeeCreate";
