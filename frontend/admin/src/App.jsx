@@ -174,7 +174,7 @@ const App = () => {
         </Route>
         
         {/* Catch-all route */}
-        <Route path="*" element={isAuthenticated ? <NotFoundPage /> : <Navigate to="/login" replace />} />
+        <Route path="*" element={isAuthenticated ? <NotFoundPage /> : <Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
