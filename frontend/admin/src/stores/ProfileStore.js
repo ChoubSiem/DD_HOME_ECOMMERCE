@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import Cookies from 'js-cookie';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile } from '../services/authService';
 
 const secureGetToken = () => {
@@ -20,7 +20,7 @@ export const useProfileStore = create((set) => ({
   loading: true,
 
   initialize: async () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const token = localStorage.getItem('token');
     const user = Cookies.get('user');    
     if (!token) {
@@ -43,16 +43,16 @@ export const useProfileStore = create((set) => ({
         Cookies.remove("permission");
       }
     } catch (error) {
-      set({
-        isAuthenticated: false,
-        token,
-        user: null,
-        permissions:null,
-        loading: false,
-      });
-      localStorage.removeItem('token');
-      Cookies.remove('user');
-      navigate("/login");
+      // set({
+      //   isAuthenticated: false,
+      //   token,
+      //   user: null,
+      //   permissions:null,
+      //   loading: false,
+      // });
+      // localStorage.removeItem('token');
+      // Cookies.remove('user');
+      // navigate("/login");
     }
   },
   
