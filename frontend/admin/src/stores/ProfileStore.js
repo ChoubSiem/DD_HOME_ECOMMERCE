@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile } from '../services/authService';
 
 const secureGetToken = () => {
@@ -19,6 +20,7 @@ export const useProfileStore = create((set) => ({
   loading: true,
 
   initialize: async () => {
+    const navigate = useNavigate();
     const token = localStorage.getItem('token');
     const user = Cookies.get('user');    
     if (!token) {
