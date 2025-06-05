@@ -10,6 +10,7 @@ const secureGetToken = () => {
 const secureRemoveToken = () => {
   localStorage.removeItem('token');
 };
+// let token =  localStorage.getItem('token');
 
 export const useProfileStore = create((set) => ({
   isAuthenticated: false,
@@ -30,9 +31,7 @@ export const useProfileStore = create((set) => ({
 
   
     try {
-      const result = await fetchUserProfile(token);    
-      console.log(token);
-              
+      const result = await fetchUserProfile(token);                  
       if (result) {
         set({
           isAuthenticated: true,
