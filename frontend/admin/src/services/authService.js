@@ -55,13 +55,12 @@ export const fetchUserProfile = async (token) => {
         }
         
       });        
+      return response.data.user;
     }else {
       console.log('error');
       
     }
     
-    console.log(token);
-    return response.data.user;
   } catch (error) {
     console.error('Error to get user profile:', error);
     return false;
