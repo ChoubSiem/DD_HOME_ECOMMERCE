@@ -65,12 +65,12 @@ export const fetchUserProfile = async (token) => {
     
     return response.data.user;
   } catch (error) {
-    if (error.response) {
-      console.error('Error status:', error.response.status);
-      console.error('Error data:', error.response.data);
-    } else {
+    // if (error.response) {
+    //   console.error('Error status:', error.response.status);
+    //   console.error('Error data:', error.response.data);
+    // } else {
       console.error('Error message:', error.message);
-    }
+    // }
     return false;
   }
 };
