@@ -44,6 +44,7 @@ export const logoutUser = async (token) => {
 };
 
 export const fetchUserProfile = async (token) => {  
+  console.log(token);
   try {
     const response = await axios.get(`${API_URL}/me`, {
       
@@ -54,7 +55,6 @@ export const fetchUserProfile = async (token) => {
     }
 
     });        
-    console.log(response);
     
     return response.data.user;
   } catch (error) {
