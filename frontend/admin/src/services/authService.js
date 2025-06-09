@@ -47,7 +47,7 @@ export const fetchUserProfile = async (token) => {
   console.log('this token ' + token);
   
   if (!token) {
-    console.log('No token provided');
+    console.log('No token');
     return false;
   }
 
@@ -55,10 +55,12 @@ export const fetchUserProfile = async (token) => {
     const response = await axios.get(`${API_URL}/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: 'application/json'
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
       // withCredentials: true, // uncomment if backend needs it
     });
+
     console.log(response);
     
     return response.data.user;
