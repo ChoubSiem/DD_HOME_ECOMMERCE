@@ -59,6 +59,8 @@ export const fetchUserProfile = async (token) => {
       },
       // withCredentials: true, // uncomment if backend needs it
     });
+    console.log(response);
+    
     return response.data.user;
   } catch (error) {
     if (error.response) {
