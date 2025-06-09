@@ -32,7 +32,7 @@ export const useProfileStore = create((set) => ({
   
     try {
       const result = await fetchUserProfile(token);                  
-      if (result) {
+      if (result.success) {
         set({
           isAuthenticated: true,
           token,
@@ -44,16 +44,16 @@ export const useProfileStore = create((set) => ({
         Cookies.remove("permission");
       }
     } catch (error) {
-      // set({
-      //   isAuthenticated: false,
-      //   token,
-      //   user: null,
-      //   permissions:null,
-      //   loading: false,
-      // });
-      // localStorage.removeItem('token');
-      // Cookies.remove('user');
-      // navigate("/login");
+      set({
+        isAuthenticated: false,
+        token,
+        user: null,
+        permissions:null,
+        loading: false,
+      });
+      localStorage.removeItem('token');
+      Cookies.remove('user');
+      navigate("/login");
     }
   },
   
