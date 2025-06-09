@@ -43,34 +43,25 @@ export const logoutUser = async (token) => {
 
 };
 
-export const fetchUserProfile = async (token) => {
-  console.log('this token ' + token);
-  
-  if (!token) {
-    console.log('No token');
-    return false;
-  }
-
+export const fetchUserProfile = async (token) => {  
   try {
-    const response = await axios.get(`${API_URL}/me`, {
-      headers: {
-        Authorization: `Bearer ${token.trim()}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      // withCredentials: true, // uncomment if backend needs it
-    });
-
-    console.log(response);
+    if (token) {
+      const response = await axios.get(`${API_URL}/me`, {
+        
+        headers: { 
+          Authorization: `Bearer ${token}`
+        },
+        withCredentials: true
+        
+      });        
+      return response.data.user;
+    }else {
+      console.log('error');
+      
+    }
     
-    return response.data.user;
   } catch (error) {
-    // if (error.response) {
-    //   console.error('Error status:', error.response.status);
-    //   console.error('Error data:', error.response.data);
-    // } else {
-      console.error('Error message:', error.message);
-    // }
+    console.error('Error to get user profiles:', error);
     return false;
   }
 };
