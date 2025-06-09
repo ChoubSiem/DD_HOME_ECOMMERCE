@@ -44,21 +44,21 @@ export const logoutUser = async (token) => {
 };
 
 export const fetchUserProfile = async (token) => {  
-  console.log(token);
   try {
     const response = await axios.get(`${API_URL}/me`, {
       
-    headers: { 
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    }
-
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      }
+      
     });        
     
+    console.log(token);
     return response.data.user;
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    console.error('Error to get user profile:', error);
     return false;
   }
 };
