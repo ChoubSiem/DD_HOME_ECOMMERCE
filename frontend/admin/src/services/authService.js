@@ -44,6 +44,8 @@ export const logoutUser = async (token) => {
 };
 
 export const fetchUserProfile = async (token) => {
+  console.log('this token ' + token);
+  
   if (!token) {
     console.log('No token provided');
     return false;
