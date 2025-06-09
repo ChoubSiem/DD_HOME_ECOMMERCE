@@ -23,7 +23,6 @@ export const useProfileStore = create((set) => ({
   initialize: async () => {
     // const navigate = useNavigate();
     const token = localStorage.getItem('token');
-    console.log('Token from localStorage:', token);
 
     const user = Cookies.get('user');    
     if (!token) {
