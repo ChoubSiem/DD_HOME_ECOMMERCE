@@ -78,7 +78,7 @@ import BrandManagement from "./pages/brand/Brand";
 const App = () => {
   const { initialize, login, logout, isAuthenticated, user, loading } = useProfileStore();
   
-  useEffect(() => {    
+  useEffect(() => {        
     if (!isAuthenticated) {
       initialize();
     }

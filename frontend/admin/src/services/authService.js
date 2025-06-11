@@ -1,7 +1,6 @@
 import axios from 'axios';
 const API_URL = 'https://backend.ddhomekh.com/api';
 
-
 export const loginUser = async ({ phone, password }) => {
     try {
       const response = await axios.post(`${API_URL}/login`, {
@@ -45,24 +44,24 @@ export const logoutUser = async (token) => {
 
 export const fetchUserProfile = async (token) => {  
   try {
-    if (token) {
-      const response = await axios.get(`${API_URL}/me`, {
-        
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        withCredentials: true
-        
-      });        
-      return response.data.user;
-    }else {
-      console.log('error');
-      
+    if (!token) {
+      console.log('No token provided');
+      return false;
     }
-    
+
+    const response = await axios.get(`${API_URL}/me`, {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+      },
+      // withCredentials: true, // optional
+    });
+
+    return response.data.user;
+
   } catch (error) {
-    console.error('Error to get user profiles:', error);
+    console.error('Fetch user error:', error.response || error.message || error);
     return false;
   }
 };
+
