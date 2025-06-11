@@ -49,7 +49,8 @@ export const fetchUserProfile = async (token) => {
       const response = await axios.get(`${API_URL}/me`, {
         
         headers: { 
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'Accept': 'application/json',
         },
         withCredentials: true
         
