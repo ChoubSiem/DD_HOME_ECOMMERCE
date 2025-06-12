@@ -15,3 +15,84 @@
     
     border-radius: 0 !important;
   }
+
+  .modern-product-modal .ant-modal-body {
+  padding: 24px;
+}
+
+.product-detail-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-gallery-card, .info-card, .description-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.image-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.gallery-item {
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover {
+  transform: translateY(-4px);
+}
+
+.image-preview-mask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.image-preview-mask:hover {
+  opacity: 1;
+}
+
+.product-descriptions .ant-descriptions-item-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.description-label {
+  display: flex;
+  align-items: center;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0;
+}
+
+@media (max-width: 768px) {
+  .modern-product-modal {
+    width: 90% !important;
+    max-width: 100%;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .action-buttons button {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+.khmer-text {
+  font-family: 'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif;
+}

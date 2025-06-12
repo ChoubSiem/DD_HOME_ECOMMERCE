@@ -170,8 +170,8 @@ const App = () => {
           <Route path="/sale" element={<Sale />} />
           <Route path="/sale/add" element={<AddSale />} />
           <Route path="/sale/edit/:id" element={<EditSale />} />
-          <Route path="/pos/add" element={<AddPos />} />
         </Route>
+          <Route path="/pos/add" element={<AddPos />} />
         
         {/* Catch-all route */}
         <Route path="*" element={isAuthenticated ? <NotFoundPage /> : <Navigate to="/login" replace />} />

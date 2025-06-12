@@ -5,9 +5,7 @@ const API_BASE = 'https://backend.ddhomekh.com/api';
 export const getRoles = async (token) => {
   const response = await axios.get(`${API_BASE}/role/list`, {
     headers: { Authorization: `Bearer ${token}` }
-  });    
-  console.log(response);
-  
+  });      
   return response.data;
 };
 
@@ -55,7 +53,7 @@ export const showRolePermissions = async (token,roleId) => {
     headers: { 
       Authorization: `Bearer ${token}` ,
       'Content-Type': 'application/json'
-        },
+    },
   });    
   return response.data;
 };

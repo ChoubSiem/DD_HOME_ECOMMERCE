@@ -33,7 +33,7 @@ export const useProfileStore = create((set) => ({
   
     try {
       const result = await fetchUserProfile(token);                  
-      console.log(result);
+      // console.log(result);
       
       if (result) {
         set({

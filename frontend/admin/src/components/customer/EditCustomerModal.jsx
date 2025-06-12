@@ -2,31 +2,42 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, Button, message } from 'antd';
 import { motion } from 'framer-motion';
 import { useUser } from '../../hooks/UserUser';
-import Cookies from 'js-cookie';
 
 const { Option } = Select;
 
 const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, customerGroups }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const { handleUpdateCustomer } = useUser(); // You may rename this later to `handleCustomerUpdate`
-  const token = localStorage.getItem('token');
+  const { handleUpdateCustomer } = useUser(); // optional usage if needed
 
+  // Update form when modal becomes visible
   useEffect(() => {
-    if (initialData) {
-      form.setFieldsValue({
-        username: initialData.username,
-        phone: initialData.phone,
-        address: initialData.address,
-        customer_group_id: initialData.customer_group_id,
-      });
-    } else {
-      form.resetFields();
+    if (visible) {
+      if (initialData) {
+        form.setFieldsValue({
+          username: initialData.username,
+          phone: initialData.phone,
+          address: initialData.address,
+          customer_group_id: initialData.customer_group_id,
+        });
+      } else {
+        form.resetFields();
+      }
     }
-  }, [initialData, form]);
+  }, [visible, initialData, form]);
 
   const handleSubmit = async (values) => {
-    onSave(values);
+    try {
+      setLoading(true);
+      await onSave(values); // await in case it's async
+      message.success(isEditing ? 'Customer updated successfully' : 'Customer added successfully');
+      onCancel(); // close modal
+    } catch (error) {
+      console.error(error);
+      message.error('Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,13 +48,18 @@ const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, cust
       centered
       className="customer-modal"
       width="60%"
+      destroyOnClose // ensures clean form state
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
           <Form.Item
             name="username"
             label="Customer Name"
@@ -74,7 +90,7 @@ const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, cust
             rules={[{ required: true, message: 'Please select customer group' }]}
           >
             <Select placeholder="Select customer group" style={{ fontSize: '16px', height: '48px' }}>
-              {(customerGroups||[]).map(group => (
+              {(customerGroups || []).map(group => (
                 <Option key={group.id} value={group.id}>
                   {group.name}
                 </Option>

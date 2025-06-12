@@ -1,9 +1,8 @@
 // components/policy/permission/PermissionTable.jsx
 import React from "react";
 import DataTable from "react-data-table-component";
-import { Button  } from "antd";
-import { EditOutlined } from "@ant-design/icons"; 
-
+import { Button } from "antd";
+import { EditOutlined } from "@ant-design/icons";
 
 const PermissionTable = ({ permissions, onEdit, loading }) => {
   const columns = [
@@ -17,29 +16,27 @@ const PermissionTable = ({ permissions, onEdit, loading }) => {
       selector: (row) => row.name,
       sortable: true,
       width: "40%",
-
     },
     {
       name: "Group",
       selector: (row) => row.group,
       sortable: true,
       width: "40%",
-
     },
     {
       name: "Action",
       cell: (row) => (
-        <Button size="small" icon={<EditOutlined style={{border:'none',color:'green'}} />} onClick={() => onEdit(row)}>
-          
-        </Button>
+        <Button
+          size="small"
+          icon={<EditOutlined style={{ color: "green" }} />}
+          onClick={() => onEdit(row)}
+        />
       ),
       ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
       width: "10%",
-
     },
   ];
+
   const customStyles = {
     headCells: {
       style: {
@@ -50,11 +47,10 @@ const PermissionTable = ({ permissions, onEdit, loading }) => {
     },
     rows: {
       style: {
-        borderBottom: "none", 
+        borderBottom: "none",
       },
     },
   };
-  
 
   return (
     <DataTable
@@ -66,7 +62,7 @@ const PermissionTable = ({ permissions, onEdit, loading }) => {
       pointerOnHover
       responsive
       striped
-      customStyles = {customStyles}
+      customStyles={customStyles}
     />
   );
 };

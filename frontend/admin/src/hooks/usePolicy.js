@@ -12,7 +12,6 @@ export const usePolicy = () => {
     try {
       
       const result = await getRoles(token);      
-      console.log(result);
       if (result) {
         return {
           success:true,

@@ -381,7 +381,7 @@ const Dashboard = () => {
             whileHover={{ y: -5 }}
             transition={{ duration: 0.2 }}
           >
-                    <div className="right-section">
+        <div className="right-section">
           <div className="seller-section">
             <div className="seller-header">
               <h3 className="seller-title">Fast Moving Products</h3>

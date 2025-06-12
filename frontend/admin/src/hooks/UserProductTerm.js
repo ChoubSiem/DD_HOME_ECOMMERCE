@@ -36,7 +36,8 @@ import {
   uomConversionsDelete,
   uomConversionsUpdate,
   UpdatePriceByCode,
-  updateCategory
+  updateCategory,
+  getProductDetail
 } from '../services/productTermService';
 
 export const useProductTerm = () => {
@@ -554,22 +555,40 @@ export const useProductTerm = () => {
   };
 
   const handleUpdateProductPrice = async (values, token) => {
-  try {
-    const productData = await UpdatePriceByCode(values, token);
+    try {
+      const productData = await UpdatePriceByCode(values, token);
 
-    return {
-      success: true,
-      products: productData.products,
-      message: productData.message,
-    };
-  } catch (error) {
-    console.error('Update failed:', error);
+      return {
+        success: true,
+        products: productData.products,
+        message: productData.message,
+      };
+    } catch (error) {
+      console.error('Update failed:', error);
 
-    return {
-      success: false,
-      message: error.response?.data?.message || 'Something went wrong',
-    };
-  }
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Something went wrong',
+      };
+    }
+  };
+  const handleProductDetail = async (warehouse_id, product_id, token) => {
+    try {
+      const productData = await getProductDetail(warehouse_id, product_id, token);
+
+      return {
+        success: true,
+        product: productData.product,
+        message: productData.message,
+      };
+    } catch (error) {
+      console.error('get failed:', error);
+
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Something went wrong',
+      };
+    }
 };
 
   
@@ -606,7 +625,8 @@ export const useProductTerm = () => {
      handleUomConversionsEdit,
      handleUomConversionsUpdate,
      handleUpdateProductPrice,
-     handleCategoryUpdate
+     handleCategoryUpdate,
+     handleProductDetail
 
     };
 };

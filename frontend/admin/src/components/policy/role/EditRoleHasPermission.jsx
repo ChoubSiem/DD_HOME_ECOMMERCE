@@ -7,7 +7,7 @@ import { useParams,useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 const EditRolePermissions = () => {
-  const { id } = useParams();x
+  const { id } = useParams();
   const navigate = useNavigate();
   const [cancelLoading, setCancelLoading] = useState(false);
   const { handlePermission } = usePermission();
@@ -25,8 +25,10 @@ const EditRolePermissions = () => {
         id: perm.id,
         name: perm.name,
       }));
+
       setRoleWithPermission(permissions);
       form.setFieldsValue({ allPermissions: permissions.map((p) => p.id) });
+
     } catch (error) {
       console.error('Failed to fetch role permissions:', error);
     }

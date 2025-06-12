@@ -34,10 +34,7 @@ const Role = () => {
 
   const fetchRoleData = async() =>{
 
-    let result = await handleRoles(token);
-    console.log(result);
-    
-    
+    let result = await handleRoles(token);    
     setRoles(result.roles);
   }
 

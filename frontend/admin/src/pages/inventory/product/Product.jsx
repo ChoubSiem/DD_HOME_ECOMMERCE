@@ -5,21 +5,20 @@ import CategoryModal from "../../../components/category/CategoryModal";
 import ProductTable from "../../../components/product/ProductTable";
 import ProductToolBar from "../../../components/product/ProductToolbar";
 import "./Product.css";
+import Cookies from "js-cookie";
 import { useProductTerm } from "../../../hooks/UserProductTerm";
 import { useNavigate } from "react-router-dom";
 import ImportProductModal from '../../../components/product/addProduct/ImporProductModal'; 
-import Cookies from "js-cookie";
 import ProductDetailModal from '../../../components/product/ProductDetailModal';
 import ProductUpdatePrice from "../../../components/product/importUpdateProductPrice";
 import { useCompany } from "../../../hooks/UseCompnay";
-
 const ProductManagement = () => {
   const token = localStorage.getItem('token');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalUpdatePriceVisible, setModalUpdatePriceVisible] = useState(false);
 
   const [products, setProducts] = useState([]);
-  const { handleCategories, handleProductImport, handleProducts, handleProductDelete ,handleUpdateProductPrice} = useProductTerm();
+  const { handleCategories, handleProductImport, handleProducts, handleProductDelete ,handleUpdateProductPrice,handleProductDetail} = useProductTerm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -33,13 +32,34 @@ const ProductManagement = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [showFilter, setShowFilter] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [productDetail, setProductDetail] = useState([]);
+  const user = Cookies.get('user');
+  const userData = JSON.parse(user);    
+  const [searchTriggered, setSearchTriggered] = useState(false);
+
+  useEffect(() => {
+    const fetchProductDetail = async () => {
+      if (selectedProduct && isProductDetailVisible) {
+        try {
+          const result = await handleProductDetail(
+            userData.warehouse_id,
+            selectedProduct.id,
+            token
+          );
+          setProductDetail(result.product);
+        } catch (error) {
+          console.error('Failed to fetch product detail:', error);
+        }
+      }
+    };
+
+    fetchProductDetail();
+  }, [selectedProduct, isProductDetailVisible, userData.warehouse_id, token]);
 
   const handleRowClick = (product) => {
     setSelectedProduct(product);
     setIsProductDetailVisible(true);
   };
-  const user = Cookies.get('user');
-  const userData = JSON.parse(user);          
   
 
   const handleImport = async(importedProducts) => {
@@ -78,7 +98,7 @@ const ProductManagement = () => {
     setLoading(true);
     let result;
     try {      
-        result = await handleProducts(token,userData.warehouse_id);                       
+        result = await handleProducts(token,userData.warehouse_id);                               
       if (result) {          
         setProducts(result.products); 
       } else {
@@ -141,22 +161,48 @@ const ProductManagement = () => {
       setCategoryFilter("all");         
     }
   };
+  const onSearch = () => {
+  // This will run when "Submit" is clicked
+  console.log("Searching with:");
+  console.log("Search term:", searchTerm);
+  console.log("Status:", statusFilter);
+  console.log("Category:", categoryFilter);
+  console.log("Type:", typeFilter);
 
-
-  const filteredProducts = products.filter(product => {
-    const searchTermLower = searchTerm.toLowerCase();
-
-    const matchesSearch =
-      String(product.name || "").toLowerCase().includes(searchTermLower) ||
-      String(product.code || "").toLowerCase().includes(searchTermLower) ||
-      String(product.barcode || "").toLowerCase().includes(searchTermLower);
-
-    const matchesStatus = statusFilter === "all" || product.status === statusFilter;
-    const matchesCategory =categoryFilter === "all" || String(product.category_id) === String(categoryFilter);
-    const matchesType = typeFilter === "all" || product.type === typeFilter;
-
-    return matchesSearch && matchesStatus && matchesCategory && matchesType;
+  // You can replace this with a real API call
+  fetchProducts({
+    name: searchTerm,
+    status: statusFilter,
+    category: categoryFilter,
+    type: typeFilter,
   });
+};
+
+
+const filteredProducts = products.filter((product) => {
+  const searchTermLower = searchTerm.toLowerCase();
+
+  const matchesSearch =
+    String(product.name || "").toLowerCase().includes(searchTermLower) ||
+    String(product.code || "").toLowerCase().includes(searchTermLower) ||
+    String(product.barcode || "").toLowerCase().includes(searchTermLower) ||
+    String(product.category_name || "").toLowerCase().includes(searchTermLower) ||
+    String(product.status || "").toLowerCase().includes(searchTermLower) ||
+    String(product.type_name || "").toLowerCase().includes(searchTermLower);
+
+  const matchesStatus =
+    statusFilter === "all" || product.status === statusFilter;
+
+  const matchesCategory =
+    categoryFilter === "all" ||
+    String(product.category_id) === String(categoryFilter);
+
+  const matchesType =
+    typeFilter === "all" || product.type === typeFilter;
+
+  return matchesSearch && matchesStatus && matchesCategory && matchesType;
+});
+
 
 
   return (
@@ -209,6 +255,7 @@ const ProductManagement = () => {
             showFilter={showFilter}
             setShowFilter={setShowFilter}
             categories={categories} 
+            onSearch={onSearch}
           />
         </Space>
 
@@ -221,22 +268,22 @@ const ProductManagement = () => {
           handleEdit={handleEdit}
         />
 
-        {/* Product Detail Modal */}
         {selectedProduct && (
           <ProductDetailModal
-          open={isProductDetailVisible}
-          onCancel={() => setIsProductDetailVisible(false)}
-          product={selectedProduct}
-          onEdit={() => {
-            setIsProductDetailVisible(false);
-            handleEdit(selectedProduct.id || selectedProduct.key);
-          }}
-          onDelete={() => {
-            setIsProductDetailVisible(false);
-            handleDelete(selectedProduct.id || selectedProduct.key);
-          }}
-        />
+            open={isProductDetailVisible}
+            onCancel={() => setIsProductDetailVisible(false)}
+            product={productDetail || selectedProduct} // Show detail if loaded
+            onEdit={() => {
+              setIsProductDetailVisible(false);
+              handleEdit(selectedProduct.id || selectedProduct.key);
+            }}
+            onDelete={() => {
+              setIsProductDetailVisible(false);
+              handleDelete(selectedProduct.id || selectedProduct.key);
+            }}
+          />
         )}
+
       </div>
     </Spin>
   );

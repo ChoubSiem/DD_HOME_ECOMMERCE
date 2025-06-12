@@ -292,9 +292,26 @@ export const uomConversionsUpdate = async (uomId, values, token) => {
   });
   return response.data;
 };
+
 export const uomConversionsDelete = async (uomId, token) => {
   const response = await axios.delete(`${API_BASE}/uom-conversion/delete/${uomId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  return response.data;
+};
+
+export const getProductDetail = async (warehouse_id, product_id, token) => {
+  const response = await axios.get(`${API_BASE}/product/detail`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    params: {
+      warehouse_id,
+      product_id
+    }
+  });
+  console.log(response);
+  
+
   return response.data;
 };

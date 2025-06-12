@@ -35,7 +35,7 @@ const PermissionModal = ({ visible, onCancel, onSuccess, permission }) => {
   return (
     <Modal
       title={permission ? 'Edit Permission' : 'Create Permission'}
-      visible={visible}
+      open={visible}
       onCancel={onCancel}
       footer={[
         <Button key="cancel" icon={<FiX />} onClick={onCancel}>

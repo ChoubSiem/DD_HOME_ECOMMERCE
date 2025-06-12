@@ -9,6 +9,7 @@ const { Option } = Select;
 const ProductToolbar = ({
   searchTerm,
   setSearchTerm,
+  onSearch, // Trigger search from parent
   statusFilter,
   setStatusFilter,
   categoryFilter,
@@ -17,7 +18,7 @@ const ProductToolbar = ({
   setTypeFilter,
   showFilter,
   setShowFilter,
-  categories = [], // add categories as a prop with default empty array
+  categories = [],
 }) => {
   return (
     <Card className="filter-card">
@@ -27,6 +28,7 @@ const ProductToolbar = ({
           prefix={<SearchOutlined />}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onSearch={onSearch}
           style={{ width: 400 }}
           allowClear
           enterButton
@@ -46,16 +48,17 @@ const ProductToolbar = ({
 
           <Select
             value={categoryFilter}
-            onChange={value => setCategoryFilter(value)}
+            onChange={(value) => setCategoryFilter(value)}
+            style={{ width: 180 }}
+            placeholder="Category"
             options={[
               { label: "All Categories", value: "all" },
-              ...categories.map(cat => ({
+              ...categories.map((cat) => ({
                 label: cat.name,
-                value: String(cat.id), 
-              }))
+                value: String(cat.id),
+              })),
             ]}
           />
-
 
           <Select
             value={typeFilter}
@@ -77,11 +80,19 @@ const ProductToolbar = ({
           >
             Advanced
           </Button>
+
+          {/* NEW SUBMIT BUTTON */}
+          <Button
+            type="primary"
+            onClick={onSearch}
+            style={{ marginLeft: 8 }}
+          >
+            Submit
+          </Button>
         </div>
       </div>
     </Card>
   );
 };
-
 
 export default ProductToolbar;
