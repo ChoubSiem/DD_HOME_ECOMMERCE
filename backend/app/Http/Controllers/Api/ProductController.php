@@ -438,5 +438,36 @@ public function index(Request $request)
             ]);
         }
 
+    public function getProductDetailIdAndWarehouse(Request $request)
+    {
+        $warehouse_id = $request->query('warehouse_id');
+        $product_id = $request->query('product_id');
+
+        if (!$product_id) {
+            return response()->json([
+                'message' => 'product_id is required',
+            ], 400);
+        }
+
+        try {
+            $product = Product::getDetailByWarehouseAndId($warehouse_id, $product_id);
+
+            if (!$product) {
+                return response()->json([
+                    'message' => 'Product not found',
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Product fetched successfully',
+                'product' => $product,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch product',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 }

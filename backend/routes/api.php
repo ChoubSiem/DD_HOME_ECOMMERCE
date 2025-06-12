@@ -176,7 +176,6 @@ use Illuminate\Support\Facades\Storage;
         Route::get('/role/permission', [RoleController::class, 'getRolePermissions']);
         
         
-        
         Route::get('/adjustment/list', [AdjustmentController::class, 'index']);
         Route::post('/adjustment/create', [AdjustmentController::class, 'store']);
         Route::put('/adjustment/update/{id}', [AdjustmentController::class, 'update']);
@@ -184,6 +183,7 @@ use Illuminate\Support\Facades\Storage;
         Route::put('/product/update-price', [ProductController::class, 'updateProductPrice']);
         Route::put('/product/update/{id}', [ProductController::class, 'update']);
         Route::delete('/adjustment/delete/{id}', [AdjustmentController::class, 'destroy']);
+        Route::get('/product/detail', [ProductController::class, 'getProductDetailIdAndWarehouse']);
         
         Route::post('warehouse/product', [WarehouseProductController::class, 'store']);
         Route::get('/adjustment/show/{id}', [AdjustmentController::class, 'show']);
