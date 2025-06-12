@@ -450,7 +450,7 @@ public function index(Request $request)
         }
 
         try {
-            $product = Product::getDetailByWarehouseAndId($warehouse_id, $product_id);
+            $product = Product::get_product_detail_by_id($warehouse_id, $product_id);
 
             if (!$product) {
                 return response()->json([
