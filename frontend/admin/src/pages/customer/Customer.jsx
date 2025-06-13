@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Spin, Space, Typography, Row, Col, Input } from 'antd';
+import { Card, Button, message, Typography, Row, Col, Input,Space  } from 'antd';
 import { PlusOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -19,14 +19,14 @@ const Customer = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [customerGroups, setCustomerGroups] = useState([]);
-  const [isCustomerModalImportVisible , setIsCustomerModalImportVisible] = useState(false);
+  const [isCustomerModalImportVisible, setIsCustomerModalImportVisible] = useState(false);
   
   const { 
     handleCustomerCreate, 
     handleCustomers, 
     handleGetCustomerGroup,
     handleUpdateCustomer,
-    handleDeleteCustomer ,
+    handleDeleteCustomer,
     handleImportCustomer
   } = useUser();
   
@@ -55,8 +55,6 @@ const Customer = () => {
     setLoading(true);
     try {
       const result = await handleCustomers(token);        
-      console.log(result);
-          
       if (result?.success) {
         setCustomers(result.customers || []);
       }
@@ -70,6 +68,14 @@ const Customer = () => {
   useEffect(() => {
     fetchCustomers();
     fetchCustomerGroups();
+    
+    return () => {
+      // Cleanup function
+      setIsCreateModalVisible(false);
+      setIsEditModalVisible(false);
+      setIsCustomerModalImportVisible(false);
+      setSelectedCustomer(null);
+    };
   }, []);
 
   const handleAddCustomer = () => {
@@ -87,8 +93,19 @@ const Customer = () => {
     setSelectedCustomer(null);
   };
 
+  const handleCreateModalCancel = () => {
+    setIsCreateModalVisible(false);
+    setSelectedCustomer(null);
+  };
+
+  const handleImportModalCancel = () => {
+    setIsCustomerModalImportVisible(false);
+  };
+
   const handleSaveCustomer = async (values, isEditing, id = null) => {    
     try {
+      console.log(isEditing);
+      
       setLoading(true);      
       const result = isEditing 
         ? await handleUpdateCustomer(id, values, token)
@@ -96,7 +113,11 @@ const Customer = () => {
       if (result?.success) {
         message.success(isEditing ? 'Customer updated successfully' : 'Customer created successfully');
         await fetchCustomers();
-        isEditing ? setIsEditModalVisible(false) : setIsCreateModalVisible(false);
+        if (isEditing) {
+          setIsEditModalVisible(false);
+        } else {
+          setIsCreateModalVisible(false);
+        }
       }
     } catch (error) {
       console.error('Error saving customer:', error);
@@ -109,7 +130,6 @@ const Customer = () => {
   const handleDeleteCustomerData = async (customerId) => {
     try {
       setLoading(true);
-      console.log(customerId);
       const result = await handleDeleteCustomer(customerId, token);
       
       if (result?.success) {
@@ -124,114 +144,115 @@ const Customer = () => {
     }
   };
 
-  const handleCustomerImportModal = () =>{
+  const handleCustomerImportModal = () => {
     setIsCustomerModalImportVisible(true);
-  }
+  };
 
   const handleImportedCustomers = async (values) => {
     let result;
-    setLoading(true)
+    setLoading(true);
     try {
       result = await handleImportCustomer(values, token);
+      if (result?.success) {
+        setIsCustomerModalImportVisible(false);
+        message.success(result.message);
+        await fetchCustomers();
+      } else {
+        message.error(result?.message || 'Import failed');
+      }
     } catch (error) {
       console.error('Import failed:', error);
-    }
-
-    if (result?.success) {
-      setIsCustomerModalImportVisible(false);
-      message.success(result.message);
+      message.error('Import failed. Please try again.');
+    } finally {
       setLoading(false);
-    } else {
-      message.error('Import failed or returned no success.');
     }
   };
 
-
   return (
     <div className="customer-container">
-      <Spin spinning={loading} tip="Loading customers..." size="large">
-        <Card className="customer-header-card" style={{ padding: '24px' }}>
-          <Row justify="space-between" align="middle" gutter={[16, 16]}>
-            <Col>
-              <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                <Title level={3} style={{ margin: 0, color: '#1a3353' }}>
-                  <UserOutlined style={{ marginRight: 8 }} />
-                  Customer Management
-                </Title>
-                <Text type="secondary">Manage your customers and their information</Text>
-              </motion.div>
-            </Col>
-            <Col >
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleCustomerImportModal}
+      <Card className="customer-header-card" style={{ padding: '24px' }}>
+        <Row justify="space-between" align="middle" gutter={[16, 16]}>
+          <Col>
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+              <Title level={3} style={{ margin: 0, color: '#1a3353' }}>
+                <UserOutlined style={{ marginRight: 8 }} />
+                Customer Management
+              </Title>
+              <Text type="secondary">Manage your customers and their information</Text>
+            </motion.div>
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleCustomerImportModal}
+              size="large"
+              style={{ borderRadius: '8px', marginRight: '20px' }}
+            >
+              Import Customer
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddCustomer}
+              size="large"
+              style={{ borderRadius: '8px' }}
+            >
+              Add New Customer
+            </Button>
+          </Col>
+        </Row>
+      </Card>
+
+      <Card className="customer-content-card" style={{ padding: '24px', marginTop: '20px' }}>
+        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <Row gutter={[16, 16]} justify="space-between" align="middle">
+            <Col xs={24} md={12}>
+              <Input
+                placeholder="Search customers..."
+                prefix={<SearchOutlined />}
                 size="large"
-                style={{ borderRadius: '8px',marginRight:'20px' }}
-              >
-                Import Customer
-              </Button>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleAddCustomer}
-                size="large"
+                allowClear
+                onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ borderRadius: '8px' }}
-              >
-                Add New Customer
-              </Button>
+              />
+            </Col>
+            <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+              <Text strong>{filteredCustomers.length} customers found</Text>
             </Col>
           </Row>
-        </Card>
 
-        <Card className="customer-content-card" style={{ padding: '24px', marginTop: '20px' }}>
-          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-            <Row gutter={[16, 16]} justify="space-between" align="middle">
-              <Col xs={24} md={12}>
-                <Input
-                  placeholder="Search customers..."
-                  prefix={<SearchOutlined />}
-                  size="large"
-                  allowClear
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ borderRadius: '8px' }}
-                />
-              </Col>
-              <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-                <Text strong>{filteredCustomers.length} customers found</Text>
-              </Col>
-            </Row>
+          <CustomerTable
+            customers={filteredCustomers}
+            // onEdit={handleEditCustomer}
+            onDelete={handleDeleteCustomerData}
+            onCancel = {handleEditModalCancel}
+            customerGroups={customerGroups}
+            onSave={(values) => handleSaveCustomer(values, true, selectedCustomer?.id)}
+          />
+        </Space>
+      </Card>
 
-            <CustomerTable
-              customers={filteredCustomers}
-              onEdit={handleEditCustomer}
-              onDelete={handleDeleteCustomerData}
+      <CreateCustomer
+        visible={isCreateModalVisible}
+        onCancel={handleCreateModalCancel}
+        onSave={(values) => handleSaveCustomer(values, false)}
+      />
 
-            />
-          </Space>
-        </Card>
+      {/* <CustomerModal
+        visible={isEditModalVisible}
+        onCancel={handleEditModalCancel}
+        onSave={(values) => handleSaveCustomer(values, true, selectedCustomer?.id)}
+        initialData={selectedCustomer}
+        isEditing={true}
+        customerGroups={customerGroups}
+      /> */}
 
-        <CreateCustomer
-          visible={isCreateModalVisible}
-          onCancel={() => setIsCreateModalVisible(false)}
-          onSave={(values) => handleSaveCustomer(values, false)}
-        />
-
-        <CustomerModal
-          visible={isEditModalVisible}
-          onCancel={handleEditModalCancel}
-          onSave={(values) => handleSaveCustomer(values, true, selectedCustomer?.id)}
-          initialData={selectedCustomer}
-          isEditing={true}
-          customerGroups={customerGroups}
-        />
-
-        <CustomerImport
-          visible={isCustomerModalImportVisible}
-          onCancel={() => setIsCustomerModalImportVisible(false)}
-          onImport={handleImportedCustomers}
-        />
-      </Spin>
+      <CustomerImport
+        visible={isCustomerModalImportVisible}
+        onCancel={handleImportModalCancel}
+        onImport={handleImportedCustomers}
+      />
     </div>
   );
 };

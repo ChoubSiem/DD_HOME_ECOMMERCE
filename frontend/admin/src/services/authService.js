@@ -12,14 +12,13 @@ export const loginUser = async ({ phone, password }) => {
           'Accept': 'application/json'
         }
       });
-  
+      
       if (response.status !== 200) {
         throw new Error(`Server responded with ${response.status}`);
       }                              
       return response.data;
     } catch (error) {
-      const serverMessage = 'message error';
-
+      const serverMessage = 'message error';      
     }
   };
 

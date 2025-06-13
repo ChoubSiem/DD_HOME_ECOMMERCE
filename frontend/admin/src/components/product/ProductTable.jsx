@@ -187,7 +187,6 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
         position: "sticky",
         top: 0,
         zIndex: 1,
-        border: "1px solid black",
         padding: 0,
         display: "flex",
         justifyContent: "center",

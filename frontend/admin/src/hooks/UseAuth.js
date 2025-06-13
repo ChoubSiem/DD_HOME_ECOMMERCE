@@ -33,9 +33,9 @@ export const useAuth = () => {
         navigate('/');
       }
     } catch (error) {
-      const errorMessage = error?.response?.data?.message || error.message || 'Login failed';
+      const errorMessage = error?.response?.data?.message || error.message || 'Login failed';      
       setError(errorMessage);
-      message.error(errorMessage);
+      message.error('Your phone number or password is incorrect!');
       return false;
     }
   };

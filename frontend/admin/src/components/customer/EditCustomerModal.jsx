@@ -29,9 +29,9 @@ const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, cust
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      await onSave(values); // await in case it's async
+      await onSave(values); 
       message.success(isEditing ? 'Customer updated successfully' : 'Customer added successfully');
-      onCancel(); // close modal
+      onCancel(); 
     } catch (error) {
       console.error(error);
       message.error('Something went wrong');
@@ -39,6 +39,9 @@ const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, cust
       setLoading(false);
     }
   };
+
+  console.log(customerGroups);
+  
 
   return (
     <Modal
