@@ -1,3 +1,63 @@
 .khmer-text {
   font-family: 'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif;
 }
+.align-items-center{
+  display: flex;
+  align-items: center;
+}
+.table-header-custom {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 20px;
+  padding: 12px 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  max-width: 400px;
+}
+
+/* Fix the IconField layout */
+.icon-field {
+  position: relative;
+  width: 100%;
+}
+
+/* Style the input icon (search icon) */
+.icon-field .pi {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #999;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+/* Style the input */
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px; /* left padding to make space for icon */
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+/* Input focus style */
+.search-input:focus {
+  outline: none;
+  border-color: #6366f1; /* Change to #FFA500 for orange theme */
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+/* .text-center{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+} */
+
+/* Add this to your global CSS */
+.p-datatable .p-datatable-thead > tr > th,
+.p-datatable .p-datatable-tbody > tr > td {
+    text-align: center !important;
+}

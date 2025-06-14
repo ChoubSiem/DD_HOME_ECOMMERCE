@@ -68,8 +68,8 @@ const Dashboard = () => {
       id: 'sales',
       icon: <DollarCircleOutlined />,
       title: 'Total Sales',
-      amount: '$24,000',
-      trend: '+12% from last month',
+      amount: '0',
+      trend: '0% from last month',
       trendPositive: true,
       iconClassName: 'card-icon-blue'
     },
@@ -77,8 +77,8 @@ const Dashboard = () => {
       id: 'expenses',
       icon: <RiseOutlined />,
       title: 'Expenses',
-      amount: '$5,400',
-      trend: '+5% from last month',
+      amount: '0',
+      trend: '0% from last month',
       trendPositive: false,
       iconClassName: 'card-icon-red'
     },
@@ -86,8 +86,8 @@ const Dashboard = () => {
       id: 'customers',
       icon: <UserOutlined />,
       title: 'New Customers',
-      amount: '1,220',
-      trend: '+8% from last month',
+      amount: '0',
+      trend: '0% from last month',
       trendPositive: true,
       iconClassName: 'card-icon-green'
     },
@@ -95,8 +95,8 @@ const Dashboard = () => {
       id: 'orders',
       icon: <ShoppingCartOutlined />,
       title: 'Total Orders',
-      amount: '670',
-      trend: '+15% from last month',
+      amount: '0',
+      trend: '0% from last month',
       trendPositive: true,
       iconClassName: 'card-icon-purple'
     }

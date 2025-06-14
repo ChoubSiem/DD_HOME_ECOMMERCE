@@ -1,15 +1,11 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Table,
   Card,
   Input,
   Button,
-  Tag,
   Select,
   Space,
   DatePicker,
-  Modal,
   Row,
   Col,
   Statistic,
@@ -21,15 +17,12 @@ import {
   SearchOutlined,
   FilterOutlined,
   DownloadOutlined,
-  EyeOutlined,
   PrinterOutlined,
   CheckCircleOutlined,
   SyncOutlined,
-  CloseCircleOutlined,
-  DollarOutlined,
-  ShoppingCartOutlined
+  ShoppingCartOutlined,
+  ClearOutlined
 } from '@ant-design/icons';
-import './Sales.css';
 import DataTable from 'react-data-table-component';
 import { useReport } from '../../../hooks/UseReport';
 import Cookies from 'js-cookie';
@@ -39,6 +32,7 @@ const { Search } = Input;
 const { Option } = Select;
 
 function SalesReports() {
+  // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [startDate, setStartDate] = useState(null);
@@ -46,373 +40,334 @@ function SalesReports() {
   const [customerFilter, setCustomerFilter] = useState('all');
   const [reportType, setReportType] = useState('all');
   const [saleTypeFilter, setSaleTypeFilter] = useState('all');
-  const [selectedSale, setSelectedSale] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const { getSaleReportsData } = useReport();
+
+  // Data states
   const [sales, setSales] = useState([]);
-  const token = Cookies.get('token');
-  const userData = JSON.parse(Cookies.get('user') || '{}');
+  const [filteredSales, setFilteredSales] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
 
-  const isAllSelected = sales.length > 0 && selectedRows.length === sales.length;
+  // Hooks and user data
+  const { getSaleReportsData } = useReport();
+  const token = localStorage.getItem('token');
+  const userData = JSON.parse(Cookies.get('user') || '{}');
 
-  function handleSales() {
-    setLoading(true);
-    getSaleReportsData(userData.warehouse_id, token).then(function(result) {
-      if (result.success) {
-        setSales(result.sales);
-        setLoading(false);
-      } else {
-        message.error('Failed to fetch sales data');
-        setLoading(false);
-      }
-    });
-  }
-  console.log(sales);
-  
-  useEffect(function() {
-    handleSales();
+  // Fetch sales data on component mount
+  useEffect(() => {
+    fetchSalesData();
   }, []);
 
-  const customers = [...new Set(sales.map(function(s) { return s.customer?.username || ''; }))];
-
-  function filterSalesByReportType(sale, reportType) {
-    if (reportType === 'all') return true;
-
-    const saleDate = new Date(sale.date);
-    const today = new Date('2025-05-20'); // Fixed date based on provided context
-    today.setHours(0, 0, 0, 0);
-
-    if (reportType === 'daily') {
-      return saleDate.toDateString() === today.toDateString();
-    } else if (reportType === 'monthly') {
-      return saleDate.getMonth() === today.getMonth() &&
-             saleDate.getFullYear() === today.getFullYear();
-    }
-    return true;
-  }
-
-  function handleSearch() {
-    // Trigger filtering explicitly, preserving selectedRows
+  const fetchSalesData = async () => {
     setLoading(true);
-    setTimeout(function() {
-      setLoading(false);
-    }, 100);
-  }
-
-  const filteredSales = sales.filter(function(sale) {
-    const idStr = sale.id ? sale.id.toString() : '';
-    const customerStr = sale.customer?.username ? sale.customer.username.toString() : '';
-
-    const matchesSearch = idStr.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customerStr.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || sale.status === statusFilter;
-    const matchesCustomer = customerFilter === 'all' || sale.customer?.username === customerFilter;
-    const matchesReportType = filterSalesByReportType(sale, reportType);
-    const matchesSaleType = saleTypeFilter === 'all' || sale.type?.toLowerCase() === saleTypeFilter.toLowerCase();
-
-    let matchesDate = true;
-    if (startDate && endDate) {
-      try {
-        const saleDate = new Date(sale.date);
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        matchesDate = saleDate >= start && saleDate <= end;
-      } catch (error) {
-        console.error('Error parsing dates:', error);
-        matchesDate = false;
+    try {
+      const result = await getSaleReportsData(userData.warehouse_id, token);
+      if (result.success) {
+        setSales(result.sales);
+        setFilteredSales(result.sales);
+      } else {
+        message.error('Failed to fetch sales data');
       }
+    } catch (error) {
+      message.error('Error fetching sales data');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return matchesSearch && matchesStatus && matchesCustomer && matchesDate && matchesReportType && matchesSaleType;
-  });
+  // Get unique customers for filter dropdown
+  const customers = [...new Set(sales.map(sale => sale.customer?.username || '').filter(Boolean))];
 
-  function getStatusColor(status) {
-    if (!status) return '#d9d9d9';
-    switch (status.toLowerCase()) {
-      case 'paid': return '#52c41a';
-      case 'partial': return '#faad14';
-      case 'unpaid': return '#f5222d';
-      default: return '#d9d9d9';
-    }
-  }
+  // Apply filters when search is clicked
+  const handleSearch = () => {
+    setLoading(true);
+    
+    const filtered = sales.filter(sale => {
+      // Search term matching
+      const matchesSearch = searchTerm === '' || 
+        (sale.id && sale.id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (sale.customer?.username && sale.customer.username.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Status filter
+      const matchesStatus = statusFilter === 'all' || sale.status === statusFilter;
+      
+      // Customer filter
+      const matchesCustomer = customerFilter === 'all' || sale.customer?.username === customerFilter;
+      
+      // Sale type filter
+      const matchesSaleType = saleTypeFilter === 'all' || 
+        (sale.type && sale.type.toLowerCase() === saleTypeFilter.toLowerCase());
+      
+      // Date filtering
+      let matchesDate = true;
+      if (startDate && endDate) {
+        try {
+          const saleDate = new Date(sale.date);
+          const start = new Date(startDate);
+          start.setHours(0, 0, 0, 0);
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          matchesDate = saleDate >= start && saleDate <= end;
+        } catch (error) {
+          console.error('Error parsing dates:', error);
+          matchesDate = false;
+        }
+      }
 
-  function getStatusIcon(status) {
-    if (!status) return null;
-    switch (status.toLowerCase()) {
-      case 'completed': return <CheckCircleOutlined />;
-      case 'pending': return <SyncOutlined spin />;
-      case 'cancelled': return <CloseCircleOutlined />;
-      default: return null;
-    }
-  }
+      // Report type filtering
+      let matchesReportType = true;
+      if (reportType !== 'all') {
+        const saleDate = new Date(sale.date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-  function getPaymentStatusColor(status) {
-    if (!status) return '#d9d9d9';
-    switch (status.toLowerCase()) {
-      case 'paid': return '#52c41a';
-      case 'partial': return '#faad14';
-      case 'pending': return '#f5222d';
-      default: return '#d9d9d9';
-    }
-  }
+        if (reportType === 'daily') {
+          matchesReportType = saleDate.toDateString() === today.toDateString();
+        } else if (reportType === 'monthly') {
+          matchesReportType = saleDate.getMonth() === today.getMonth() && 
+                            saleDate.getFullYear() === today.getFullYear();
+        }
+      }
 
-  function getPaymentStatusIcon(status) {
-    if (!status) return null;
-    switch (status.toLowerCase()) {
-      case 'paid':
-      case 'partial':
-      case 'pending':
-        return <DollarOutlined />;
-      default:
-        return null;
-    }
-  }
-
-  function handleDownloadPDF() {
-    console.log("Downloading PDF...");
-  }
-
-  function handleExportExcel() {
-    const selectedSales = sales.filter(function(sale) {
-      return selectedRows.includes(sale.id);
+      return matchesSearch && matchesStatus && matchesCustomer && 
+             matchesSaleType && matchesDate && matchesReportType;
     });
 
-    if (selectedSales.length === 0) {
-      message.error("Please select item first");
+    setFilteredSales(filtered);
+    setLoading(false);
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setStartDate(null);
+    setEndDate(null);
+    setCustomerFilter('all');
+    setReportType('all');
+    setSaleTypeFilter('all');
+    setFilteredSales(sales);
+  };
+
+  // Export to Excel
+  const handleExportExcel = () => {
+    if (selectedRows.length === 0) {
+      message.error("Please select items to export");
       return;
     }
 
-    const exportData = selectedSales.map(function(sale) {
-      return {
-        Invoice: sale.reference,
-        Date: new Date(sale.date).toLocaleDateString(),
-        Customer: sale.customer?.username || 'N/A',
-        Total: sale?.total,
-        Paid: sale.payments_sum_amount || '0',
-        Balance: (sale.total - (sale.payments_sum_amount || 0)),
-        Status: sale.status ? sale.status.charAt(0).toUpperCase() + sale.status.slice(1) : '',
-        Type: sale.type
-      };
-    });
+    const selectedSales = sales.filter(sale => selectedRows.includes(sale.id));
+    const exportData = selectedSales.map(sale => ({
+      'Product Name': sale.product_name,
+      'First Sale Date': new Date(sale.first_sale_date).toLocaleDateString(),
+      'Customers': sale.total_customers,
+      'Quantity Sold': sale.total_quantity,
+      'Subtotal': sale.total_subtotal,
+      'Invoice Discount': sale.total_invoice_discount,
+      'Item Discount': sale.total_item_discount,
+      'Total Sale': sale.total_sale,
+      'Total Cost': sale.total_cost,
+      'Profit': sale.profit
+    }));
 
     try {
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales');
-      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(data);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'Sales_Report.xlsx';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
+      XLSX.writeFile(workbook, 'Sales_Report.xlsx');
     } catch (error) {
-      console.error('Error exporting Excel:', error);
-      message.error('Failed to export Excel file');
+      console.error('Export error:', error);
+      message.error('Failed to export data');
     }
-  }
+  };
 
-  function handlePrint() {
-    try {
-      setTimeout(function() {
-        window.print();
-      }, 100);
-    } catch (error) {
-      console.error('Error triggering print:', error);
-      message.error('Failed to open print dialog. Please check your browser settings.');
-    }
-  }
+  // Handle row selection
+  const handleRowSelected = useCallback((state) => {
+    setSelectedRows(state.selectedRows.map(row => row.id));
+  }, []);
 
-  function handleSelectAll(e) {
-    if (e.target.checked) {
-      const allIds = filteredSales.map(function(row) { return row.id; });
-      setSelectedRows(allIds);
-    } else {
-      setSelectedRows([]);
-    }
-  }
+  // Calculate totals for footer
+  const calculateTotals = () => {
+    return {
+      totalCustomers: filteredSales.reduce((sum, row) => sum + (row.total_customers || 0), 0),
+      totalQuantity: filteredSales.reduce((sum, row) => sum + (row.total_quantity || 0), 0),
+      totalSubtotal: filteredSales.reduce((sum, row) => sum + (row.total_subtotal || 0), 0),
+      totalInvoiceDiscount: filteredSales.reduce((sum, row) => sum + (row.total_invoice_discount || 0), 0),
+      totalItemDiscount: filteredSales.reduce((sum, row) => sum + (row.total_item_discount || 0), 0),
+      totalSale: filteredSales.reduce((sum, row) => sum + (row.total_sale || 0), 0),
+      totalCost: filteredSales.reduce((sum, row) => sum + (row.total_cost || 0), 0),
+      totalProfit: filteredSales.reduce((sum, row) => sum + (row.profit || 0), 0)
+    };
+  };
 
-  function handleCheckboxChange(e, row) {
-    if (e.target.checked) {
-      setSelectedRows(function(prev) { return [...prev, row.id]; });
-    } else {
-      setSelectedRows(function(prev) { return prev.filter(function(id) { return id !== row.id; }); });
-    }
-  }
+  const totals = calculateTotals();
 
+  // Custom footer component with proper column alignment
+  const CustomFooter = () => {
+    return (
+      <div style={{ 
+        display: 'grid',
+        gridTemplateColumns: '20% 10% 8% 8% 13% 8% 8% 8% 8% 8%',
+        width: '100%',
+        padding: '10px 0',
+        background: '#fafafa',
+        borderTop: '1px solid #f0f0f0',
+        marginTop: '-1px',
+        fontSize: '14px'
+      }}>
+        <div style={{ padding: '0 0px', textAlign: 'left'}}>
+          <strong>Total</strong>
+        </div>
+        <div style={{ padding: '0 8px', textAlign: 'center' }}></div>
+        <div style={{ padding: '0 8px', textAlign: 'right'  }}>
+          <strong>{totals.totalCustomers}</strong>
+        </div>
+        <div style={{ padding: '0 8px', textAlign: 'right' }}>
+          <strong>{totals.totalQuantity}</strong>
+        </div>
+        <div style={{ padding: '0 8px', textAlign: 'right' }}>
+          <strong>${totals.totalSubtotal.toFixed(2)}</strong>
+        </div>
+        <div style={{ padding: '0 8px', textAlign: 'right' }}>
+          <strong>${totals.totalInvoiceDiscount.toFixed(2)}</strong>
+        </div>
+        <div style={{ padding: '0 8px', textAlign: 'right' }}>
+          <strong>${totals.totalItemDiscount.toFixed(2)}</strong>
+        </div>
+        <div style={{ padding: '0 8px', textAlign: 'right' }}>
+          <strong>${totals.totalSale.toFixed(2)}</strong>
+        </div>
+        <div style={{ padding: '0 8px', textAlign: 'right' }}>
+          <strong>${totals.totalCost.toFixed(2)}</strong>
+        </div>
+        <div style={{ padding: '0 8px', textAlign: 'right' }}>
+          <strong style={{ 
+            color: totals.totalProfit >= 0 ? '#52c41a' : '#f5222d'
+          }}>
+            ${totals.totalProfit.toFixed(2)}
+          </strong>
+        </div>
+      </div>
+    );
+  };
+
+  // Table columns
   const columns = [
     {
-      name: (
-        <input
-          type="checkbox"
-          checked={isAllSelected}
-          onChange={handleSelectAll}
-        />
+      name: 'Product',
+      selector: row => row.product_name,
+      sortable: true,
+      cell: row => (
+        <strong style={{ fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif" }}>
+          {row.product_name}
+        </strong>
       ),
-      selector: function(row) { return row.id; },
-      sortable: false,
-      width: '3%',
-      cell: function(row) {
-        return (
-          <input
-            type="checkbox"
-            checked={selectedRows.includes(row.id)}
-            onChange={function(e) { handleCheckboxChange(e, row); }}
-          />
-        );
-      },
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
+      width: '20%'
     },
-   {
-    name: 'Product',
-    selector: row => row.product_name,
-    sortable: true,
-    width: '20%',
-    cell: row => (
-      <strong style={{ 
-        color: 'black', 
-        fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif" 
-      }}>
-        {row.product_name}
-      </strong>
-    )
-  },  
-
     {
       name: 'Date',
-      selector: function(row) { return row.first_sale_date; },
+      selector: row => row.first_sale_date,
       sortable: true,
-      width: '10%',
-      cell: function(row) { return <span>{new Date(row.first_sale_date).toLocaleDateString()}</span>; }
+      cell: row => new Date(row.first_sale_date).toLocaleDateString(),
+      width: '10%'
     },
     {
-      name:  'Customers',
-      selector: function(row) { return row.total_customers; },
+      name: 'Customers',
+      selector: row => row.total_customers,
       sortable: true,
       width: '8%',
-      cell: function(row) { return <span>{row.total_customers}</span>; }
+      center: true
     },
     {
       name: 'Sold QTY',
-      selector: function(row) { return row.total_quantity; },
+      selector: row => row.total_quantity,
       sortable: true,
+      cell: row => <span>{row.total_quantity}</span>,
       width: '8%',
-      cell: function(row) { return <span style={{ fontWeight: 600 }}>{row.total_quantity}</span>; }
+      center: true
     },
     {
       name: 'Sub Amount',
-      selector: function(row) { return row.total_subtotal; },
+      selector: row => row.total_subtotal,
       sortable: true,
+      cell: row => <span>${row.total_subtotal?.toFixed(2) || '0.00'}</span>,
       width: '10%',
-      cell: function(row) { return <span style={{ fontWeight: 600 }}>${row.total_subtotal || '0'}</span>; }
+      right: true
     },
     {
       name: 'Invoice Dis',
-      selector: function(row) { return row.total_invoice_discount; },
+      selector: row => row.total_invoice_discount,
       sortable: true,
+      cell: row => <span>${row.total_invoice_discount?.toFixed(2) || '0.00'}</span>,
       width: '8%',
-      cell: function(row) { return <span style={{ fontWeight: 600 }}>${row.total_invoice_discount || '0'}</span>; }
+      right: true
     },
     {
       name: 'Item Dis',
-      selector: function(row) { return row.total_item_discount; },
+      selector: row => row.total_item_discount,
       sortable: true,
+      cell: row => <span>${row.total_item_discount?.toFixed(2) || '0.00'}</span>,
       width: '8%',
-      cell: function(row) { return <span style={{ fontWeight: 600 }}>${row.total_item_discount || '0'}</span>; }
+      right: true
     },
     {
-    name: 'Total Sale',
-    selector: row => row.total_sale,
-    sortable: true,
-    width: '8%',
-    cell: row => <span style={{ fontWeight: 600 }}>${row.total_sale || '0'}</span>
-  },
-  {
-    name: 'Total Cost',
-    selector: row => row.total_cost,
-    sortable: true,
-    width: '8%',
-    cell: row => <span style={{ fontWeight: 600 }}>${row.total_cost || '0'}</span>
-  },
-  {
-    name: 'Profits',
-    selector: row => row.profit,
-    sortable: true,
-    width: '8%',
-    cell: row => <span style={{ fontWeight: 600 }}>${row.profit || '0'}</span>
-  }
-  
-    
+      name: 'Total Sale',
+      selector: row => row.total_sale,
+      sortable: true,
+      cell: row => <span>${row.total_sale?.toFixed(2) || '0.00'}</span>,
+      width: '8%',
+      right: true
+    },
+    {
+      name: 'Total Cost',
+      selector: row => row.total_cost,
+      sortable: true,
+      cell: row => <span>${row.total_cost?.toFixed(2) || '0.00'}</span>,
+      width: '8%',
+      right: true
+    },
+    {
+      name: 'Profit',
+      selector: row => row.profit,
+      sortable: true,
+      cell: row => (
+        <span style={{ 
+          color: (row.profit || 0) >= 0 ? '#52c41a' : '#f5222d'
+        }}>
+          ${row.profit?.toFixed(2) || '0.00'}
+        </span>
+      ),
+      width: '8%',
+      right: true
+    }
   ];
 
+  // Calculate summary statistics
   const totalSales = filteredSales.length;
-  const totalAmount = filteredSales.reduce(function(sum, s) { return sum + s.total; }, 0);
-  const completedSales = filteredSales.filter(function(s) { return s.status === 'paid'; }).length;
-  const pendingSales = filteredSales.filter(function(s) { return s.status === 'pending'; }).length;
+  const totalRevenue = filteredSales.reduce((sum, sale) => sum + (sale.total_sale || 0), 0);
+  const totalProfit = filteredSales.reduce((sum, sale) => sum + (sale.profit || 0), 0);
+  const completedSales = filteredSales.filter(sale => sale.status === 'completed').length;
+  const pendingSales = filteredSales.filter(sale => sale.status === 'pending').length;
   const completionRate = totalSales > 0 ? Math.round((completedSales / totalSales) * 100) : 0;
 
   return (
     <Spin spinning={loading}>
-      <style>
-        {`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            .sale-detail, .sale-detail * {
-              visibility: visible;
-            }
-            .sale-detail {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              padding: 20px;
-              box-sizing: border-box;
-            }
-            .sale-detail .ant-btn {
-              display: none;
-            }
-            .sale-detail img {
-              max-width: 100px;
-            }
-            .sale-detail .ant-table {
-              font-size: 12px;
-            }
-            .sale-detail h2 {
-              font-size: 16px;
-            }
-          }
-        `}
-      </style>
-      <div className="sales-reports" style={{ padding: '24px' }}>
-        <Card
-          className="report-header"
-          style={{
-            color: '#52c41a',
-            marginBottom: '24px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <h1 style={{ color: '#52c41a', marginBottom: '8px' }}>Sales Reports</h1>
-              <p style={{ color: '#52c41a', marginBottom: 0 }}>
-                Track and analyze your sales transactions in real-time
+      <div style={{ padding: '24px' }}>
+        {/* Header Card */}
+        <Card style={{ marginBottom: 24, background: '#f6ffed' }}>
+          <Row align="middle" justify="space-between">
+            <Col>
+              <h1 style={{ margin: 0, color: '#389e0d' }}>Sales Reports</h1>
+              <p style={{ margin: 0, color: '#8c8c8c' }}>
+                Analyze product sales performance
               </p>
-            </div>
-            <ShoppingCartOutlined style={{ fontSize: '48px', opacity: 0.2 }} />
-          </div>
+            </Col>
+            <Col>
+              <ShoppingCartOutlined style={{ fontSize: 48, color: '#b7eb8f', opacity: 0.8 }} />
+            </Col>
+          </Row>
         </Card>
 
+        {/* Filter Card */}
         <Card
           className="report-filters"
           style={{
@@ -420,272 +375,196 @@ function SalesReports() {
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
           }}
         >
-   <Row gutter={[16, 16]}>
-    {/* Search */}
-    <Col span={6}>
-      <Search
-        placeholder="Search invoice or customer"
-        prefix={<SearchOutlined style={{ color: '#52c41a' }} />}
-        value={searchTerm}
-        onChange={e => setSearchTerm(e.target.value)}
-        allowClear
-        size="large"
-      />
-    </Col>
-
-    {/* Status Filter */}
-    <Col span={6}>
-      <Select
-        style={{ width: '100%' }}
-        placeholder="Filter by status"
-        value={statusFilter}
-        onChange={setStatusFilter}
-        allowClear
-        suffixIcon={<FilterOutlined style={{ color: '#52c41a' }} />}
-        size="large"
-      >
-        <Option value="all">All Statuses</Option>
-        <Option value="completed">Completed</Option>
-        <Option value="pending">Pending</Option>
-        <Option value="cancelled">Cancelled</Option>
-      </Select>
-    </Col>
-
-    {/* Customer Filter */}
-    <Col span={6}>
-      <Select
-        style={{ width: '100%' }}
-        placeholder="Filter by customer"
-        value={customerFilter}
-        onChange={setCustomerFilter}
-        allowClear
-        suffixIcon={<FilterOutlined style={{ color: '#52c41a' }} />}
-        size="large"
-      >
-        <Option value="all">All Customers</Option>
-        {customers.map(customer => (
-          <Option key={customer} value={customer}>{customer}</Option>
-        ))}
-      </Select>
-    </Col>
-
-    {/* Sale Type Filter */}
-    <Col span={6}>
-      <Select
-        style={{ width: '100%' }}
-        placeholder="Filter by sale type"
-        value={saleTypeFilter}
-        onChange={setSaleTypeFilter}
-        allowClear
-        suffixIcon={<FilterOutlined style={{ color: '#52c41a' }} />}
-        size="large"
-      >
-        <Option value="all">All Sale Types</Option>
-        <Option value="pos">POS</Option>
-        <Option value="inventory">Inventory</Option>
-      </Select>
-    </Col>
-
-    {/* Report Type */}
-    <Col span={6}>
-      <Select
-        style={{ width: '100%' }}
-        placeholder="Report Type"
-        value={reportType}
-        onChange={setReportType}
-        allowClear
-        suffixIcon={<FilterOutlined style={{ color: '#52c41a' }} />}
-        size="large"
-      >
-        <Option value="all">All Reports</Option>
-        <Option value="daily">Daily</Option>
-        <Option value="monthly">Monthly</Option>
-      </Select>
-    </Col>
-
-    {/* Start Date */}
-    <Col span={6}>
-      <DatePicker
-        style={{ width: '100%' }}
-        placeholder="Start Date"
-        value={startDate}
-        onChange={setStartDate}
-        size="large"
-        disabled={reportType !== 'all'}
-      />
-    </Col>
-
-    {/* End Date */}
-    <Col span={6}>
-      <DatePicker
-        style={{ width: '100%' }}
-        placeholder="End Date"
-        value={endDate}
-        onChange={setEndDate}
-        size="large"
-        disabled={reportType !== 'all'}
-      />
-    </Col>
-
-    {/* Search Button */}
-    <Col span={6}>
-      <Button
-        type="primary"
-        icon={<SearchOutlined />}
-        onClick={handleSearch}
-        size="large"
-        style={{
-          width: '100%',
-          backgroundColor: '#52c41a',
-          borderColor: '#52c41a',
-          fontWeight: 600
-        }}
-      >
-        Search
-      </Button>
-    </Col>
-  </Row>
-        </Card>
-
-        <div style={{ width: '100%', marginBottom: '24px' }}>
           <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} md={6}>
-              <Card
-                style={{
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                  height: '100%',
-                }}
+            {/* <Col span={6}>
+              <Search
+                placeholder="Search invoice or customer"
+                prefix={<SearchOutlined style={{ color: '#52c41a' }} />}
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                allowClear
+                size="large"
+              />
+            </Col> */}
+
+            <Col span={6}>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Filter by status"
+                value={statusFilter}
+                onChange={setStatusFilter}
+                allowClear
+                suffixIcon={<FilterOutlined style={{ color: '#52c41a' }} />}
+                size="large"
               >
-                <Statistic
-                  title="Total Sales"
-                  value={totalSales}
-                  prefix={<ShoppingCartOutlined style={{ color: '#52c41a' }} />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-                <Progress
-                  percent={100}
-                  showInfo={false}
-                  strokeColor="#d9f7be"
-                  trailColor="#f6ffed"
-                />
-              </Card>
+                <Option value="all">All Statuses</Option>
+                <Option value="completed">Completed</Option>
+                <Option value="pending">Pending</Option>
+                <Option value="cancelled">Cancelled</Option>
+              </Select>
             </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card
-                style={{
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                  height: '100%',
-                }}
+
+            <Col span={6}>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Filter by sale type"
+                value={saleTypeFilter}
+                onChange={setSaleTypeFilter}
+                allowClear
+                suffixIcon={<FilterOutlined style={{ color: '#52c41a' }} />}
+                size="large"
               >
-                <Statistic
-                  title="Total Revenue"
-                  value={totalAmount}
-                  prefix="$"
-                  valueStyle={{ color: '#52c41a' }}
-                />
-                <Progress
-                  percent={100}
-                  showInfo={false}
-                  strokeColor="#b7eb8f"
-                  trailColor="#f6ffed"
-                />
-              </Card>
+                <Option value="all">All Sale Types</Option>
+                <Option value="pos">POS</Option>
+                <Option value="inventory">Inventory</Option>
+              </Select>
             </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card
-                style={{
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                  height: '100%',
-                }}
-              >
-                <Statistic
-                  title="Paid"
-                  value={completedSales}
-                  prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-                <Progress
-                  percent={completionRate}
-                  showInfo={false}
-                  strokeColor="#52c41a"
-                  trailColor="#f6ffed"
-                />
-              </Card>
+
+            <Col span={6}>
+              <DatePicker
+                style={{ width: '100%' }}
+                placeholder="Start Date"
+                value={startDate}
+                onChange={setStartDate}
+                size="large"
+                disabled={reportType !== 'all'}
+              />
             </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card
+
+            <Col span={6}>
+              <DatePicker
+                style={{ width: '100%' }}
+                placeholder="End Date"
+                value={endDate}
+                onChange={setEndDate}
+                size="large"
+                disabled={reportType !== 'all'}
+              />
+            </Col>
+
+            <Col span={3}>
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={handleSearch}
+                size="large"
                 style={{
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                  height: '100%',
+                  width: '100%',
+                  backgroundColor: '#52c41a',
+                  borderColor: '#52c41a',
+                  fontWeight: 600
                 }}
               >
-                <Statistic
-                  title="Pending"
-                  value={pendingSales}
-                  prefix={<SyncOutlined spin style={{ color: '#faad14' }} />}
-                  valueStyle={{ color: '#faad14' }}
-                />
-                <Progress
-                  percent={totalSales > 0 ? Math.round((pendingSales / totalSales) * 100) : 0}
-                  showInfo={false}
-                  strokeColor="#faad14"
-                  trailColor="#fffbe6"
-                />
-              </Card>
+                Search
+              </Button>
+            </Col>
+
+            <Col span={3}>
+              <Button
+                type="default"
+                icon={<ClearOutlined />}
+                onClick={handleClearFilters}
+                size="large"
+                style={{
+                  width: '100%',
+                  fontWeight: 600
+                }}
+              >
+                Clear
+              </Button>
             </Col>
           </Row>
-        </div>
+        </Card>
 
+        {/* Data Table Card */}
         <Card
-          title={<span style={{ fontSize: '18px', fontWeight: '500' }}>Sales Transactions</span>}
+          title="Sales Report Details"
           extra={
             <Space>
               <Button
                 icon={<DownloadOutlined />}
-                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a', color: 'white' }}
                 onClick={handleExportExcel}
+                disabled={selectedRows.length === 0}
               >
                 Export
               </Button>
-              <Button
-                icon={<PrinterOutlined />}
-                style={{ backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }}
-                onClick={handlePrint}
-              >
+              <Button icon={<PrinterOutlined />} onClick={() => window.print()}>
                 Print
               </Button>
             </Space>
           }
           style={{
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+            overflow: 'hidden'
           }}
         >
-          <DataTable
-            columns={columns}
-            data={filteredSales}
-            pagination
-            responsive
-            fixedHeader
-            highlightOnHover
-            striped
-            persistTableHead
-            customStyles={{
-              headCells: {
-                style: {
-                  fontWeight: '600',
-                  backgroundColor: '#fafafa',
-                  color: '#333',
-                },
-              },
-              rows: {
-                style: {
-                  '&:hover': {
-                    backgroundColor: '#f6ffed !important',
-                  },
-                },
-              },
-            }}
-          />
+          <div style={{ position: 'relative' }}>
+<DataTable
+  columns={columns}
+  data={filteredSales}
+  pagination
+  paginationPerPage={10}
+  paginationRowsPerPageOptions={[10, 25, 50, 100]}
+  highlightOnHover
+  selectableRows
+  onSelectedRowsChange={handleRowSelected}
+  customStyles={{
+    head: {
+      style: {
+        fontSize: '14px',
+        fontWeight: 600,
+        paddingLeft: '0',
+        paddingRight: '0',
+      },
+    },
+    headRow: {
+      style: {
+        backgroundColor: '#f8f8f8',
+        borderBottomWidth: '1px',
+        borderBottomColor: '#e7e7e7',
+        borderBottomStyle: 'solid',
+      },
+    },
+    headCells: {
+      style: {
+        paddingLeft: '12px',
+        paddingRight: '12px',
+        color: '#333',
+      },
+    },
+    cells: {
+      style: {
+        paddingLeft: '12px',
+        paddingRight: '12px',
+        fontSize: '13px',
+      },
+    },
+    rows: {
+      style: {
+        '&:not(:last-of-type)': {
+          borderBottomWidth: '1px',
+          borderBottomColor: '#f0f0f0',
+          borderBottomStyle: 'solid',
+        },
+        '&:hover': {
+          backgroundColor: '#f8f8f8 !important',
+        },
+      },
+    },
+    pagination: {
+      style: {
+        fontSize: '13px',
+        borderTopWidth: '1px',
+        borderTopColor: '#e7e7e7',
+        borderTopStyle: 'solid',
+      },
+    },
+  }}
+  fixedHeader
+  fixedHeaderScrollHeight="500px"
+/>
+            <CustomFooter />
+          </div>
         </Card>
       </div>
     </Spin>

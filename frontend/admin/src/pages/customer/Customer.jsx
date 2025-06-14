@@ -201,34 +201,14 @@ const Customer = () => {
           </Col>
         </Row>
       </Card>
-
-      <Card className="customer-content-card" style={{ padding: '24px', marginTop: '20px' }}>
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Row gutter={[16, 16]} justify="space-between" align="middle">
-            <Col xs={24} md={12}>
-              <Input
-                placeholder="Search customers..."
-                prefix={<SearchOutlined />}
-                size="large"
-                allowClear
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ borderRadius: '8px' }}
-              />
-            </Col>
-            <Col xs={24} md={12} style={{ textAlign: 'right' }}>
-              <Text strong>{filteredCustomers.length} customers found</Text>
-            </Col>
-          </Row>
-
-          <CustomerTable
-            customers={filteredCustomers}
-            onEdit={handleEditCustomer}  // Pass the edit handler directly
-            onDelete={handleDeleteCustomerData}
-            customerGroups={customerGroups}
-            onSave={handleSaveCustomer}  // Pass the save handler
-          />
-        </Space>
-      </Card>
+      <CustomerTable
+        customers={filteredCustomers}
+        onEdit={handleEditCustomer}  // Pass the edit handler directly
+        onDelete={handleDeleteCustomerData}
+        customerGroups={customerGroups}
+        onSave={handleSaveCustomer}  // Pass the save handler
+        style = {{marginTop:'10px'}}
+      />
 
       <CreateCustomer
         visible={isCreateModalVisible}
