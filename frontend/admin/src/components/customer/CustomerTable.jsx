@@ -8,7 +8,7 @@ import "./CustomerTable.css";
 
 const { confirm } = Modal;
 
-const CustomerTable = ({ customers: allCustomers, onEdit, onDelete ,customerGroups}) => {
+const CustomerTable = ({ customers: allCustomers, onEdit, onDelete ,customerGroups,onSave  }) => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -19,13 +19,11 @@ const CustomerTable = ({ customers: allCustomers, onEdit, onDelete ,customerGrou
   const loadPage = (pageNumber, rowsPerPage) => {
     setLoading(true);
     
-    // Use requestAnimationFrame for smoother transitions
     requestAnimationFrame(() => {
       const startIndex = (pageNumber - 1) * rowsPerPage;
       const endIndex = startIndex + rowsPerPage;
       setCurrentData(allCustomers.slice(startIndex, endIndex));
       
-      // Small delay to allow the loading indicator to show
       setTimeout(() => {
         setLoading(false);
       }, 150);
@@ -45,6 +43,23 @@ const CustomerTable = ({ customers: allCustomers, onEdit, onDelete ,customerGrou
     setPerPage(newPerPage);
     setPage(newPage);
     loadPage(newPage, newPerPage);
+  };
+
+  const handleEdit = (customer) => {
+    setSelectedCustomer(customer);
+    setIsEditModalOpen(true);
+  };
+
+  const handleModalSave = async (values) => {
+    try {
+      if (selectedCustomer && onSave) {
+        await onSave(values, true, selectedCustomer.id);
+        setIsEditModalOpen(false);
+        setSelectedCustomer(null);
+      }
+    } catch (error) {
+      console.error('Error saving customer:', error);
+    }
   };
 
   const getRoleTag = (role) => (
@@ -77,11 +92,11 @@ const CustomerTable = ({ customers: allCustomers, onEdit, onDelete ,customerGrou
     });
   };
 
-  const handleEdit = (customer) => {
-    setSelectedCustomer(customer);
-    setIsEditModalOpen(true);
-    if (onEdit) onEdit(customer);
-  };
+  // const handleEdit = (customer) => {
+  //   setSelectedCustomer(customer);
+  //   setIsEditModalOpen(true);
+  //   if (onEdit) onEdit(customer);
+  // };
 
   const handleEditModalClose = () => {
     setIsEditModalOpen(false);
@@ -284,10 +299,10 @@ const CustomerTable = ({ customers: allCustomers, onEdit, onDelete ,customerGrou
         <CustomerModal
           visible={isEditModalOpen}
           onCancel={handleEditModalClose}
-          onSave={handleEditSave}
+          onSave={handleModalSave}
           initialData={selectedCustomer}
           isEditing={true}
-          customerGroups = {customerGroups}
+          customerGroups={customerGroups}
         />
       )}
     </motion.div>

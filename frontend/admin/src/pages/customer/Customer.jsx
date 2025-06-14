@@ -103,9 +103,7 @@ const Customer = () => {
   };
 
   const handleSaveCustomer = async (values, isEditing, id = null) => {    
-    try {
-      console.log(isEditing);
-      
+    try {      
       setLoading(true);      
       const result = isEditing 
         ? await handleUpdateCustomer(id, values, token)
@@ -224,11 +222,10 @@ const Customer = () => {
 
           <CustomerTable
             customers={filteredCustomers}
-            // onEdit={handleEditCustomer}
+            onEdit={handleEditCustomer}  // Pass the edit handler directly
             onDelete={handleDeleteCustomerData}
-            onCancel = {handleEditModalCancel}
             customerGroups={customerGroups}
-            onSave={(values) => handleSaveCustomer(values, true, selectedCustomer?.id)}
+            onSave={handleSaveCustomer}  // Pass the save handler
           />
         </Space>
       </Card>
@@ -239,14 +236,13 @@ const Customer = () => {
         onSave={(values) => handleSaveCustomer(values, false)}
       />
 
-      {/* <CustomerModal
+      <CustomerModal
         visible={isEditModalVisible}
         onCancel={handleEditModalCancel}
-        onSave={(values) => handleSaveCustomer(values, true, selectedCustomer?.id)}
+        // onSave={(values) => handleSaveCustomer(values, true, selectedCustomer?.id)}
         initialData={selectedCustomer}
-        isEditing={true}
         customerGroups={customerGroups}
-      /> */}
+      />
 
       <CustomerImport
         visible={isCustomerModalImportVisible}

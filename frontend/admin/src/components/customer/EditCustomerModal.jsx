@@ -8,9 +8,8 @@ const { Option } = Select;
 const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, customerGroups }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const { handleUpdateCustomer } = useUser(); // optional usage if needed
+  const { handleUpdateCustomer } = useUser(); 
 
-  // Update form when modal becomes visible
   useEffect(() => {
     if (visible) {
       if (initialData) {
@@ -30,7 +29,7 @@ const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, cust
     try {
       setLoading(true);
       await onSave(values); 
-      message.success(isEditing ? 'Customer updated successfully' : 'Customer added successfully');
+      // message.success(isEditing ? 'Customer updated successfully' : 'Customer added successfully');
       onCancel(); 
     } catch (error) {
       console.error(error);
@@ -38,10 +37,7 @@ const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, cust
     } finally {
       setLoading(false);
     }
-  };
-
-  console.log(customerGroups);
-  
+  };  
 
   return (
     <Modal
