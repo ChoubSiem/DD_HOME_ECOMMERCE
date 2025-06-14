@@ -280,7 +280,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
     >
       <Toast ref={toast} position="top-center" />
       
-      <div className="card" style={{ width: '100%', height: '500px', display: 'flex', flexDirection: 'column' }}>
+      <div className="card" style={{ width: '100%', height: '300px', display: 'flex', flexDirection: 'column' }}>
         <DataTable
           ref={dt}
           value={filteredData}
