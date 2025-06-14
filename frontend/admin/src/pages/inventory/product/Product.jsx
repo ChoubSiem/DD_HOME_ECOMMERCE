@@ -163,10 +163,10 @@ const ProductManagement = () => {
   };
   const onSearch = () => {
   // This will run when "Submit" is clicked
-  console.log("Searching with:");
-  console.log("Search term:", searchTerm);
-  console.log("Status:", statusFilter);
-  console.log("Category:", categoryFilter);
+  // console.log("Searching with:");
+  // console.log("Search term:", searchTerm);
+  // console.log("Status:", statusFilter);
+  // console.log("Category:", categoryFilter);
   console.log("Type:", typeFilter);
 
   // You can replace this with a real API call
@@ -181,7 +181,8 @@ const ProductManagement = () => {
 
 const filteredProducts = products.filter((product) => {
   const searchTermLower = searchTerm.toLowerCase();
-
+  console.log(product);
+  
   const matchesSearch =
     String(product.name || "").toLowerCase().includes(searchTermLower) ||
     String(product.code || "").toLowerCase().includes(searchTermLower) ||
@@ -195,7 +196,7 @@ const filteredProducts = products.filter((product) => {
 
   const matchesCategory =
     categoryFilter === "all" ||
-    String(product.category_id) === String(categoryFilter);
+    String(product.category_name) === String(categoryFilter);
 
   const matchesType =
     typeFilter === "all" || product.type === typeFilter;

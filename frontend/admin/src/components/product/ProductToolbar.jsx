@@ -55,7 +55,7 @@ const ProductToolbar = ({
               { label: "All Categories", value: "all" },
               ...categories.map((cat) => ({
                 label: cat.name,
-                value: String(cat.id),
+                value: String(cat.name),
               })),
             ]}
           />
@@ -82,13 +82,13 @@ const ProductToolbar = ({
           </Button>
 
           {/* NEW SUBMIT BUTTON */}
-          <Button
+          {/* <Button
             type="primary"
             onClick={onSearch}
             style={{ marginLeft: 8 }}
           >
             Submit
-          </Button>
+          </Button> */}
         </div>
       </div>
     </Card>
