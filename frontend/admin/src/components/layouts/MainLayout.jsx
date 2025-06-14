@@ -57,14 +57,15 @@ import { useProfileStore } from '@/stores/ProfileStore';
 import { useAuth } from '@/hooks/UseAuth';
 import Cookies from 'js-cookie';
 import { usePolicy } from '../../hooks/usePolicy';
+import logo from '../../assets/logo/DD_Home_Logo 2.jpg';
 
 const { Header, Content, Footer, Sider } = Layout;
 
 const Logo = () => (
   <img
-    src="..\src\assets\logo\DD_Home_Logo 2.jpg"
+    src={logo}
     alt="Logo"
-    style={{ width: "70px", height: "70px" }}
+    style={{ width: '70px', height: '70px' }}
   />
 );
 
