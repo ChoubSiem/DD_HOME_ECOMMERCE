@@ -12,7 +12,7 @@ const CreateSupplier = ({ visible, onCancel, onSave }) => {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
   const { handleSuppliers, handleSupplierCreate } = useUser();
-  const token = Cookies.get('token');
+  const token = localStorage.getItem('token');
 
   const getSupplierDatas = async () => {
     setLoading(true);

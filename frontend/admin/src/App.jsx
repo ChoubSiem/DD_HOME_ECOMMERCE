@@ -48,15 +48,21 @@ import EditSaleReturn from "./pages/sale_return/EditSaleReturn";
 import StockAlert from "./pages/notification/StockAlert";
 import RequestAlert from "./pages/notification/RequestAlert";
 import ProductReport from "./pages/report/Product";
-import StockReport from "./pages/report/stock_report/Stock";
+// import StockListReport from "./pages/report/stock_report/StockListReport";
+import StockListReport from "./pages/report/stock_report/StockListReport";
 import LowBestSellerReport from "./pages/report/low_best_product/LowestBestReport";
-import SaleReport from "./pages/report/sale_report/SaleReport";
-import PurchaseReport from "./pages/report/purchase/Purchase";
-import AdjustmentReport from "./pages/report/adjustment/Adjustment";
-import SupplierReport from "./pages/report/supplier/Supplier";
+import SaleReport from "./pages/report/sale_report/SaleListReport";
+// import PurchaseListReport from "./pages/report/purchase/Purchase";
+import PurchaseListReport from "./pages/report/purchase/PurchaseListReport";
+// import AdjustmentReport from "./pages/report/adjustment/Adjustment";
+import AdjustmentListReport from "./pages/report/adjustment/AdjustmentListReport";
+import SupplierListReport from "./pages/report/supplier/SupplierListReport";
+// import SupplierReport from "./pages/report/supplier/Supplier";
 import SaleReturnReport from "./pages/report/sale_return/SaleReturn";
-import ShiftReport from "./pages/report/shift_report/ShiftReport";
-import AccountingPayment from "./pages/accounting/payment/Payment";
+// import ShiftListReport from "./pages/report/shift_report/ShiftReport";
+import ShiftListReport from "./pages/report/shift_report/ShiftListReport";
+// import AccountingPayment from "./pages/accounting/payment/Payment";
+import PaymentListReport from "./pages/accounting/payment/PaymentListReport";
 import AccountingExpense from "./pages/accounting/expense/Expense";
 import AccountingRevenue from "./pages/accounting/revenue/RevenueReport";
 import ProductForWarehouse from "./components/warehouse/ProductForWarehouse";
@@ -74,6 +80,10 @@ import EmployeeCreate from "./components/policy/employee/create/EmployeeCreate";
 import EmployeeEdit from "./components/policy/employee/edit/EmployeeForm/EmployeeForm";
 import UomConversion from "./pages/inventory/UomConversion/UomConversion";
 import BrandManagement from "./pages/brand/Brand";
+
+
+// sale report 
+import DailySaleReport from "./pages/report/sale_report/SaleReport";
 
 const App = () => {
   const { initialize, login, logout, isAuthenticated, user, loading } = useProfileStore();
@@ -152,18 +162,21 @@ const App = () => {
           <Route path="/sale-return/edit" element={<EditSaleReturn />} />
           <Route path="/stock-alert" element={<StockAlert />} />
           <Route path="/request-alert" element={<RequestAlert />} />
+          {/* ============== sale report =============== */}
+
+          <Route path="/reports/daily-sale" element={<DailySaleReport/>} />
           <Route path="/reports/product" element={<ProductReport />} />
-          <Route path="/reports/stock" element={<StockReport />} />
+          <Route path="/reports/stock" element={<StockListReport />} />
           <Route path="/reports/low-best-reports" element={<LowBestSellerReport />} />
           <Route path="/reports/sale" element={<SaleReport />} />
-          <Route path="/reports/purchase" element={<PurchaseReport />} />
-          <Route path="/reports/adjustment" element={<AdjustmentReport />} />
-          <Route path="/reports/supplier" element={<SupplierReport />} />
+          <Route path="/reports/purchase" element={<PurchaseListReport />} />
+          <Route path="/reports/adjustment" element={<AdjustmentListReport />} />
+          <Route path="/reports/supplier" element={<SupplierListReport />} />
           <Route path="/reports/sale-return" element={<SaleReturnReport />} />
-          <Route path="/reports/shift" element={<ShiftReport />} />
+          <Route path="/reports/shift" element={<ShiftListReport />} />
           <Route path="/setting" element={<Setting />} />
           <Route path="/pos/payment" element={<PaymentPos />} />
-          <Route path="/accounting/payment" element={<AccountingPayment />} />
+          <Route path="/accounting/payment" element={<PaymentListReport />} />
           <Route path="/accounting/expense" element={<AccountingExpense />} />
           <Route path="/accounting/revenue" element={<AccountingRevenue />} />
           <Route path="/uom-conversion" element={<UomConversion />} />

@@ -119,21 +119,21 @@ const itemMenuLeftTmp = [
   ]),
 
   getItem("Reports", "reports", <BarChartOutlined />, [
-    getItem("Product Report", "/reports/product", <AppstoreOutlined />),
+    // getItem("Product Report", "/reports/product", <AppstoreOutlined />),
     getItem("Stock Report", "/reports/stock", <StockOutlined />),
     getItem("Low Best Product Report", "/reports/low-best-reports", <LineChartOutlined />),
     getItem("Sale Report", "/reports/sale", <ShoppingCartOutlined />),
     getItem("Purchase Report", "/reports/purchase", <ShoppingOutlined />),
-    getItem("Adjustment Report", "/reports/adjustment", <ReloadOutlined />),
+    // getItem("Adjustment Report", "/reports/adjustment", <ReloadOutlined />),
     getItem("Supplier Report", "/reports/supplier", <TeamOutlined />),
     getItem("Sale Return Report", "/reports/sale-return", <ShoppingCartOutlined />),
     getItem("Shift Report", "/reports/shift", <ClockCircleOutlined  />),
+    getItem("Payment Reports", "/accounting/payment", <DollarCircleOutlined />),
   ]),
 
   getItem("Accounting", "accounting", <DollarCircleOutlined />, [
     getItem("Expense Reports", "/accounting/expense", <FileSearchOutlined />),
     getItem("Profit and Loss Reports", "/accounting/revenue", <LineChartOutlined />),
-    getItem("Payment Reports", "/accounting/payment", <DollarCircleOutlined />),
     getItem("Tax Reports", "/accounting/tax", <FileTextOutlined />),
     getItem("Income Statement Report", "/accounting/income-statement", <LineChartOutlined />),
     getItem("Balance Sheet Report", "/accounting/balance-sheet", <LineChartOutlined />),
