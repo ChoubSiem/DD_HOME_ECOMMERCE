@@ -65,7 +65,7 @@ const WarehouseTable = ({ warehouses, setCurrentWarehouse, setIsModalVisible, ha
           />
           <Popconfirm
             title="Are you sure to delete this regional?"
-            onConfirm={() => handleDelete(row.key)}
+            onConfirm={() => handleDelete(row.id)}
             okText="Yes"
             cancelText="No"
           >

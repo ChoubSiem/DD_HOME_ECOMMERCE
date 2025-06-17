@@ -1,7 +1,7 @@
 import { message } from 'antd';
 import { fetchCompany , createCompany, updateCompany,deleteCompnay,showCompany} from '../services/companyService';
 import { fetchRegional, updateRegional ,createRegional,showRegional,deleteRegional} from '../services/regionalService';
-import { fetchWarehouse , createWarehouse,showWarehouse, updateWarehouse } from '../services/warehouseService';
+import { fetchWarehouse , createWarehouse,showWarehouse, updateWarehouse,deleteWarehouse } from '../services/warehouseService';
 
 export const useCompany = () => {
   const handleCompany = async (token) => {
@@ -240,6 +240,23 @@ export const useCompany = () => {
   //   }
   // };
 
+  const handleWarehouseDelete = async (id , token) => {
+    try {
+      const response = await deleteWarehouse(id, token);      
+      return {
+        success: true,
+        data: response.warehouse, 
+        message: response.message || "Warehouse updated successfully",
+      };
+    } catch (error) {
+      console.error("Error updating warehouse:", error);
+      return {
+        success: false,
+        message: error?.response?.data?.message || "Failed to update warehouse",
+      };
+    }
+  };
+
   return { 
     handleCompany,
     handleRegional,
@@ -254,6 +271,7 @@ export const useCompany = () => {
     handleRegionalUpdate,
     handleWarehouseCreate,
     handleWarehouseUpdate,
-    handleRegionalDelete
+    handleRegionalDelete,
+    handleWarehouseDelete
   };
 };

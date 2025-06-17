@@ -12,8 +12,7 @@ import Cookies from "js-cookie";
 const WarehouseManagement = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
-  const { handleWarehouse, handleWarehouseUpdate, handleWarehouseCreate } = useCompany();
-
+  const { handleWarehouse, handleWarehouseUpdate, handleWarehouseCreate,handleWarehouseDelete } = useCompany();
   const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentWarehouse, setCurrentWarehouse] = useState(null);
@@ -35,10 +34,18 @@ const WarehouseManagement = () => {
     }
   };
 
-  const handleDelete = (warehouseId) => {
+  const handleDelete = async(warehouseId) => {
+    console.log(warehouseId);
+    
     const updated = warehouses.filter((c) => c.id !== warehouseId);
-    setWarehouses(updated);
-    message.success("Warehouse deleted successfully");
+    const result = await handleWarehouseDelete(warehouseId , token);
+    console.log(token);
+    
+    if (result) {
+      setWarehouses(updated);
+      message.success("Warehouse deleted successfully");
+      
+    }
   };
 
   const fetchWarehouses = async () => {
