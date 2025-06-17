@@ -76,7 +76,7 @@ const EmployeeTable = ({ employees, onEdit, onDelete, loading }) => {
           <Button
             size="small"
             icon={<DeleteOutlined style={{ color: "red" }} />}
-            onClick={() => onDelete(row)}
+            onClick={() => onDelete(row.id)}
             style={{ border: 'none' }}
           />
         </div>

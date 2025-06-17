@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Spin,Space } from 'antd';
+import { Card, Button, message, Spin,Space,Modal } from 'antd';
 import EmployeeModal from '../../../components/policy/employee/EmployeeModal';
 import { useUser } from '../../../hooks/UserUser';
 import Toolbar from "../../../components/policy/employee/EmployeeToolbar";
@@ -15,11 +15,11 @@ const Employee = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null); 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);  
-  const { handleEmployee } = useUser();
+  const { handleEmployee,handleDeleteCustomer } = useUser();
+  const token = localStorage.getItem("token");
 
   const fetchUsersData = async () => {
     try {
-      const token = localStorage.getItem("token");
       const result = await handleEmployee(token);      
       setUsers(result.employees);
       setLoading(false);  
@@ -28,6 +28,7 @@ const Employee = () => {
       message.error('Failed to fetch users.');
     }
   };
+
 
   useEffect(() => {
     fetchUsersData();
@@ -58,9 +59,25 @@ const Employee = () => {
   };
 
 
-  const handleDeleteEmployee = (employeeId) => {
-    setUsers(users.filter(user => user.employeeId !== employeeId));
-  };
+const handleDeleteEmployee = (employeeId) => {
+  Modal.confirm({
+    title: 'Are you sure you want to delete this employee?',
+    content: 'This action cannot be undone.',
+    okText: 'Yes, Delete',
+    okType: 'danger',
+    cancelText: 'Cancel',
+    onOk: async () => {
+      const result = await handleDeleteCustomer(employeeId, token);
+      if (result) {
+        setUsers(users.filter(user => user.employeeId !== employeeId));
+        message.success('Employee deleted successfully!');
+        location.reload();
+      } else {
+        message.error('Failed to delete employee.');
+      }
+    },
+  });
+};
 
   return (
     <div style={{ padding: '20px' }}>
