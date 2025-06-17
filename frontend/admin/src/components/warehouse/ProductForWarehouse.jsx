@@ -13,7 +13,7 @@ const WarehouseProductSelection = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [currentWarehouseProducts, setCurrentWarehouseProducts] = useState([]);
   const [checkAll, setCheckAll] = useState(false);
-  const token = Cookies.get('token');
+  const token = localStorage.getItem('token');
   const [form] = Form.useForm();
   const { handleProducts, handleSelectWarehouseProduct, handleWarehouseProducts } = useProductTerm();
 

@@ -43,14 +43,14 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
       selector: (row) => row.price || 'N/A',
       width: '15%',
       center: true,
-      cell: (row) => <span className="price-value">{row.price ? `$${row.price.toFixed(2)}` : 'N/A'}</span>,
+      cell: (row) => <span className="price-value">{row.price ? `$${row.price}` : 'N/A'}</span>,
     },
     {
       name: 'Total',
       selector: (row) => row.total_price || null,
       width: '15%',
       center: true,
-      cell: (row) => <span className="total-value">{row.total_price ? `$${row.total_price.toFixed(2)}` :null}</span>,
+      cell: (row) => <span className="total-value">{row.total_price ? `$${row.total_price}` :null}</span>,
     },
   ];
 

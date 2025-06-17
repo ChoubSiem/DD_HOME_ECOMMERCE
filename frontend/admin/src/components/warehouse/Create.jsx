@@ -94,7 +94,7 @@ const CreateWarehouse = () => {
                 name="phone"
                 rules={[
                   { required: true, message: "Please input phone number!" },
-                  { pattern: /^\+?[0-8]{9,15}$/, message: "Invalid phone number format!" },
+                  // { pattern: /^\+?[0-8]{9,15}$/, message: "Invalid phone number format!" },
                 ]}
               >
                 <Input placeholder="Phone Number" style={{ height: 48 }} />

@@ -428,6 +428,8 @@ function SalesReports() {
                 onChange={setStartDate}
                 size="large"
                 disabled={reportType !== 'all'}
+                showTime={{ format: 'HH:mm' }}
+                format="YYYY-MM-DD HH:mm"
               />
             </Col>
 
@@ -439,6 +441,8 @@ function SalesReports() {
                 onChange={setEndDate}
                 size="large"
                 disabled={reportType !== 'all'}
+                showTime={{ format: 'HH:mm' }}
+                format="YYYY-MM-DD HH:mm"
               />
             </Col>
 

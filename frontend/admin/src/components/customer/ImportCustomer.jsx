@@ -34,19 +34,20 @@ const ImportCustomer = ({ visible, onCancel, onImport }) => {
       const workbook = XLSX.read(binaryString, { type: 'binary' });
 
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data = XLSX.utils.sheet_to_json(sheet);
-
+      // console.log(sheet);
+      
+      const data = XLSX.utils.sheet_to_json(sheet);      
       const formattedData = data.map((item) => {
-        return {
-          name: item['Customer Name'],
-          contact_name: item['Contact Name'],
-          phone: item['Phone'],
-          code: item['Code'],
-          address: item['Address'],
-          group: item['Group'],
-
-        };
+          return {
+            name: item['Customer Name']?.trim(),  
+            contact_name: item['Contact Name']?.trim(),
+            phone: item['Phone']?.trim(),
+            code: item['Code']?.trim(),
+            address: item['Address']?.trim(),
+            group: item['Group']?.trim()
+          };
       });
+      // console.log(formattedData);
       // console.log(formattedData);
       // return;
       onImport(formattedData);
