@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import moment from 'moment';
 import "./ViewShift.css";
 import CloseShiftView from "../../../components/pos/shift/CloseShiftView";
+import logo from '../../../assets/logo/DD_Home_Logo 2.jpg';
 
 const { Title, Text } = Typography;
 
@@ -20,7 +21,14 @@ const ViewShiftModal = ({ open, onClose, warehouseId, token, onShiftClosed }) =>
   const [form] = Form.useForm();
   const userData = JSON.parse(Cookies.get('user') || '{}');
   const shiftId = Cookies.get('shift_id');
-
+  
+  const Logo = () => (
+    <img
+      src={logo}
+      alt="Logo"
+      style={{ width: '70px', height: '70px' }}
+    />
+  );
   const handleGetOneShiftData = async () => {
     if (!shiftId || !userData.warehouse_id || !token) {
       setError('Missing required data for shift fetch');
@@ -221,11 +229,8 @@ const ViewShiftModal = ({ open, onClose, warehouseId, token, onShiftClosed }) =>
               padding: '16px 0',
             }}
           >
-            <img
-              src=""
-              alt="Chomrourn Phal Logo"
-              style={{ height: 60, objectFit: 'contain' }}
-            />
+                      <Logo />
+
             <Title
               level={4}
               style={{

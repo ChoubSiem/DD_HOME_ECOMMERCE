@@ -111,7 +111,8 @@ const AddPurchase = () => {
       productName: selectedProduct.name,
       quantity: 1,
       price: selectedProduct.cost,
-      unit: selectedProduct.unit_name,
+      unit_code: selectedProduct.unit_code,
+      unit_name: selectedProduct.unit_name,
       total: selectedProduct.cost * 1,
     };
     
@@ -196,12 +197,12 @@ const AddPurchase = () => {
         const editable = isEditing(record);
         return editable ? (
           <Select
-            value={record.unit}
+            value={record.unit_name}
             style={{ width: '100%' }}
             onChange={(value) => handleUnitChange(record.key, value)}
           />
         ) : (
-          <span>{record.unit}</span>
+          <span>{record.unit_name}</span>
         );
       },
     },
@@ -315,7 +316,7 @@ const AddPurchase = () => {
         product_id: product.productId,
         qty: product.quantity,
         price: product.price,
-        unit_code: product.unit || null
+        unit_code: product.unit_code || null
       }))
     };    
 

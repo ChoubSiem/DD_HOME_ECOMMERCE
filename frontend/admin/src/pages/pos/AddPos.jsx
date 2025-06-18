@@ -10,8 +10,6 @@ const paymentOptions = [
   { name: "ABA", icon: <BankOutlined /> },
   { name: "AC", icon: <WalletOutlined /> },
   { name: "Bakong", icon: <BankOutlined /> },
-  { name: "VISA", icon: <CreditCardOutlined /> },
-  { name: "Mastercard", icon: <CreditCardOutlined /> },
 ];
 import { Tooltip, Drawer, message, Button, Input, Modal, Alert, Table, Badge, Spin, Select } from 'antd';
 import Cookies from "js-cookie";
@@ -1757,7 +1755,7 @@ const printInvoice = (printData) => {
                               </span>
                             ) : (
                               <span className="item-discount">
-                                Save ${item.discount.toFixed(2)}
+                                Save ${item.discount}
                               </span>
                             )
                           ) : null}
@@ -1917,8 +1915,8 @@ const printInvoice = (printData) => {
                   value={selectedPayment || undefined}
                   style={{
                     width: "100%",
-                    maxWidth: 200,
-                    minWidth: 200,
+                    maxWidth: 150,
+                    minWidth: 150,
                   }}
                   size="large"
                   optionLabelProp="label"
@@ -1939,14 +1937,7 @@ const printInvoice = (printData) => {
                     <BankOutlined style={{ marginRight: 8 }} />
                     Bakong
                   </Option>
-                  <Option value="VISA" label="VISA">
-                    <CreditCardOutlined style={{ marginRight: 8 }} />
-                    VISA
-                  </Option>
-                  <Option value="Mastercard" label="Mastercard">
-                    <CreditCardOutlined style={{ marginRight: 8 }} />
-                    Mastercard
-                  </Option>
+  
                 </Select>
               </div>
             </div>
