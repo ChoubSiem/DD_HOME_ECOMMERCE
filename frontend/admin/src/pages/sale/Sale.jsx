@@ -62,16 +62,12 @@ const StockTransferPage = () => {
 
   const handleSalesInveontoryData = async() =>{
     setLoading(true);
-    const result = await handleSaleInventory(user.warehouse_id , token);
-    console.log(result);
-    
+    const result = await handleSaleInventory(user.warehouse_id , token);    
     if (result.success) {
       setSales(result.sales);
       setLoading(false);
     }
-  }
-  console.log(sales);
-  
+  }  
   useEffect(() => {
     if (token && user) {
       handleUomTransferData();

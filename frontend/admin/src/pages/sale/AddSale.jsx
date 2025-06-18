@@ -297,9 +297,6 @@ const AddAdjustment = () => {
         discount: product.discountAmount ?? 0,
       }))
     };
-    console.log('data: '+ (saleData));
-    console.log(selectedProducts);
-    
 
     try {
       const result = await handlePosSaleCreate(saleData, token);

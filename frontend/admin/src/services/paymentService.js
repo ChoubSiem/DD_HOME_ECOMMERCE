@@ -10,3 +10,41 @@ export const createPayment = async (values , token) => {
   return response.data;
 };
 
+// purchase payment
+
+export const getPurchasePayment = async (purchaseId, token) => {
+  const response = await axios.post(`${API_BASE}/purchase-payment/${purchaseId}`, values, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    params: {
+      warehouse_id: values.warehouse_id 
+    }
+  });
+
+  return response.data;
+};
+export const addPurchasePayment = async (values, token) => {
+  const response = await axios.post(`${API_BASE}/purchase-payment`, values, {
+    headers: { 
+      Authorization: `Bearer ${token}`
+    },
+    params: {
+      warehouse_id: values.warehouse_id 
+    }
+  });
+
+  return response.data;
+};
+export const updatePurchasePayment = async (purchaseId,values, token) => {
+  const response = await axios.post(`${API_BASE}/purchase-payment/edit/${purchaseId}`, values, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    params: {
+      warehouse_id: values.warehouse_id 
+    }
+  });
+
+  return response.data;
+};

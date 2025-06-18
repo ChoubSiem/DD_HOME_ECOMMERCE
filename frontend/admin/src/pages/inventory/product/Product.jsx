@@ -167,7 +167,7 @@ const ProductManagement = () => {
   // console.log("Search term:", searchTerm);
   // console.log("Status:", statusFilter);
   // console.log("Category:", categoryFilter);
-  console.log("Type:", typeFilter);
+  // console.log("Type:", typeFilter);
 
   // You can replace this with a real API call
   fetchProducts({
@@ -181,7 +181,7 @@ const ProductManagement = () => {
 
 const filteredProducts = products.filter((product) => {
   const searchTermLower = searchTerm.toLowerCase();
-  console.log(product);
+  // console.log(product);
   
   const matchesSearch =
     String(product.name || "").toLowerCase().includes(searchTermLower) ||

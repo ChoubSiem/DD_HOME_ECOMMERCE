@@ -1,62 +1,97 @@
-import React, { useState, useEffect } from "react";
-import DataTable from "react-data-table-component";
-import { Button, Dropdown, Space, Tag } from "antd";
+import React, { useState } from 'react';
+import DataTable from 'react-data-table-component';
+import { Button, Dropdown, Space, Tag, Modal, message } from 'antd';
 import {
   EditOutlined,
   MoreOutlined,
   DeleteOutlined,
   EyeOutlined,
-  CheckOutlined,
-  CloseOutlined,
-} from "@ant-design/icons";
-import PurchaseModalDetail from "../../components/purchase/PurchaseModalDetail";
+  DollarOutlined,
+  PlusCircleOutlined
+} from '@ant-design/icons';
+import PurchaseModalDetail from '../../components/purchase/PurchaseModalDetail';
+import ViewPaymentModal from '../../components/purchase/payment/ViewPayment';
+import AddPaymentModal from '../../components/purchase/payment/AddPayment';
+import EditPaymentModal from '../../components/purchase/payment/EditPayment';
 
 const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modal states
+  const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
+  const [viewPaymentModalVisible, setViewPaymentModalVisible] = useState(false);
+  const [addPaymentModalVisible, setAddPaymentModalVisible] = useState(false);
+  const [editPaymentModalVisible, setEditPaymentModalVisible] = useState(false);
+  
+  // Selected items
   const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
-  const showModal = (purchase) => {
+  // Show purchase details modal
+  const showPurchaseModal = (purchase) => {
     const transformedPurchase = {
       id: purchase.id,
       reference: purchase.reference || "N/A",
-      supplier:
-        typeof purchase.supplier === "object"
-          ? purchase.supplier.name || purchase.supplier.username || "N/A"
-          : purchase.supplier || "N/A",
+      supplier: typeof purchase.supplier === "object"
+        ? purchase.supplier.name || purchase.supplier.username || "N/A"
+        : purchase.supplier || "N/A",
       createdBy: {
-        username:
-          typeof purchase.purchaser === "object"
-            ? purchase.purchaser.name || purchase.purchaser.username || "N/A"
-            : purchase.purchaser || "N/A",
+        username: typeof purchase.purchaser === "object"
+          ? purchase.purchaser.name || purchase.purchaser.username || "N/A"
+          : purchase.purchaser || "N/A",
       },
       date: purchase.date || new Date().toISOString(),
       note: purchase.note || "",
       status: purchase.approval || "pending",
       items: purchase.purchase_items || [],
-      payments:purchase.payments , 
+      payments: purchase.payments || [], 
       total: parseFloat(purchase.total || 0),
     };
     setSelectedPurchase(transformedPurchase);
-    setIsModalOpen(true);
+    setPurchaseModalVisible(true);
   };
 
-  useEffect(() => {
-    if (selectedPurchase) {
-      console.log("Selected Purchase:", selectedPurchase);
+  // Payment actions
+  const handleViewPayment = (purchase) => {
+    if (purchase.payments?.length > 0) {
+      setSelectedPayment(purchase.payments[0]); // View first payment
+      setViewPaymentModalVisible(true);
+    } else {
+      Modal.info({
+        title: 'No Payments',
+        content: 'This purchase has no payments recorded yet.',
+      });
     }
-  }, [selectedPurchase]);
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setSelectedPurchase(null);
   };
 
-  const items = (purchase) => [
+  const handleAddPayment = (purchase) => {
+    setSelectedPurchase(purchase);
+    setAddPaymentModalVisible(true);
+  };
+
+  const handleEditPayment = (payment) => {
+    setSelectedPayment(payment);
+    setEditPaymentModalVisible(true);
+  };
+
+  // Payment CRUD operations
+  const handlePaymentAdded = (newPayment) => {
+    // API call or state update would go here
+    message.success('Payment added successfully');
+    setAddPaymentModalVisible(false);
+  };
+
+  const handlePaymentUpdated = (updatedPayment) => {
+    // API call or state update would go here
+    message.success('Payment updated successfully');
+    setEditPaymentModalVisible(false);
+  };
+
+  // Dropdown menu items
+  const getDropdownItems = (purchase) => [
     {
       key: "view",
       icon: <EyeOutlined />,
       label: "View Details",
-      onClick: () => showModal(purchase),
+      onClick: () => showPurchaseModal(purchase),
     },
     {
       key: "edit",
@@ -65,13 +100,18 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       onClick: () => handleEdit(purchase),
     },
     {
-      key: "status",
-      icon: purchase.approval === "approved" ? <CheckOutlined /> : <CloseOutlined />,
-      label: purchase.approval === "approved" ? "Mark as Pending" : "Mark as Approved",
+      key: "view-payment",
+      icon: <DollarOutlined />,
+      label: "View Payment",
+      onClick: () => handleViewPayment(purchase),
     },
     {
-      type: "divider",
+      key: "add-payment",
+      icon: <PlusCircleOutlined />,
+      label: "Add Payment",
+      onClick: () => handleAddPayment(purchase),
     },
+    { type: "divider" },
     {
       key: "delete",
       icon: <DeleteOutlined />,
@@ -81,6 +121,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
     },
   ];
 
+  // Table columns
   const columns = [
     {
       name: "No",
@@ -136,7 +177,8 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       cell: (row) => (
         <Tag
           color={
-            row.approval === "approved" ? "green" : row.approval === "request" ? "orange" : "blue"
+            row.approval === "approved" ? "green" : 
+            row.approval === "request" ? "orange" : "blue"
           }
         >
           {row.approval?.toUpperCase() || "N/A"}
@@ -144,7 +186,6 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       ),
       width: "10%",
     },
-    
     {
       name: "Total",
       selector: (row) => parseFloat(row.total || 0),
@@ -157,29 +198,35 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       selector: (row) => row.payments?.map(p => p.payment_type).join(", "),
       sortable: true,
       cell: (row) => (
-        <>
-          <div>
-            {
-              Array.isArray(row.payments) && row.payments.length > 0
-                ? row.payments.map((p, index) => (
-                    <div key={index}>{     p.paid+' | '+p.payment_type || ""}</div>
-                  ))
-                : null
-            }
-          </div>
-
-
-        </>
+        <div>
+          {Array.isArray(row.payments) && row.payments.length > 0 ? (
+            row.payments.map((p, index) => (
+              <div key={index}>
+                <Tag 
+                  color={p.status === 'completed' ? 'green' : 'orange'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditPayment(p);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  ${p.amount} | {p.payment_type}
+                </Tag>
+              </div>
+            ))
+          ) : (
+            <Tag color="red">No Payment</Tag>
+          )}
+        </div>
       ),
-      width: "10%",
+      width: "15%",
     },
-
     {
       name: "Note",
       selector: (row) => row.note,
       sortable: true,
       cell: (row) => <span>{row.note || null}</span>,
-      width: "15%",
+      width: "10%",
     },
     {
       name: "Actions",
@@ -194,7 +241,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
             }}
           />
           <Dropdown
-            menu={{ items: items(row) }}
+            menu={{ items: getDropdownItems(row) }}
             trigger={["click"]}
             placement="bottomRight"
             onClick={(e) => e.stopPropagation()}
@@ -209,6 +256,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
     },
   ];
 
+  // Table styles
   const customStyles = {
     table: {
       style: {
@@ -264,19 +312,40 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
         paginationRowsPerPageOptions={[10, 20, 50, 100]}
         customStyles={customStyles}
         highlightOnHover
-        onRowClicked={(row) => showModal(row)}
+        onRowClicked={(row) => showPurchaseModal(row)}
       />
-      {selectedPurchase && (
-        <PurchaseModalDetail
-          open={isModalOpen}
-          onCancel={handleCancel}
-          onEdit={() => {
-            handleEdit(selectedPurchase);
-            handleCancel();
-          }}
-          purchase={selectedPurchase}
-        />
-      )}
+
+      {/* Purchase Detail Modal */}
+      <PurchaseModalDetail
+        open={purchaseModalVisible}
+        onCancel={() => setPurchaseModalVisible(false)}
+        onEdit={() => {
+          handleEdit(selectedPurchase);
+          setPurchaseModalVisible(false);
+        }}
+        purchase={selectedPurchase}
+      />
+
+      {/* Payment Modals */}
+      <ViewPaymentModal
+        payment={selectedPayment}
+        visible={viewPaymentModalVisible}
+        onCancel={() => setViewPaymentModalVisible(false)}
+      />
+
+      <AddPaymentModal
+        purchase={selectedPurchase}
+        visible={addPaymentModalVisible}
+        onCreate={handlePaymentAdded}
+        onCancel={() => setAddPaymentModalVisible(false)}
+      />
+
+      <EditPaymentModal
+        payment={selectedPayment}
+        visible={editPaymentModalVisible}
+        onUpdate={handlePaymentUpdated}
+        onCancel={() => setEditPaymentModalVisible(false)}
+      />
     </div>
   );
 };

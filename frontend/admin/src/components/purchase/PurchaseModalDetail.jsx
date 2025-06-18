@@ -3,12 +3,21 @@ import DataTable from 'react-data-table-component';
 import { Modal, Button, Divider } from 'antd';
 import { PrinterOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons';
 import './PurchaseModalDetail.css';
+import logo from '../../assets/logo/DD_Home_Logo 2.jpg';
 
 const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
   const handlePrint = () => {
    
     window.print();
   };
+
+  const Logo = () => (
+    <img
+      src={logo}
+      alt="Logo"
+      style={{ width: '70px', height: '70px' }}
+    />
+  );
 
   const columns = [
     {
@@ -107,25 +116,22 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
         <header className="invoice-header">
           <div className="header-left">
             <div className="company-logo">
-              <img
-                alt="Logo"
-                style={{ width: '90px', marginRight: '20px' }}
-              />
+              <Logo />
             </div>
             <div className="header-info">
-              <h1 className="document-title">PURCHASE ORDER</h1>
+              <h2 className="documentitle">PURCHASE ORDER</h2>
               <p className="document-reference">Reference: {purchase?.reference || '.............'}</p>
               <p className="document-reference">
                 Supplier:{' '}
                 {typeof purchase?.supplier === 'object'
                   ? purchase.supplier.name || purchase.supplier.username || '.............'
-                  : purchase.supplier || '.............'}
+                  : purchase?.supplier || '.............'}
               </p>
               <p className="document-reference">
                 Created By:{' '}
                 {typeof purchase?.createdBy === 'object'
                   ? purchase.createdBy.username || purchase.createdBy.name || '.............'
-                  : purchase.createdBy || '.............'}
+                  : purchase?.createdBy || '.............'}
               </p>
             </div>
           </div>
