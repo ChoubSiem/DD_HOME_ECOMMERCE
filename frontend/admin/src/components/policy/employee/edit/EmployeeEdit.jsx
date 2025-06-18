@@ -41,14 +41,6 @@ const EmployeeEdit = () => {
         getRoleDatas();
         getEmployee();
       }, []);
-
-
-
-    
-
-
-
-      console.log(employee);
       
   return (
     <div>

@@ -31,7 +31,7 @@ import {
   ExclamationCircleOutlined
 } from '@ant-design/icons';
 import "./ProductDetail.css";
-
+import Cookies from 'js-cookie';
 const { Text } = Typography;
 
 const ProductDetailModal = ({ 
@@ -44,7 +44,7 @@ const ProductDetailModal = ({
   error = null 
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
-
+  const userData = JSON.parse(Cookies.get('user'));
   const getImageUrls = () => {
     if (!product?.images) return ['default.jpg'];
     
@@ -64,14 +64,20 @@ const ProductDetailModal = ({
 
   const imageUrls = getImageUrls();
 
-  const priceTypes = [
-    { label: 'Retail Price', value: product?.retail_price, icon: <DollarOutlined />, color: 'green' },
-    { label: 'VIP Price', value: product?.vip_price, icon: <CrownOutlined />, color: 'gold' },
-    { label: 'Dealer Price', value: product?.dealer_price, icon: <UserOutlined />, color: 'geekblue' },
-    { label: 'Depot Price', value: product?.depot_price, icon: <ShopOutlined />, color: 'blue' },
-    { label: 'Branch Price', value: product?.price, icon: <DollarOutlined />, color: 'green' },
-    { label: 'Cost', value: product?.cost, icon: <BarcodeOutlined />, color: 'volcano' },
-  ];
+const priceTypes = [
+  { label: 'Retail Price', value: product?.retail_price, icon: <DollarOutlined />, color: 'green' },
+  { label: 'VIP Price', value: product?.vip_price, icon: <CrownOutlined />, color: 'gold' },
+  { label: 'Dealer Price', value: product?.dealer_price, icon: <UserOutlined />, color: 'geekblue' },
+  { label: 'Depot Price', value: product?.depot_price, icon: <ShopOutlined />, color: 'blue' },
+  { label: 'Branch Price', value: product?.price, icon: <DollarOutlined />, color: 'green', key: 'branch' },
+  { label: 'Cost', value: product?.cost, icon: <BarcodeOutlined />, color: 'volcano' },
+].filter(item => {
+  if (userData?.warehouse_id && item.label === 'Branch Price') {
+    return false; 
+  }
+  return true;
+});
+
 
   const handleDelete = () => {
     Modal.confirm({

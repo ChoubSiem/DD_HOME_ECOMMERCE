@@ -24,6 +24,7 @@ const SaleDetailCard = ({
     name: salesperson?.name || '',
     id: salesperson?.id || null
   };
+  
 
   useEffect(() => {
     if (selectedWarehouse && selectedWarehouse !== "company") {
@@ -44,7 +45,7 @@ const SaleDetailCard = ({
   const handleCustomerChange = (value) => {
     selectedCustomer(value);
   };
-
+  
   return (
     <Card title="Sale Details" style={{ marginBottom: 20, borderRadius: 0 }}>
       <Form form={form} layout="vertical">
@@ -82,7 +83,7 @@ const SaleDetailCard = ({
           </Col>
 
           <Col xs={24} sm={8} md={8} lg={8} style={{ marginTop: "30px" }}>
-            {!userData?.warehouse_id ? (
+            {!userData.warehouse_id ? (
               <Form.Item
                 label="Warehouse"
                 name="warehouse_id"

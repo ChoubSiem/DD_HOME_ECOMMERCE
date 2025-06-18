@@ -240,7 +240,7 @@ function PosAdd() {
     if (discountType === "percentage") {
       discountValue = price * quantity * (discount / 100);
     } else if (discountType === "amount") {
-      discountValue = discount;
+      discountValue = discount * quantity;
     }
 
     return sum + discountValue;

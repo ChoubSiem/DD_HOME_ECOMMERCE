@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, message, Form } from "antd";
 import dayjs from 'dayjs';
 import { useProductTerm } from "../../hooks/UserProductTerm";
-import AdjustmentDetailsCard from "../../components/sale/addSale/SaleDetailCard";
+import SaleDetailCard from "../../components/sale/addSale/SaleDetailCard";
 import ProductSearchBar from "../../components/sale/addSale/ProductSearchBar";
 import ProductsTable from "../../components/sale/addSale/ProductTable";
 import NoteSection from "../../components/sale/addSale/NoteSection";
@@ -160,8 +160,14 @@ const AddAdjustment = () => {
     }
 
     const customer_type = (localStorage.getItem('customer_type') || '').toLowerCase();
-
-    let productPrice = selectedProduct.retail_price || selectedProduct.sale_price || selectedProduct.price || 0;
+    let productPrice;
+    
+    if (!userData.warehouse_id) {
+      productPrice = selectedProduct.price  || 0;
+      
+    }else{
+      productPrice = selectedProduct.retail_price;
+    }
 
     switch (customer_type) {
       case 'vip':
@@ -188,6 +194,7 @@ const AddAdjustment = () => {
       discountAmount: 0,
       discountPercent: 0
     };
+    
 
     setSelectedProducts([...selectedProducts, newProduct]);
     message.success(`${selectedProduct.name} has been added to the sale.`);
@@ -195,10 +202,7 @@ const AddAdjustment = () => {
   };
 
   const handleQuantityChange = (key, value) => {
-    console.log('handleQuantityChange - key:', key, 'value:', value, 'type:', typeof value);
     const numericValue = Number(value);
-    console.log('numericValue:', numericValue, 'isNaN:', isNaN(numericValue));
-
     if (isNaN(numericValue)) {
       message.error('Quantity must be a valid number');
       return;
@@ -219,7 +223,6 @@ const AddAdjustment = () => {
         }
         return item;
       });
-      console.log('Updated selectedProducts:', updatedProducts);
       return updatedProducts;
     });
   };
@@ -294,10 +297,14 @@ const AddAdjustment = () => {
         discount: product.discountAmount ?? 0,
       }))
     };
+    console.log('data: '+ (saleData));
+    console.log(selectedProducts);
+    
 
     try {
       const result = await handlePosSaleCreate(saleData, token);
-      if (result.success) {
+      
+      if (result.success) {        
         message.success('Sale created successfully!');
         form.resetFields();
         setSelectedProducts([]);
@@ -360,7 +367,7 @@ const AddAdjustment = () => {
         </div>
       </Card>
 
-      <AdjustmentDetailsCard 
+      <SaleDetailCard 
         reference={reference}
         warehouses={warehouses}
         setReference={setReference}

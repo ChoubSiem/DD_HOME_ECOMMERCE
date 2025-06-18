@@ -74,7 +74,9 @@ export const useUser = () => {
   };
 
   const handleEmployeeUpdate = async (employeeId,values , token) => {
+    
     try {
+      console.log(values);
       const employeeData = await updateUser(employeeId,values,token);                  
       return {
         success: true,

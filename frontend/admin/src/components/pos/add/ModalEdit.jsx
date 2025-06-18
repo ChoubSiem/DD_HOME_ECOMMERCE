@@ -49,7 +49,12 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
     } else {
       const discountAmount = value;
       const discountPercentage = originalPrice > 0 ? (discountAmount / originalPrice) * 100 : 0;
-      const newFinalPrice = originalPrice - discountAmount;
+      const newFinalPrice = parseFloat((originalPrice - discountAmount).toFixed(4));
+      console.log(newFinalPrice);
+      console.log('dis ' + discountAmount);
+      console.log('ori ' + originalPrice);
+      console.log(originalPrice - discountAmount);
+      
       form.setFieldsValue({
         discount: discountPercentage,
         finalPrice: newFinalPrice,

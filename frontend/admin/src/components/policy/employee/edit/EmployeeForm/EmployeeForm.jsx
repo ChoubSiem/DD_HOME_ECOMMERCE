@@ -103,8 +103,8 @@ const EmployeeForm = ({   onRefresh }) => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.username.trim()) newErrors.username = 'Username is required';
-    if (!formData.phone || !/^\d{9}$/.test(formData.phone))
-      newErrors.phone = 'Valid 9-digit phone number is required';
+    // if (!formData.phone || !/^\d{9}$/.test(formData.phone))
+    //   newErrors.phone = 'Valid 9-digit phone number is required';
     if (!formData.password || formData.password.length < 6)
       newErrors.password = 'Password must be at least 6 characters';
     return newErrors;

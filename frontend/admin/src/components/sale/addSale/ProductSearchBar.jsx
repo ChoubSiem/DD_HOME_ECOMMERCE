@@ -9,15 +9,14 @@ const ProductSearchBar = ({
   handleProductSelect,
   customer,
 }) => {
-  const userData = Cookies.get('userData') ? JSON.parse(Cookies.get('userData')) : {};
-
+  const userData = Cookies.get('user') ? JSON.parse(Cookies.get('user')) : {};
   const getPriceByCustomerGroup = (product, customer) => {
-    if (!userData?.warehouse_id) {
-      return product.auto_price ?? product.price;
+    if (!userData.warehouse_id) {
+      return product.price;
     }
-
-    const groupName = customer?.customer_group?.name?.toLowerCase();
-
+    // console.log(userData.warehouse_id);
+    
+    const groupName = customer?.customer_group?.name?.toLowerCase();    
     switch (groupName) {
       case 'vip':
         return product.vip_price ?? product.price;
@@ -27,12 +26,12 @@ const ProductSearchBar = ({
         return product.dealer_price ?? product.price;
       case 'retail':
       default:
-        return product.retail_price ?? product.price;
+        return userData.warehouse_id ? product.retail_price : product.price;
     }
   };
+  
 
   const searchTermLower = searchTerm.toLowerCase();
-
   const filteredProducts = products.filter((product) => {
     const productName = product.name?.toLowerCase() || '';
     const productCode = String(product.code || '');

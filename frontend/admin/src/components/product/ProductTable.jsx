@@ -94,6 +94,16 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
       {rowData.category_name}
     </motion.span>
   );
+  const codeBodyTemplate = (rowData) => (
+    <motion.span
+      style={{ display: 'flex', justifyContent: 'center', fontSize: '15px', padding: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      {rowData.code}
+    </motion.span>
+  );
 
   const priceBodyTemplate = (rowData) => (
     <motion.div
@@ -316,6 +326,15 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
             className="text-center"
             headerClassName="text-center"
             style={{ width: '200px', minWidth: '200px' }}
+          />
+          <Column 
+            field="product_code" 
+            header="Code" 
+            sortable 
+            body={codeBodyTemplate}
+            className="text-center"
+            headerClassName="text-center"
+            style={{ width: '150px', minWidth: '150px' }}
           />
           <Column 
             field="category_name" 

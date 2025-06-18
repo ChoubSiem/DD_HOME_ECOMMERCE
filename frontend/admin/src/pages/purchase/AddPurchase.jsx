@@ -102,6 +102,8 @@ const AddPurchase = () => {
       message.warning(`${selectedProduct.name} is already added.`);
       return;
     }
+    console.log(selectedProduct);
+    
 
     const newProduct = {
       key: Date.now(),
@@ -109,7 +111,7 @@ const AddPurchase = () => {
       productName: selectedProduct.name,
       quantity: 1,
       price: selectedProduct.cost,
-      unit: selectedProduct.unit_code,
+      unit: selectedProduct.unit_name,
       total: selectedProduct.cost * 1,
     };
     
@@ -242,7 +244,7 @@ const AddPurchase = () => {
       dataIndex: "total",
       key: "total",
       width: 120,
-      render: (_, record) => <span style={{display: 'flex', justifyContent: 'flex-end', width: '100%'}}>${record.total.toFixed(2)}</span>,
+      render: (_, record) => <span style={{display: 'flex', justifyContent: 'flex-end', width: '100%'}}>${record.total?.toFixed(2)}</span>,
     },
     {
       title: "Action",
