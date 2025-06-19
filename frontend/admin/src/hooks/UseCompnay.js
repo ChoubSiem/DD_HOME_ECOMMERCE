@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { fetchCompany , createCompany, updateCompany,deleteCompnay,showCompany} from '../services/companyService';
+import { fetchCompany , createCompany, updateCompany,deleteCompany,showCompany} from '../services/companyService';
 import { fetchRegional, updateRegional ,createRegional,showRegional,deleteRegional} from '../services/regionalService';
 import { fetchWarehouse , createWarehouse,showWarehouse, updateWarehouse,deleteWarehouse } from '../services/warehouseService';
 
@@ -72,7 +72,7 @@ export const useCompany = () => {
     if (!id) return { success: false, message: "Company ID is missing" };
   
     try {
-      const response = await deleteCompnay(id, token);
+      const response = await deleteCompany(id, token);
       return { success: true, message: response.message || "Company deleted successfully" };
     } catch (error) {
       return { success: false, message: error?.response?.data?.message || "Failed to delete company" };

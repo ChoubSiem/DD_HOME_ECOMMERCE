@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { data } from 'react-router-dom';
 const API_BASE = 'https://backend.ddhomekh.com/api';
 
 export const fetchUsers = async (token) => {
