@@ -1,6 +1,6 @@
 import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
-import {React } from "react";
+import React from 'react'; // Fixed import statement
 
 const Spinner = ({ fullPage = true, size = 'large' }) => {
   const spinner = <Spin indicator={<LoadingOutlined spin />} size={size} />;

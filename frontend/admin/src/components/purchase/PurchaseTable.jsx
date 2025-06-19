@@ -13,19 +13,22 @@ import PurchaseModalDetail from '../../components/purchase/PurchaseModalDetail';
 import ViewPaymentModal from '../../components/purchase/payment/ViewPayment';
 import AddPaymentModal from '../../components/purchase/payment/AddPayment';
 import EditPaymentModal from '../../components/purchase/payment/EditPayment';
-
+import { usePayment } from '../../hooks/UsePayment';
+// import Cookies from 'js-cookie';
 const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
+
   // Modal states
   const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
   const [viewPaymentModalVisible, setViewPaymentModalVisible] = useState(false);
   const [addPaymentModalVisible, setAddPaymentModalVisible] = useState(false);
   const [editPaymentModalVisible, setEditPaymentModalVisible] = useState(false);
-  
+  const token = localStorage.getItem('token');
+  const {handleGetPurchasePayment,handleAddPurchasePayment} = usePayment();
+
   // Selected items
   const [selectedPurchase, setSelectedPurchase] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
 
-  // Show purchase details modal
   const showPurchaseModal = (purchase) => {
     const transformedPurchase = {
       id: purchase.id,
@@ -49,17 +52,10 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
     setPurchaseModalVisible(true);
   };
 
-  // Payment actions
-  const handleViewPayment = (purchase) => {
-    if (purchase.payments?.length > 0) {
-      setSelectedPayment(purchase.payments[0]); // View first payment
-      setViewPaymentModalVisible(true);
-    } else {
-      Modal.info({
-        title: 'No Payments',
-        content: 'This purchase has no payments recorded yet.',
-      });
-    }
+  const handleViewPayment = async(purchase) => {
+    const payments = await handleGetPurchasePayment(purchase.id,token);    
+    setSelectedPayment(payments.payment); 
+    setViewPaymentModalVisible(true);
   };
 
   const handleAddPayment = (purchase) => {
@@ -72,20 +68,21 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
     setEditPaymentModalVisible(true);
   };
 
-  // Payment CRUD operations
-  const handlePaymentAdded = (newPayment) => {
-    // API call or state update would go here
-    message.success('Payment added successfully');
-    setAddPaymentModalVisible(false);
+  const handlePaymentAdded = async(newPayment) => {
+    console.log(newPayment);
+    // return;
+    const addPayment = await handleAddPurchasePayment(newPayment,token);
+    if (addPayment.success) {
+      message.success('Payment added successfully');
+      setAddPaymentModalVisible(false);
+    }
   };
 
   const handlePaymentUpdated = (updatedPayment) => {
-    // API call or state update would go here
     message.success('Payment updated successfully');
     setEditPaymentModalVisible(false);
   };
 
-  // Dropdown menu items
   const getDropdownItems = (purchase) => [
     {
       key: "view",
@@ -193,34 +190,30 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       cell: (row) => <strong>${parseFloat(row.total || 0).toFixed(2)}</strong>,
       width: "10%",
     },
-    {
-      name: "Payment",
-      selector: (row) => row.payments?.map(p => p.payment_type).join(", "),
-      sortable: true,
-      cell: (row) => (
-        <div>
-          {Array.isArray(row.payments) && row.payments.length > 0 ? (
-            row.payments.map((p, index) => (
-              <div key={index}>
-                <Tag 
-                  color={p.status === 'completed' ? 'green' : 'orange'}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditPayment(p);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  ${p.amount} | {p.payment_type}
-                </Tag>
-              </div>
-            ))
-          ) : (
-            <Tag color="red">No Payment</Tag>
-          )}
-        </div>
-      ),
-      width: "15%",
-    },
+ {
+  name: "Payment",
+  selector: (row) => row.payments[0]?.payment_type,
+  sortable: true,
+  cell: (row) => {
+    const p = row.payments?.[0];
+    return p ? (
+      <Tag 
+        color={p.status === 'completed' ? 'green' : 'orange'}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleEditPayment(p);
+        }}
+        style={{ cursor: 'pointer' }}
+      >
+        ${p.amount} | {p.payment_type}
+      </Tag>
+    ) : (
+      <Tag color="red">No Payment</Tag>
+    );
+  },
+  width: "15%",
+}
+,
     {
       name: "Note",
       selector: (row) => row.note,
@@ -328,7 +321,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
 
       {/* Payment Modals */}
       <ViewPaymentModal
-        payment={selectedPayment}
+        payments={selectedPayment}
         visible={viewPaymentModalVisible}
         onCancel={() => setViewPaymentModalVisible(false)}
       />

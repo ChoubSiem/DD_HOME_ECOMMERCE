@@ -18,7 +18,7 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-
+import Cookies from 'js-cookie';
 const { Option } = Select;
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -26,7 +26,7 @@ const { Title, Text } = Typography;
 const AddPaymentModal = ({ visible, onCreate, onCancel, purchase }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = React.useState(false);
-
+  const userData = JSON.parse(Cookies.get('user'));
   const handleSubmit = async () => {
     try {
       setLoading(true);
@@ -36,6 +36,7 @@ const AddPaymentModal = ({ visible, onCreate, onCancel, purchase }) => {
         date: values.date.format('YYYY-MM-DD'),
         purchaseId: purchase.id,
         amount: Number(values.amount),
+        warehouse_id:userData.warehouse_id
       });
       form.resetFields();
     } catch (error) {
@@ -105,7 +106,7 @@ const AddPaymentModal = ({ visible, onCreate, onCancel, purchase }) => {
             <Option value="acleda">🏦 Acleda Bank</Option>
             <Option value="bakong">🌐 Bakong</Option>
             <Option value="cash">💵 Cash</Option>
-        </Select>
+          </Select>
 
         </Form.Item>
 

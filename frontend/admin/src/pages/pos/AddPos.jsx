@@ -27,6 +27,8 @@ import { useSale } from "../../hooks/UseSale";
 import EditOpenShift from '../../components/pos/shift/EditOpenShift';
 import InvoiceTemplate from "./InvoiceTemplate";
 import ReactDOM from "react-dom/client";
+import { DataView } from 'primereact/dataview';
+import { Skeleton } from 'primereact/skeleton';
 function PosAdd() {
   const [searchProductTerm, setSearchProductTerm] = useState("");
   const [searchCustomerTerm, setSearchCustomerTerm] = useState("");
@@ -46,6 +48,10 @@ function PosAdd() {
     }
   });
 
+  // console.log(selectedCustomer);
+  
+  const [customerGroup, setCustomerGroup] = useState('');
+  const [groupOptions, setGroupOptions] = useState([]);
   const [priceType, setPriceType] = useState('retail_price'); 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
@@ -69,7 +75,7 @@ function PosAdd() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { handleProducts, handleCategories } = useProductTerm();
-  const { handleCustomerQuickCreate, handleCustomers } = useUser();
+  const { handleCustomerQuickCreate, handleCustomers,handleGetCustomerGroup } = useUser();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const [shiftOpen, setShiftOpen] = useState(false);
@@ -154,6 +160,7 @@ function PosAdd() {
         setShiftModalVisible(true);
       }
     };
+    getCustomerGroup();
 
   fetchShiftData();
 
@@ -471,9 +478,7 @@ function PosAdd() {
 
   setCartItems(prev => {
     const existingItem = prev.find(item => item.id === product.id);
-    if (existingItem) {
-      console.log(existingItem);
-      
+    if (existingItem) {      
       return prev.map(item =>
         item.id === product.id
           ? {
@@ -491,10 +496,7 @@ function PosAdd() {
     let discount = parseFloat(product.discount) || 0;
     if (isNaN(discount) || discount < 0 || discount > 100) {
       discount = 0;
-    }
-
-    console.log(discount);
-    
+    }    
 
     return [
       ...prev,
@@ -554,6 +556,13 @@ function PosAdd() {
     setSearchCustomerTerm('');
   };
 
+  const getCustomerGroup = async() =>{
+    const customerGroup = await handleGetCustomerGroup(token);    
+    if (customerGroup) {
+      setGroupOptions(customerGroup.groups);
+    }
+  }
+
   const handleAddCustomer = async () => {
     if (!newCustomerName.trim()) {
       message.warning("Please enter customer name");
@@ -563,11 +572,10 @@ function PosAdd() {
       const newCustomer = { 
         username: newCustomerName.trim(),
         phone: newCustomerPhone.trim(),
-        customer_group: 'walkin' 
+        customer_group: customerGroup
       };
   
-      let result = await handleCustomerQuickCreate(newCustomer, token);
-      
+      let result = await handleCustomerQuickCreate(newCustomer, token);      
       if (result?.success) {
         message.success("Customer added successfully");
         setCustomers(prev => [...prev, result.customer]);
@@ -668,9 +676,6 @@ function PosAdd() {
 
       return sum + discountValue;
     }, 0);
-
-
-    console.log('total' + itemDiscountTotal);
     
     const calculatedCartDiscount = cartDiscountType === 'percent'
       ? (subtotal - itemDiscountTotal) * (cartDiscount / 100)
@@ -841,8 +846,6 @@ function PosAdd() {
   };
 
   const handleSaveEdit = (values) => {
-
-    console.log(values);
     // console.log(values.originalPrice - values.finalPrice);
     // return;
     
@@ -859,9 +862,7 @@ function PosAdd() {
       )
       
     );
-    
-    console.log(cartItems);
-    
+        
     setIsEditModalVisible(false);
     message.success("Item updated successfully");
   };
@@ -901,11 +902,11 @@ function PosAdd() {
     const suspendedOrders = JSON.parse(localStorage.getItem('suspendedOrders') || '[]');
 
     const columns = [
-      {
-        title: 'Order ID',
-        dataIndex: 'id',
-        key: 'id',
-      },
+      // {
+      //   title: 'Order ID',
+      //   dataIndex: 'id',
+      //   key: 'id',
+      // },
       {
         title: 'Customer',
         key: 'customer',
@@ -913,11 +914,6 @@ function PosAdd() {
           const customer = customers.find(c => c.id === record.customer_id);
           return customer ? customer.username : 'N/A';
         }
-      },
-      {
-        title: 'Price Type',
-        dataIndex: 'price_type',
-        key: 'price_type',
       },
       {
         title: 'Total',
@@ -1006,6 +1002,9 @@ function PosAdd() {
       />
     </Modal>
   );
+
+  // console.log(selectedCustomer);
+  
 
 const handleCreatePosSaleData = async () => {
   if (!selectedCustomer) {
@@ -1254,24 +1253,6 @@ const printInvoice = (printData) => {
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                   />
                 </Tooltip>
-
-                {/* <Tooltip title="Edit Shift">
-                  <Button
-                    icon={<EditOutlined />}
-                    type="default"
-                    shape="circle"
-                    size="large"
-                    style={{
-                      background: '#fff',
-                      borderColor: '#d9d9d9',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onClick={handleEditShift}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                  />
-                </Tooltip> */}
                 <Tooltip title="Close Shift">
                   <Button
                     icon={<FiPower />}
@@ -1337,12 +1318,11 @@ const printInvoice = (printData) => {
             </motion.div>
 
             <div className="customer-select" ref={dropdownRef}>
-              <motion.div 
+              <div 
                 className="select-trigger"
-                whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   setIsOpen(!isOpen);
-                  setSearchProductTerm('');
+                  setSearchCustomerTerm('');
                 }}
               >
                 <div className="customer-avatar">
@@ -1352,352 +1332,167 @@ const printInvoice = (printData) => {
                   {selectedCustomer ? (
                     <>
                       {selectedCustomer.username}
-                      <span className="group-name"> ({selectedCustomer?.group_name || 'WalkIn'})</span>                    </>
+                      <span className="group-name"> ({selectedCustomer?.group_name})</span>
+                    </>
                   ) : (
                     "Select Customer"
                   )}
                 </span>
 
-                <motion.div
-                  animate={{ rotate: isOpen ? 180 : 10 }}
-                  transition={{ duration: 0.2 }}
+                <div>
+                  <FiChevronDown style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                </div>
+              </div>
+
+              {isOpen && (
+             <div className="dropdown-menu">
+            <div className="search-box">
+              <FiSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search customers..."
+                value={searchCustomerTerm}
+                onChange={(e) => setSearchCustomerTerm(e.target.value)}
+                autoFocus
+              />
+              {searchCustomerTerm && (
+                <button 
+                  className="clear-search"
+                  onClick={() => setSearchCustomerTerm('')}
                 >
-                  <FiChevronDown />
-                </motion.div>
-              </motion.div>
+                  <FiX />
+                </button>
+              )}
+            </div>
 
-              <AnimatePresence>
-                {isOpen && (
-                  <motion.div
-                    className="dropdown-menu"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="search-box">
-                      <FiSearch className="search-icon" />
-                      <input
-                        type="text"
-                        placeholder="Search customers..."
-                        value={searchCustomerTerm}
-                        onChange={(e) => setSearchCustomerTerm(e.target.value)}
-                        autoFocus
-                      />
-                      {searchCustomerTerm && (
-                        <button 
-                          className="clear-search"
-                          onClick={() => setSearchCustomerTerm('')}
-                        >
-                          <FiX />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="options-list">
-                      {filteredCustomers.length > 0 ? (
-                        filteredCustomers.map(customer => (
-                          
-                          <motion.div
-                            key={customer.id}
-                            className={`option ${selectedCustomer?.id === customer.id ? 'selected' : ''}`}
-                            whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
-                            onClick={() => handleSelect(customer)}
-                          >
-                            <div className="customer-info">
-                              <div className="username">{customer.username}  ({customer.group_name})</div>
-                              {customer.phone && (
-
-                                <>
-                                <div className="phone">{customer.phone}</div>
-                                
-                                </>
-                              )}
-                            </div>
-                          </motion.div>
-                        ))
-                      ) : (
-                        <div className="no-results">
-                          {searchCustomerTerm ? "No matching customers" : "No customers available"}
-                        </div>
-                      )}
-                    </div>
-
-                    <motion.div
-                      className="add-option"
-                      whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
-                      onClick={() => {
-                        setIsModalVisible(true);
-                        setIsOpen(false);
-                      }}
+            <div className="options-list">
+              {filteredCustomers.length > 0 ? (
+                <>
+                  {(searchCustomerTerm ? filteredCustomers : filteredCustomers.slice(0, 10)).map(customer => (
+                    <div
+                      key={customer.id}
+                      className={`option ${selectedCustomer?.id === customer.id ? 'selected' : ''}`}
+                      onClick={() => handleSelect(customer)}
                     >
-                      <FiPlus className="add-icon" />
-                      <span>Add New Customer</span>
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      <div className="customer-info">
+                        <div className="username">{customer.username} ({customer.group_name})</div>
+                        {customer.phone && (
+                          <div className="phone">{customer.phone}</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                        
+                </>
+              ) : (
+                <div className="no-results">
+                  {searchCustomerTerm ? "No matching customers" : "No customers available"}
+                </div>
+              )}
+            </div>
+
+            <div
+              className="add-option"
+              onClick={() => {
+                setIsModalVisible(true);
+                setIsOpen(false);
+              }}
+            >
+              <FiPlus className="add-icon" />
+              <span>Add New Customer</span>
             </div>
           </div>
-
-          <div className="categories-container" style={{ position: 'relative', padding: '8px 0' }}>
-            <motion.button
-              className="category-nav-btn"
-              onClick={() => scrollCategories('left')}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              style={{
-                position: 'absolute',
-                left: '-10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: '#fff',
-                border: '1px solid #d9d9d9',
-                borderRadius: '50%',
-                padding: '5px',
-                zIndex: 1
-              }}
-            >
-              <FiChevronLeft size={20} />
-            </motion.button>
-
-            <div 
-              className="categories-scroller" 
-              ref={categoryScrollerRef}
-              style={{ 
-                overflowX: 'auto', 
-                whiteSpace: 'nowrap', 
-                padding: '8px 30px',
-                scrollbarWidth: 'none'
-              }}
-            >
-              <motion.div
-                className={`category-tag ${!selectedCategory ? "active" : ""}`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedCategory(null)}
-                style={{ display: 'inline-block', marginRight: '8px' }}
-              >
-                All Products
-              </motion.div>
-              {categories.map(category => (
-                <motion.div
-                  key={category.id}
-                  className={`category-tag ${selectedCategory === category.name ? "active" : ""}`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCategory(category.name)}
-                  style={{ display: 'inline-block', marginRight: '8px' }}
-                >
-                  <span className="category-icon">{category.icon}</span>
-                  {category.name}
-                </motion.div>
-              ))}
+              )}
             </div>
-
-            <motion.button
-              className="category-nav-btn"
-              onClick={() => scrollCategories('right')}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              style={{
-                position: 'absolute',
-                right: '-10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: '#fff',
-                border: '1px solid #d9d9d9',
-                borderRadius: '50%',
-                padding: '5px',
-                zIndex: 1
-              }}
-            >
-              <FiChevronRight size={20} />
-            </motion.button>
           </div>
 
           <div className="products-grid">
-            {loading ? (
-              <div className="loading-products">
-                <Spin size="large" />
-              </div>
-            ) : filteredProducts.length > 0 ? (
-              <>
-                {getCurrentProducts().map(product => {
-                  const isInCart = cartItems.some(item => item.id === product.id);
-                  const price = product[priceType] || product.retail_price;
-                  const discountedPrice = price * (1 - (product.discount || 0) / 100);
-                  
-                  return (
-                    <motion.div
-                      key={product.id}
-                      className={`product-card ${isInCart ? "in-cart" : ""}`}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.2 }}
-                      whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => addToCart(product)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {isInCart && (
-                        <motion.div 
-                          className="in-cart-indicator"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        >
-                          <span>({cartItems.find(item => item.id === product.id)?.quantity || 1})</span>
-                        </motion.div>
-                      )}
-                      
-                      <div className="product-badges">
-                        {product.discount> 0 && (
-                          <div className="discount-badge">
-                            <FiPercent size={12} />
-                            <span>{product.discount}% OFF</span>
+              {loading ? (
+                <div className="loading-products">
+                  {Array(productsPerPage).fill(0).map((_, i) => (
+                    <div key={`skeleton-${i}`} className="product-card-skeleton">
+                      <Skeleton width="100%" height="150px" />
+                      <Skeleton width="80%" height="1.5rem" className="mt-2" />
+                      <Skeleton width="60%" height="1rem" className="mt-1" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <DataView
+                  value={filteredProducts}
+                  className="layout-card"
+                  layout='grid'
+                  itemTemplate={(product) => {
+                    const isInCart = cartItems.some(item => item.id === product.id);
+                    const price = product[priceType] || product.retail_price;
+                    const discountedPrice = price * (1 - (product.discount || 0) / 100);
+                    
+                    return (
+                      <div 
+                        className={`product-card ${isInCart ? "in-cart" : ""}`}
+                        onClick={() => addToCart(product)}
+                      >
+                        {isInCart && (
+                          <div className="in-cart-indicator">
+                            <span>({cartItems.find(item => item.id === product.id)?.quantity || 1})</span>
                           </div>
                         )}
-                        <div className="stock-badge">
-                          {product.stock} left
-                        </div>
-                      </div>
-                      <div className="product-image">
-                        {product.category === "Electronics" ? "💻" : 
-                        product.category === "Clothing" ? "👕" : "🛒"}
-                      </div>
-                      <div className="product-details">
-                        <div className="product-info" style={{display:"flex",justifyContent:"space-between"}}>
-                          <h3 className="product-name">{product.name}</h3>
-                          <p style={{fontSize:12}}>{product.code}</p>
-                        </div>
-                        <div className="product-pricing" >
-                          <div style={{display:'flex',flexDirection:"column"}}>
-                            <span className="retail-price" style={{fontSize:10}}>
-                              OP ${product.retail_price.toFixed(2)}
-                            </span>
-                            <span className="current-price">
-                              ${discountedPrice.toFixed(2)}
-                            </span>
-                          </div>
+                        
+                        <div className="product-badges">
                           {product.discount > 0 && (
-                            <span className="original-price">
-                              ${price.toFixed(2)}
-                            </span>
+                            <div className="discount-badge">
+                              <FiPercent size={12} />
+                              <span>{product.discount}% OFF</span>
+                            </div>
                           )}
+                          <div className="stock-badge">
+                            {product.stock} left
+                          </div>
+                        </div>
+                        <div className="product-image">
+                          {product.category === "Electronics" ? "💻" : 
+                          product.category === "Clothing" ? "👕" : "🛒"}
+                        </div>
+                        <div className="product-details">
+                          <div className="product-info">
+                            <h3 className="product-name">{product.name}</h3>
+                            <div style={{display:"flex",justifyContent:'space-between'}}>
+                            <p className="product-code">{product.code}</p>
+                              <span className="retail-price">
+                                OP ${product.retail_price.toFixed(2)}
+                              </span>
+
+                            </div>
+                          </div>
+                          <div className="product-pricing">
+                            <div className="price-container">
+                              <span className="current-price">
+                                ${discountedPrice.toFixed(2)}
+                              </span>
+                            </div>
+                            {product.discount > 0 && (
+                              <span className="original-price">
+                                ${price.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </motion.div>
-                  );
-                })}
-              </>
-            ) : (
-              <motion.div
-                className="no-products"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: '700px',
-                  minWidth: "1500px",
-                  padding: '24px',
-                  textAlign: 'center'
-                }}
-              >
-                <div
-                  className="no-products-icon"
-                  style={{
-                    fontSize: '48px',
-                    marginBottom: '16px',
-                    color: '#8c8c8c',
+                    );
                   }}
-                >
-                  🛒
-                </div>
-                <p
-                  style={{
-                    fontSize: '18px',
-                    fontWeight: 500,
-                    color: '#595959',
-                    margin: '0 0 16px 0',
-                  }}
-                >
-                  No products found
-                </p>
-              </motion.div>
-            )}
+                  paginator
+                  rows={productsPerPage}
+                  first={(currentPage - 1) * productsPerPage}
+                  onPage={(e) => setCurrentPage(e.page + 1)}
+                  totalRecords={filteredProducts.length}
+                />
+              )}
           </div>
-          {filteredProducts.length > productsPerPage && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '1rem',
-              marginTop: '1.5rem',
-            }}>
-              <Button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  backgroundColor: currentPage === 1 ? '#ddd' : '#f0f0f0',
-                  color: '#333',
-                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                  border: '1px solid #ccc'
-                }}
-              >
-                <FiChevronLeft />
-                Previous
-              </Button>
-              <span style={{ 
-                fontSize: '14px', 
-                color: '#fff',
-                background: 'rgb(82, 196, 26)', 
-                width: '200px', 
-                display: 'inline-block', 
-                textAlign: 'center',
-                padding: '4px 8px',
-                borderRadius: '6px'
-              }}>
-                Page <strong>{currentPage}</strong> of <strong>{Math.ceil(filteredProducts.length / productsPerPage)}</strong>
-              </span>
-              <Button
-                onClick={() =>
-                  setCurrentPage(p =>
-                    Math.min(Math.ceil(filteredProducts.length / productsPerPage), p + 1)
-                  )
-                }
-                disabled={currentPage >= Math.ceil(filteredProducts.length / productsPerPage)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  backgroundColor: currentPage >= Math.ceil(filteredProducts.length / productsPerPage) ? '#ddd' : '#f0f0f0',
-                  color: '#333',
-                  cursor: currentPage >= Math.ceil(filteredProducts.length / productsPerPage) ? 'not-allowed' : 'pointer',
-                  border: '1px solid #ccc'
-                }}
-              >
-                Next
-                <FiChevronRight />
-              </Button>
-            </div>
-          )}
         </div>
 
         <div className="cart-panel">
           <div className="cart-header">
-            <h2>Order Summary</h2>
+            {/* <h2>Order Summary</h2> */}
             <div className="cart-tabs">
               <button 
                 className={`cart-tab ${activeCartTab === 'items' ? 'active' : ''}`}
@@ -1902,7 +1697,7 @@ const printInvoice = (printData) => {
                 }}
               >
                 <FiPercent />
-                Cart Discount
+                Cart Dis
               </motion.button>
                 {/* <FiPercent />
                 Select Payment
@@ -1986,6 +1781,7 @@ const printInvoice = (printData) => {
               className="modal-overlay"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              style={{ width: '100%', maxWidth: '100%' }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalVisible(false)}
             >
@@ -2024,6 +1820,20 @@ const printInvoice = (printData) => {
                       value={newCustomerPhone}
                       onChange={(e) => setNewCustomerPhone(e.target.value)}
                     />
+                  </div>
+                  <div className="form-group">
+                    <label>Customer Group</label>
+                    <select
+                      value={customerGroup}
+                      onChange={(e) => setCustomerGroup(e.target.value)}
+                    >
+                      <option value="">Select group</option>
+                      {groupOptions.map((group) => (
+                        <option key={group.id} value={group.id}>
+                          {group.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className="modal-footer">

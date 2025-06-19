@@ -1,13 +1,13 @@
 import { message } from 'antd';
-import { createPaymen,getPurchasePayment,addPurchasePayment,updatePurchasePayment} from '../services/paymentService';
+import { createPayment,getPurchasePayment,addPurchasePayment,updatePurchasePayment} from '../services/paymentService';
 
 export const usePayment = () => {
   const handlePaymentCreate = async (values,token) => {
     try {
-      const companyData = await getPurchasePayment(values,token);            
+      const companyData = await createPayment(values,token);            
       return {
         success: true,
-        payment: companyData.data,     
+        payment: companyData,     
         message: companyData.message  
       };
       
@@ -17,11 +17,24 @@ export const usePayment = () => {
   };
   const handleGetPurchasePayment = async (purchaseId,token) => {
     try {
-      const companyData = await createPayment(purchaseId,token);            
+      const purchasePayment = await getPurchasePayment(purchaseId,token);                  
       return {
         success: true,
-        payment: companyData.data,     
-        message: companyData.message  
+        payment: purchasePayment,     
+        message: purchasePayment.message  
+      };
+      
+    } catch (error) {
+      
+    }
+  };
+  const handleAddPurchasePayment = async (values,token) => {
+    try {
+      const purchasePayment = await addPurchasePayment(values,token);                  
+      return {
+        success: true,
+        payment: purchasePayment,     
+        message: purchasePayment.message  
       };
       
     } catch (error) {
@@ -31,5 +44,5 @@ export const usePayment = () => {
 
   
 
-  return { handlePaymentCreate};
+  return { handlePaymentCreate ,handleGetPurchasePayment,handleAddPurchasePayment};
 };

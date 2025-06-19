@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_BASE = 'https://backend.ddhomekh.com/api';
+const API_BASE = 'http://127.0.0.1:8000/api';
 
 export const createPayment = async (values , token) => {
   
@@ -13,19 +13,15 @@ export const createPayment = async (values , token) => {
 // purchase payment
 
 export const getPurchasePayment = async (purchaseId, token) => {
-  const response = await axios.post(`${API_BASE}/purchase-payment/${purchaseId}`, values, {
+  const response = await axios.get(`${API_BASE}/purchase-payment/${purchaseId}`, {
     headers: {
       Authorization: `Bearer ${token}`
-    },
-    params: {
-      warehouse_id: values.warehouse_id 
     }
-  });
-
+  });  
   return response.data;
 };
 export const addPurchasePayment = async (values, token) => {
-  const response = await axios.post(`${API_BASE}/purchase-payment`, values, {
+  const response = await axios.post(`${API_BASE}/purchase-payment/add`, values, {
     headers: { 
       Authorization: `Bearer ${token}`
     },

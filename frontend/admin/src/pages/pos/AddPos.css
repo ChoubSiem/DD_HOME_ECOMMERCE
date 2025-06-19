@@ -59,7 +59,7 @@ body {
 
 /* Products Panel */
 .products-panel {
-  flex: 3;
+  flex: 2;
   padding: 2rem;
   overflow-y: auto;
   background-color: rgba(141, 139, 139, 0.253);
@@ -268,11 +268,18 @@ body {
 }
 
 .products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  /* display: grid; */
+  /* grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); */
   gap: 1.5rem;
+  /* background: #000; */
+  width: 100%;
 }
-
+.layout-card .p-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr); /* shows 3 cards per row */
+  gap: 1rem;
+  width: 100%;
+}
 .product-card {
   background: white;
   border-radius: var(--border-radius);
@@ -280,6 +287,11 @@ body {
   box-shadow: var(--box-shadow);
   transition: var(--transition);
   position: relative;
+  cursor: pointer;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .product-badges {
@@ -314,7 +326,7 @@ body {
 }
 
 .product-image {
-  height: 140px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,9 +349,15 @@ body {
 
 .product-pricing {
   display: flex;
-  align-items: center;
+  /* align-items: center; */
   gap: 0.5rem;
   margin-bottom: 1rem;
+  /* flex-direction: column; */
+  /* background: #000; */
+}
+.price-container{
+  display: flex;
+  flex-direction: column;
 }
 
 .current-price {
@@ -413,7 +431,7 @@ body {
 
 .cart-panel {
   flex: 1;
-  max-width: 500px;
+  max-width: 700px;
   background: #ffffff56; /* <-- no quotes */
   border-left: 1px solid var(--light-gray);
   display: flex;
@@ -423,7 +441,7 @@ body {
 
 
 .cart-header {
-  padding: 1.5rem;
+  /* padding: 1.5rem; */
   border-bottom: 1px solid var(--light-gray);
 }
 
@@ -628,8 +646,8 @@ textarea:focus{
 .summary-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
+  /* margin-bottom: 0.75rem; */
+  font-size: 0.9rem;
 }
 
 .summary-row.discount {
@@ -687,7 +705,7 @@ textarea:focus{
   border-radius: var(--border-radius);
   box-shadow: 0 10px 50px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 400px;
+  max-width: 500px;
   overflow: hidden;
 }
 
@@ -1029,3 +1047,26 @@ textarea:focus{
   font-weight: bold;
   font-size: 14px;
 }
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: #fff;
+  transition: border 0.3s;
+}
+
+.form-group select:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+}
+.retail-price{
+  font-size: 10px;
+}
+.product-code{
+  font-size: 10px;
+  
+}
+
