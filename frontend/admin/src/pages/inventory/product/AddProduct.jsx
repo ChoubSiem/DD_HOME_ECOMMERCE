@@ -26,7 +26,7 @@ import { useProductTerm } from "../../../hooks/UserProductTerm";
 const { Option } = Select;
 import { useNavigate } from "react-router-dom";
 const { Title, Text } = Typography;
-
+import Cookies from 'js-cookie';
 const ProductForm = ({ onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ const ProductForm = ({ onCancel, onSubmit, initialValues }) => {
   const { handleCategories, handleUnits, handleProductGroups, handleProductCreate, handleBrands } =
     useProductTerm();
   const token = localStorage.getItem("token");
-
+  const userData = JSON.parse(Cookies.get('user'));
   // Data fetching functions
   const fetchData = async () => {
     try {
@@ -97,6 +97,10 @@ const ProductForm = ({ onCancel, onSubmit, initialValues }) => {
           formData.append("images[]", file.originFileObj);
         }
       });
+
+      if (userData.warehouse_id) {
+        formData.append('warehouse_id',userData.warehouse_id);
+      }
       
       const result = await handleProductCreate(formData, token);
       if (result?.success) {

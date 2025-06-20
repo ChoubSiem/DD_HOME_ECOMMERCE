@@ -23,7 +23,7 @@ import { useProductTerm } from "../../../hooks/UserProductTerm";
 const { Option } = Select;
 import { useNavigate, useParams } from "react-router-dom";
 const { Title } = Typography;
-
+import Cookies from 'js-cookie';
 const EditProductForm = ({ onCancel, onSubmit }) => {
   const [form] = Form.useForm();
   const { id } = useParams();
@@ -36,6 +36,9 @@ const EditProductForm = ({ onCancel, onSubmit }) => {
   const [productUnits, setProductUnits] = useState([]);
   const [productGroups, setProductGroups] = useState([]);
   const [units, setUnits] = useState([]);
+  const userData = JSON.parse(Cookies.get('user'));
+  console.log(units);
+  
   const { 
     handleCategories, 
     handleUnits, 
@@ -84,17 +87,15 @@ const fetchDropdownData = async () => {
   const fetchProductData = async () => {
     try {
       setLoading(true);
-      const productRes = await handleProductEdit(id, token); 
-      console.log('Product Data:', productRes);
-      
+      const productRes = await handleProductEdit(id, token);       
       if (productRes?.success && productRes.product) {
         const product = productRes.product;
         
         // Set product units if they exist
-        if (product.product_units && product.product_units.length > 0) {
-          setProductUnits(product.product_units);
-        }
-  
+        // if (product.product_units.units && product.product_units.units) {
+          setProductUnits(product.product_units.units.id);
+        // }
+        
         // Prepare form values
         const formValues = {
           name: product.name,
@@ -115,12 +116,10 @@ const fetchDropdownData = async () => {
   
         // Determine unit value - prioritize product_units if available
         if (product.product_units?.length > 0) {
-          formValues.unit = product.product_units[0].unit_id;
-        } else if (product.unit) {
-          formValues.unit = product.unit;
+          formValues.unit = product.product_units.units.id;
+        } else {
+          formValues.unit = product.product_units.units.id;
         }
-  
-        console.log('Form values being set:', formValues);
         form.setFieldsValue(formValues);
   
         // Format images
@@ -163,8 +162,6 @@ const fetchDropdownData = async () => {
     }
     return isImage && isLt2M;
   };
-  console.log(productGroups);
-
   const handleImageChange = ({ fileList }) => setImageList(fileList);
   const handleDocumentChange = ({ fileList }) => setDocumentList(fileList);
 
@@ -193,7 +190,10 @@ const fetchDropdownData = async () => {
         }
       });
 
-      console.log(formData);
+      if (userData.warehouse_id) {
+        formData.append('warehouse_id',userData.warehouse_id);
+      }
+
       const result = await handleProductUpdate(id, formData, token);
       if (result?.success) {
         message.success(result.message || "Product updated successfully");
@@ -264,7 +264,7 @@ const fetchDropdownData = async () => {
                       placeholder="Select category" 
                       size="large" 
                     >
-                      {categories?.map((category) => ( // Safe navigation with ?.
+                      {categories?.map((category) => ( 
                         <Option key={category.id} value={category.id}>
                           {category.name}
                         </Option>
@@ -290,22 +290,24 @@ const fetchDropdownData = async () => {
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12} lg={8}>
-                  <Form.Item label="Unit" name="unit">
-                      <Select 
-                        size="large"
-                        optionFilterProp="children"
-                        showSearch
-                      >
-                        {units?.map(unit => (
-                          <Option 
-                            key={unit.id} 
-                            value={unit.id}  // Ensure this matches the type of your form value
-                          >
-                            {unit.name} ({unit.short_name || unit.code || unit.id})
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
+                  <Form.Item
+                    label="Unit"
+                    name="unit" // This must match the field in your initialValues
+                    rules={[{ required: true, message: 'Please select a unit' }]}
+                  >
+                    <Select 
+                      size="large"
+                      optionFilterProp="children"
+                      showSearch
+                      placeholder="Select unit"
+                    >
+                      {units?.map(unit => (
+                        <Select.Option key={unit.id} value={unit.id}>
+                          {unit.name} ({unit.short_name || unit.code || unit.id})
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
                 </Col>
                 <Col xs={24} md={12} lg={8}>
                   <Form.Item label="Brand" name="brand_id">
@@ -326,6 +328,7 @@ const fetchDropdownData = async () => {
 
             <Card title="Pricing Information" size="small" className="form-section-card">
               <Row gutter={16}>
+                {!userData.warehouse_id && (
                 <Col xs={24} sm={12} md={8} lg={6}>
                   <Form.Item 
                     label="Cost" 
@@ -339,6 +342,8 @@ const fetchDropdownData = async () => {
                     />
                   </Form.Item>
                 </Col>
+                )}
+                
                 <Col xs={24} sm={12} md={8} lg={6}>
                   <Form.Item 
                     label="Branch Price" 

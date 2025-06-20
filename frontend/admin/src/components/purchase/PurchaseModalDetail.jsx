@@ -1,177 +1,254 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import DataTable from 'react-data-table-component';
-import { Modal, Button, Divider } from 'antd';
+import { Modal, Button } from 'antd';
 import { PrinterOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import './PurchaseModalDetail.css';
 import logo from '../../assets/logo/DD_Home_Logo 2.jpg';
 
 const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
-  const handlePrint = () => {
-   
-    window.print();
+  const printRef = useRef();
+
+  const handlePrint = async () => {
+    try {
+      const element = printRef.current;
+      const actionButtons = element.querySelector('.action-buttons');
+      if (actionButtons) actionButtons.style.display = 'none';
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        scrollY: -window.scrollY
+      });
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const xPos = 10; // Left margin
+
+      pdf.addImage(imgData, 'PNG', xPos, 10, pdfWidth, pdfHeight);
+      window.open(pdf.output('bloburl'), '_blank');
+
+      if (actionButtons) actionButtons.style.display = 'flex';
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
   };
 
-  const Logo = () => (
-    <img
-      src={logo}
-      alt="Logo"
-      style={{ width: '70px', height: '70px' }}
-    />
-  );
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(amount || 0);
+  };
+
+  // Calculate totals
+  const subtotal = purchase?.items?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;
+  const taxRate = 0.1; // 10% tax
+  const tax = subtotal * taxRate;
+  const total = subtotal + tax;
 
   const columns = [
     {
-      name: 'No',
-      selector: (row, index) => index + 1,
-      width: '5%',
-      center: true,
+      name: '#',
+      selector: (_, index) => index + 1,
+      width: '40px',
+      center: true
     },
     {
-      name: 'Product',
-      selector: (row) => row.product.name || 'N/A',
-      width: '35%',
-      center: true,
-      cell: (row) => <span className="product-name">{row.product.name || 'N/A'}</span>,
+      name: 'DESCRIPTION',
+      selector: (row) => row.product?.name || 'N/A',
+      grow: 2,
+      cell: (row) => <div className="product-cell">{row.product?.name || 'N/A'}</div>
     },
     {
-      name: 'Unit',
-      selector: (row) => row.unit.name || 'N/A',
-      width: '15%',
-      center: true,
-      cell: (row) => <span className="unit-value">{row.unit.name || 'N/A'}</span>,
+      name: 'QTY',
+      selector: (row) => row.qty,
+      width: '60px',
+      center: true
     },
     {
-      name: 'Quantity',
-      selector: (row) => row.qty || 'N/A',
-      width: '15%',
-      center: true,
-      cell: (row) => <span className="quantity-value">{row.qty?.toLocaleString() || 'N/A'}</span>,
+      name: 'UNIT',
+      selector: (row) => row.unit?.name || 'EA',
+      width: '60px',
+      center: true
     },
     {
-      name: 'Price',
-      selector: (row) => row.price || 'N/A',
-      width: '15%',
-      center: true,
-      cell: (row) => <span className="price-value">{row.price ? `$${row.price}` : 'N/A'}</span>,
+      name: 'UNIT PRICE',
+      selector: (row) => row.price,
+      width: '90px',
+      right: true,
+      cell: (row) => formatCurrency(row.price)
     },
     {
-      name: 'Total',
-      selector: (row) => row.total_price || null,
-      width: '15%',
-      center: true,
-      cell: (row) => <span className="total-value">{row.total_price ? `$${row.total_price}` :null}</span>,
-    },
+      name: 'AMOUNT',
+      selector: (row) => row.total_price,
+      width: '90px',
+      right: true,
+      cell: (row) => formatCurrency(row.total_price)
+    }
   ];
-
-  const customStyles = {
-    table: {
-      style: {
-        border: '1px solid #e8e8e8',
-        borderRadius: '4px',
-      },
-    },
-    head: {
-      style: {
-        backgroundColor: 'green !important',
-        borderBottom: '1px solid #e8e8e8',
-      },
-    },
-    headCells: {
-      style: {
-        fontWeight: '600',
-        fontSize: '14px',
-        color: '#000000',
-        padding: '12px',
-        justifyContent: 'center',
-      },
-    },
-    cells: {
-      style: {
-        fontSize: '13px',
-        padding: '12px',
-        borderBottom: '1px solid #f0f0f0',
-        justifyContent: 'center',
-      },
-    },
-    rows: {
-      style: {
-        '&:hover': {
-          backgroundColor: '#f5f5f5',
-        },
-      },
-    },
-  };
 
   return (
     <Modal
-      className="purchase-modal"
       open={open}
       onCancel={onCancel}
       footer={null}
-      width="60%"
-      styles={{ body: { padding: 0 } }}
+      width={800}
+      className="purchase-modal"
       destroyOnClose
     >
-      <div id="purchase-modal-content" className="invoice-container">
-        <header className="invoice-header">
-          <div className="header-left">
-            <div className="company-logo">
-              <Logo />
-            </div>
-            <div className="header-info">
-              <h2 className="documentitle">PURCHASE ORDER</h2>
-              <p className="document-reference">Reference: {purchase?.reference || '.............'}</p>
-              <p className="document-reference">
-                Supplier:{' '}
-                {typeof purchase?.supplier === 'object'
-                  ? purchase.supplier.name || purchase.supplier.username || '.............'
-                  : purchase?.supplier || '.............'}
-              </p>
-              <p className="document-reference">
-                Created By:{' '}
-                {typeof purchase?.createdBy === 'object'
-                  ? purchase.createdBy.username || purchase.createdBy.name || '.............'
-                  : purchase?.createdBy || '.............'}
-              </p>
-            </div>
-          </div>
-          <div className="header-right">
-            <p className="document-date">
-              {purchase?.date
-                ? new Date(purchase.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })
-                : 'N/A'}
-            </p>
-          </div>
-        </header>
+      <div ref={printRef} className="invoice-container">
+        <table className="invoice-headers" style={{alignItems:'center'}}>
+          <tbody style={{width:'100%',padding:0}}>
+            <tr style={{width:'100%',display:'flex',justifyContent:'space-between'}}>
+              <td className="company-info" style={{display:'flex',justifyContent:'space-between'}}>
+                <img src={logo} alt="Company Logo" className="company-logo" style={{width:'80px',height:'80px'}}/>
+                <div>
+                  <h1>DD HOME SOLUTIONS</h1>
+                  <p>123 Business Street, City, ST 12345</p>
+                  <p>Phone: (123) 456-7890</p>
+                </div>
+              </td>
+              <td className="document-info">
+                <h2>PURCHASE ORDER</h2>
+                <table className="meta-table">
+                  <tbody>
+                    <tr>
+                      <td>FEF #:</td>
+                      <td>{purchase?.reference || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <td>Date:</td>
+                      <td>{purchase?.date ? new Date(purchase.date).toLocaleDateString() : 'N/A'}</td>
+                    </tr>
+                    <tr>
+                      <td>Vendor:</td>
+                      <td>{typeof purchase?.supplier === 'object' ? purchase.supplier.name : purchase?.supplier || 'N/A'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
+        {/* Items Table */}
+        <div className="items-section">
           <DataTable
             columns={columns}
             data={purchase?.items || []}
             noHeader
-            customStyles={customStyles}
-            noDataComponent={<span>No items found</span>}
-            className="items-table"
+            customStyles={{
+              table: {
+                style: {
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px',
+                },
+              },
+              head: {
+                style: {
+                  backgroundColor: '#f5f5f5',
+                  fontWeight: 'bold',
+                  fontSize: '13px'
+                }
+              },
+              cells: {
+                style: {
+                  fontSize: '13px',
+                  padding: '8px 4px'
+                }
+              },
+              rows: {
+                style: {
+                  borderBottom: '1px solid #f0f0f0',
+                  '&:hover': {
+                    backgroundColor: 'transparent'
+                  }
+                }
+              }
+            }}
+            noDataComponent={<div className="no-items">No items in this purchase order</div>}
           />
-                  {purchase?.note && (
-                            <p className="note-text">Note: {purchase.note}</p>
-          )}          
-        <footer className="invoice-footer">
-          <div className="action-buttons">
-            <Button onClick={onCancel} icon={<CloseOutlined />} className="close-button" style={{ border: '1px solid red' }}>
-              Close
-            </Button>
-            <Button icon={<PrinterOutlined />} onClick={handlePrint} className="print-button">
-              Print Document
-            </Button>
-            <Button type="primary" onClick={onEdit} icon={<EditOutlined />} className="edit-button">
-              Edit Purchase
-            </Button>
-          </div>
-        </footer>
+        </div>
+
+        {/* Totals Section */}
+        <table className="totals-section">
+          <tbody>
+            <tr>
+              <td className="notes">
+                <h4>NOTES</h4>
+                <p>{purchase?.note || 'No additional notes'}</p>
+              </td>
+              <td className="amounts">
+                <table>
+                  <tbody>
+                    {/* <tr className="amount-row">
+                      <td>Subtotal:</td>
+                      <td>{formatCurrency(subtotal)}</td>
+                    </tr> */}
+                    {/* <tr className="amount-row">
+                      <td>Tax (10%):</td>
+                      <td>{formatCurrency(tax)}</td>
+                    </tr> */}
+                    <tr className="amount-row total">
+                      <td>TOTAL:</td>
+                      <td>{formatCurrency(total)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Footer */}
+        {/* <table className="footer-section">
+          <tbody>
+            <tr>
+              <td className="terms">
+                <p><strong>Terms:</strong> Net 30 days</p>
+                <p><strong>Payment Method:</strong> Bank Transfer</p>
+              </td>
+              <td className="signatures">
+                <div className="signature-box">
+                  <p>_________________________</p>
+                  <p>Authorized Signature</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table> */}
+
+        {/* Action Buttons */}
+        <div className="action-buttons">
+          <Button onClick={onCancel} icon={<CloseOutlined />}>Close</Button>
+          <Button 
+            type="primary" 
+            icon={<PrinterOutlined />} 
+            onClick={handlePrint}
+          >
+            Print PO
+          </Button>
+          <Button 
+            type="primary" 
+            icon={<EditOutlined />} 
+            onClick={onEdit}
+          >
+            Edit PO
+          </Button>
+        </div>
       </div>
     </Modal>
   );
