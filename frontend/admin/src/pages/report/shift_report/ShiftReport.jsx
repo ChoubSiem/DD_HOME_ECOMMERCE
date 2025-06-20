@@ -656,54 +656,70 @@ console.log(selectedShift);
           <div style={{ flex: 1 }}>
             <h4 style={{ margin: '0 0 8px 0', fontWeight: 'bold', textAlign: 'center',borderBottom: '1px solid #ddd' }}>START CURRENCY NOTE</h4>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <tbody>
-                {selectedShift?.open_cashes &&
-                  Object.entries(selectedShift.open_cashes).map(([currency, items]) =>
-                    items.map((item, index) => {
-                      const denomination = item.money_type;
-                      const count = item.money_number;
-                      const isUSD = item.currency === 'USD';
-                      const denomValue = parseFloat(denomination);
+          <tbody>
+            {/* USD currency notes */}
+            {selectedShift?.open_cashes?.USD &&
+              selectedShift.open_cashes.USD.map((item, index) => {
+                const denomination = item.money_type;
+                const count = item.money_number;
+                const denomValue = parseFloat(denomination);
+                const total = denomValue * count;
 
-                      const total = denomValue * count;
+                return (
+                  <tr key={`usd-${index}`}>
+                    <td style={{ padding: '4px 0', fontWeight: '500' }}>${denomination}</td>
+                    <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
+                    <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+                    <td style={{ padding: '4px 0', textAlign: 'right' }}>{total.toFixed(2)}$</td>
+                  </tr>
+                );
+              })}
 
-                      return (
-                        <tr key={`${currency}-${index}`}>
-                          <td style={{ padding: '4px 0', fontWeight: '500' }}>
-                            {isUSD ? `$${denomination}` : `៛${denomination}`}
-                          </td>
-                          <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
-                          <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
-                          <td style={{ padding: '4px 0', textAlign: 'right' }}>
-                            {isUSD ? total.toFixed(2) + '$' : Math.round(total) + '៛'}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
+            {/* Start Dollar Total */}
+            <tr>
+              <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Start Dollar</td>
+              <td></td>
+              <td></td>
+              <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                {selectedShift?.open_total_usd ? `${selectedShift.open_total_usd}$` : '$0.00'}
+              </td>
+            </tr>
 
-                <tr>
-                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Start Dollar</td>
-                  <td style={{ padding: '4px 0' }}></td>
-                  <td style={{ padding: '4px 0' }}></td>
-                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
-                    {selectedShift?.open_total_usd} $
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Start Riel</td>
-                  <td style={{ padding: '4px 0' }}></td>
-                  <td style={{ padding: '4px 0' }}></td>
-                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
-                    {selectedShift?.start_currency_notes
-                      ? Object.entries(selectedShift.start_currency_notes)
-                          .filter(([denom]) => denom.includes('៛'))
-                          .reduce((acc, [denom, count]) => acc + parseFloat(denom.replace('៛', '')) * count, 0)
-                          .toFixed(0) + '៛'
-                      : '៛0'}
-                  </td>
-                </tr>
-              </tbody>
+            {/* Riel currency notes */}
+            {selectedShift?.open_cashes?.KHR &&
+              selectedShift.open_cashes.KHR.map((item, index) => {
+                const denomination = item.money_type;
+                const count = item.money_number;
+                const denomValue = parseFloat(denomination);
+                const total = denomValue * count;
+
+                return (
+                  <tr key={`kh-${index}`}>
+                    <td style={{ padding: '4px 0', fontWeight: '500' }}>៛{denomination}</td>
+                    <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
+                    <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+                    <td style={{ padding: '4px 0', textAlign: 'right' }}>{Math.round(total)}៛</td>
+                  </tr>
+                );
+              })}
+
+            {/* Start Riel Total */}
+            <tr>
+              <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Start Riel</td>
+              <td></td>
+              <td></td>
+              <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                {/* {selectedShift?.start_currency_notes
+                  ? Object.entries(selectedShift.start_currency_notes)
+                      .filter(([denom]) => denom.includes('៛'))
+                      .reduce((acc, [denom, count]) => acc + parseFloat(denom.replace('៛', '')) * count, 0)
+                      .toFixed(0) + '៛'
+                  : '៛0'} */}
+                  {selectedShift?.open_total_kh}៛
+              </td>
+            </tr>
+          </tbody>
+
             </table>
 
           </div>
@@ -722,46 +738,103 @@ console.log(selectedShift);
             </h4>
 
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <tbody>
-                {selectedShift?.close_cashes &&
-                  Object.entries(selectedShift.close_cashes).map(([currency, items]) =>
-                    items.map((item, index) => {
-                      const denomination = parseFloat(item.money_type);
-                      const count = Number(item.money_number);
-                      const total = denomination * count;
-                      const isUSD = item.currency === 'USD';
+        <tbody>
+  {/* USD cash list */}
+  {selectedShift?.close_cashes?.USD &&
+    selectedShift.close_cashes.USD.map((item, index) => {
+      const denomination = parseFloat(item.money_type);
+      const count = Number(item.money_number);
+      const total = denomination * count;
 
-                      return (
-                        <tr key={`${currency}-${index}`}>
-                          <td style={{ padding: '4px 0', fontWeight: '500' }}>
-                            {isUSD ? `$${denomination}` : `៛${denomination}`}
-                          </td>
-                          <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
-                          <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
-                          <td style={{ padding: '4px 0', textAlign: 'right' }}>
-                            {isUSD
-                              ? total.toFixed(2) + '$'
-                              : Math.round(total).toLocaleString() + '៛'}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
+      return (
+        <tr key={`usd-${index}`}>
+          <td style={{ padding: '4px 0', fontWeight: '500' }}>${denomination}</td>
+          <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
+          <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+          <td style={{ padding: '4px 0', textAlign: 'right' }}>{total.toFixed(2)}$</td>
+        </tr>
+      );
+    })}
 
-                {/* Total USD */}
-                <tr>
-                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total USD</td>
-                  <td></td>
-                  <td></td>
-                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
-                    {selectedShift?.close_cashes?.USD
-                      ? selectedShift.close_cashes.USD
-                          .reduce((sum, item) => sum + item.money_type * item.money_number, 0)
-                          .toFixed(2) + '$'
-                      : '$0.00'}
-                  </td>
-                </tr>
-              </tbody>
+  {/* Total USD */}
+  <tr>
+    <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total USD</td>
+    <td></td>
+    <td></td>
+    <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
+      {selectedShift?.close_cashes?.USD
+        ? selectedShift.close_cashes.USD
+            .reduce((sum, item) => sum + item.money_type * item.money_number, 0)
+            .toFixed(2) + '$'
+        : '$0.00'}
+    </td>
+  </tr>
+
+  {/* Riel cash list */}
+  {selectedShift?.close_cashes?.KHR &&
+    selectedShift.close_cashes.KHR.map((item, index) => {
+      const denomination = parseFloat(item.money_type);
+      const count = Number(item.money_number);
+      const total = denomination * count;
+
+      return (
+        <tr key={`kh-${index}`}>
+          <td style={{ padding: '4px 0', fontWeight: '500' }}>៛{denomination}</td>
+          <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
+          <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+          <td style={{ padding: '4px 0', textAlign: 'right' }}>
+            {Math.round(total).toLocaleString()}៛
+          </td>
+        </tr>
+      );
+    })}
+
+  {/* Total Riel */}
+  <tr>
+    <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total Riel</td>
+    <td></td>
+    <td></td>
+    <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
+      {selectedShift?.close_cashes?.KHR
+        ? Math.round(
+            selectedShift.close_cashes.KHR.reduce(
+              (sum, item) => sum + item.money_type * item.money_number,
+              0
+            )
+          ).toLocaleString() + '៛'
+        : '៛0'}
+    </td>
+  </tr>
+
+  {/* Total USD + (Riel / 4000) */}
+  <tr>
+    <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total (USD + Riel ÷ 4000)</td>
+    <td></td>
+    <td></td>
+    <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold', color: 'green' }}>
+      {(() => {
+        const totalUSD = selectedShift?.close_cashes?.USD
+          ? selectedShift.close_cashes.USD.reduce(
+              (sum, item) => sum + item.money_type * item.money_number,
+              0
+            )
+          : 0;
+
+        const totalRiel = selectedShift?.close_cashes?.KHR
+          ? selectedShift.close_cashes.KHR.reduce(
+              (sum, item) => sum + item.money_type * item.money_number,
+              0
+            )
+          : 0;
+
+        const convertedRielToUSD = totalRiel / 4000;
+
+        return (totalUSD + convertedRielToUSD).toFixed(2) + '$';
+      })()}
+    </td>
+  </tr>
+</tbody>
+
             </table>
           </div>
 
