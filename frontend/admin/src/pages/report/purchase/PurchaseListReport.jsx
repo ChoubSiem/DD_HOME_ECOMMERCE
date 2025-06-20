@@ -36,7 +36,7 @@ const PurchaseReports = () => {
     {
       title: 'Completed Purchases',
       icon: <ShoppingCartOutlined />,
-      path: '/reports/purchase/completed',
+      path: '/reports/purchase',
       color: colors.green,
       type: 'completed',
       hoverColor: colors.hoverGreen

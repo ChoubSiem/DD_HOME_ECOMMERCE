@@ -194,14 +194,6 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
               <td className="amounts">
                 <table>
                   <tbody>
-                    {/* <tr className="amount-row">
-                      <td>Subtotal:</td>
-                      <td>{formatCurrency(subtotal)}</td>
-                    </tr> */}
-                    {/* <tr className="amount-row">
-                      <td>Tax (10%):</td>
-                      <td>{formatCurrency(tax)}</td>
-                    </tr> */}
                     <tr className="amount-row total">
                       <td>TOTAL:</td>
                       <td>{formatCurrency(total)}</td>
@@ -212,43 +204,33 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
             </tr>
           </tbody>
         </table>
-
-        {/* Footer */}
-        {/* <table className="footer-section">
-          <tbody>
-            <tr>
-              <td className="terms">
-                <p><strong>Terms:</strong> Net 30 days</p>
-                <p><strong>Payment Method:</strong> Bank Transfer</p>
-              </td>
-              <td className="signatures">
-                <div className="signature-box">
-                  <p>_________________________</p>
-                  <p>Authorized Signature</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table> */}
-
-        {/* Action Buttons */}
-        <div className="action-buttons">
-          <Button onClick={onCancel} icon={<CloseOutlined />}>Close</Button>
+        <div className="action-buttons" style={{  display: 'flex' }}>
+          <Button 
+            type="danger" 
+            onClick={onCancel} 
+            icon={<CloseOutlined />} 
+            style={{ flex: 1, marginRight: 8 }}
+          >
+            Close
+          </Button>
           <Button 
             type="primary" 
             icon={<PrinterOutlined />} 
-            onClick={handlePrint}
+            onClick={handlePrint} 
+            style={{ flex: 1, marginRight: 8 }}
           >
-            Print PO
+            Print
           </Button>
           <Button 
             type="primary" 
             icon={<EditOutlined />} 
-            onClick={onEdit}
+            onClick={onEdit} 
+            style={{ flex: 1 }}
           >
-            Edit PO
+            Edit
           </Button>
         </div>
+
       </div>
     </Modal>
   );

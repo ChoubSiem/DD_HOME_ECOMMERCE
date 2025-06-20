@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import {
   Table,
   Card,
@@ -35,14 +35,16 @@ import {
   UserOutlined,
   ShoppingCartOutlined,
   ClockCircleOutlined,
-  MoneyCollectOutlined
+  MoneyCollectOutlined,
+  CloseOutlined 
 } from '@ant-design/icons';
 import './Shift.css';
 import DataTable from 'react-data-table-component';
 import { useReport } from '../../../hooks/UseReport';
 import Cookies from "js-cookie";
 import moment from 'moment';
-
+import generatePDF from 'react-to-pdf';
+import html2canvas from 'html2canvas';
 const { Search } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -58,7 +60,7 @@ const ShiftReports = () => {
   const [loading, setLoading] = useState(false);
   const { getShiftReportData } = useReport();
   const [shifts, setShifts] = useState([]);
-  const token = Cookies.get('token');
+  const token = localStorage.getItem('token');
   const userData = JSON.parse(Cookies.get('user'));
 
   const handleShifts = async () => {
@@ -69,6 +71,18 @@ const ShiftReports = () => {
     if (result.success) {
       setShifts(result.shifts);
       setLoading(false);
+    }
+  };
+  const contentRef = useRef();
+
+  const handleDownloadImage = async () => {
+    if (contentRef.current) {
+      const canvas = await html2canvas(contentRef.current, { scale: 2 });
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = `shift-report-${selectedShift?.id || 'unknown'}.png`;
+      link.click();
     }
   };
 
@@ -238,6 +252,7 @@ const ShiftReports = () => {
   const openShifts = filteredShifts?.filter(s => s.status === 'processing').length;
   const closedShifts = filteredShifts?.filter(s => s.status === 'completed').length;
   const totalSales = filteredShifts?.reduce((sum, s) => sum + (s.total_sales || 0), 0);
+console.log(selectedShift);
 
   return (
     <Spin spinning={loading}>
@@ -432,132 +447,333 @@ const ShiftReports = () => {
         </Card>
 
         {/* Shift Detail Modal */}
-        <Modal
-          open={isDetailModalVisible}
-          onCancel={() => setIsDetailModalVisible(false)}
-          footer={null}
-          width={800}
-          style={{ body: { backgroundColor: '#f9f9f9', padding: 0 }}}
-        >
-          {selectedShift && (
-            <div
-              className="shift-detail"
+    <Modal
+      open={isDetailModalVisible}
+      onCancel={() => setIsDetailModalVisible(false)}
+      footer={
+        <div style={{ display: 'flex', width: '100%' }}>
+          <Button
+            key="image"
+            icon={<DownloadOutlined />}
+            onClick={handleDownloadImage}
+            style={{
+              flex: 1,
+              backgroundColor: '#52c41a', // green
+              color: 'white',
+              border: 'none',
+              marginRight: 8
+            }}
+          >
+            Download Image
+          </Button>
+          <Button
+            key="close"
+            icon={<CloseOutlined />}
+            onClick={() => setIsDetailModalVisible(false)}
+            style={{
+              flex: 1,
+              backgroundColor: '#f5222d', // red
+              color: 'white',
+              border: 'none'
+            }}
+          >
+            Close
+          </Button>
+        </div>
+      }
+      width={400}
+      // style={{ padding: 0 }}
+    >
+      <div
+        ref={contentRef}
+        style={{
+          padding: '24px',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '14px',
+          color: '#333',
+          position: 'relative',
+          backgroundColor: '#fff',
+          minHeight: '100%',
+        }}
+      >
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <h1 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 'bold' }}>{selectedShift?.warehouse_name}</h1>
+          {/* <h2 style={{ margin: '0 0 16px 0', fontSize: '14px' }}>សាខាមិត្តភាពភ្នំពេញ</h2> */}
+          <h3 style={{
+            margin: '0 0 24px 0',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            borderBottom: '1px solid #ddd',
+            paddingBottom: '8px',
+          }}>
+            CLOSE SHIFT REPORT
+          </h3>
+        </div>
+
+        {/* Main Report Section */}
+        <div style={{ marginBottom: '24px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <tbody style={{ width: '100%'}}>
+              <tr style={{width:'100%'}}>
+                <td style={{ width: '50%', padding: '6px 0', fontWeight: '500' }}>Start Date</td>
+                <td style={{ width: '5%', padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift ? moment(selectedShift.start_time).format('DD-MM-YYYY HH:mm:ss') : 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>End Date</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift && selectedShift.end_time ? moment(selectedShift.end_time).format('DD-MM-YYYY HH:mm:ss') : 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Start Shift By</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.cashier_name || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>End Shift By</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6pxx 0' }}>{selectedShift?.cashier_name || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Start Amount</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift ? `$${selectedShift.open_total_usd?.toLocaleString() || '0'} / ៛${selectedShift.open_total_kh?.toLocaleString() || '0'}` : 'N/A'}</td>
+              </tr>
+              <tr >
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>End Amount</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift ? `$${selectedShift.close_total_usd?.toLocaleString() || '0'} / ៛${selectedShift.close_total_kh?.toLocaleString() || '0'}` : 'N/A'}</td>
+              </tr>
+              <tr style={{borderBottom: '1px solid #ddd'}}>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Station</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.station || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Sub Amount</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.sub_amount ? `$${selectedShift.sub_amount}` : 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Discount</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.discount ? `$${selectedShift.discount}` : '$0.00'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Refunds</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.refunds ? `$${selectedShift.refunds}` : '$0.00'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Tax Amount</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.tax_amount ? `$${selectedShift.tax_amount}` : '$0.00'}</td>
+              </tr>
+              <tr style={{borderBottom: '1px solid #ddd'}}>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Grand Total</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0', fontWeight: 'bold' }}>{selectedShift?.sales_total ? `$${selectedShift.sales_total}` : '$0.00'}</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Num of Invoice</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.number_of_invoice || '0'}</td>
+              </tr>
+              {/* <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Avg of Invoice</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.avg_invoice ? `$${selectedShift.avg_invoice}` : '$0.00'}</td>
+              </tr> */}
+              <tr>
+                <td style={{ padding: '6px 0', fontWeight: '500' }}>Num of Refund</td>
+                <td style={{ padding: '6px 0' }}>:</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.num_refund || '0'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Payment Type Section */}
+        <div style={{ marginBottom: '24px' }}>
+  <h4
+    style={{
+      margin: '0 0 8px 0',
+      fontWeight: 'bold',
+      textAlign: 'center',
+      borderBottom: '1px solid #ddd',
+    }}
+  >
+    PAYMENT TYPE
+  </h4>
+  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+    <tbody>
+      {selectedShift?.payments_by_type && selectedShift.payments_by_type.length > 0 ? (
+        selectedShift.payments_by_type.map(({ payment_method, total }) => {
+          // Decide currency symbol and formatting based on payment method or your logic
+          const isUSD = payment_method.toLowerCase().includes('usd') || payment_method.toLowerCase().includes('cash'); 
+          // You can improve this detection based on your data
+
+          const amount = parseFloat(total);
+          return (
+            <tr key={payment_method}>
+              <td style={{ padding: '6px 0', fontWeight: '500' }}>{payment_method}</td>
+              <td style={{ padding: '6px 0' }}>:</td>
+              <td style={{ padding: '6px 0', textDecoration: 'underline' }}>
+                {isUSD
+                  ? `$${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                  : `៛${amount.toLocaleString()}`}
+              </td>
+            </tr>
+          );
+        })
+      ) : (
+        <tr>
+          <td colSpan={3} style={{ padding: '6px 0', textAlign: 'center', fontStyle: 'italic' }}>
+            No payment data available
+          </td>
+        </tr>
+      )}
+
+      {/* Total Payment (optional) */}
+      <tr>
+        <td style={{ padding: '6px 0', fontWeight: 'bold' }}>Total Payment</td>
+        <td style={{ padding: '6px 0' }}>:</td>
+        <td style={{ padding: '6px 0', fontWeight: 'bold' }}>
+          {selectedShift?.sales_total
+            ? `$${selectedShift.sales_total.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+            : '$0.00'}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+        {/* Currency Sections */}
+        <div style={{ display: 'flex',flexDirection:'column', gap: '24px', marginBottom: '24px' }}>
+          {/* Start Currency */}
+          <div style={{ flex: 1 }}>
+            <h4 style={{ margin: '0 0 8px 0', fontWeight: 'bold', textAlign: 'center',borderBottom: '1px solid #ddd' }}>START CURRENCY NOTE</h4>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                {selectedShift?.open_cashes &&
+                  Object.entries(selectedShift.open_cashes).map(([currency, items]) =>
+                    items.map((item, index) => {
+                      const denomination = item.money_type;
+                      const count = item.money_number;
+                      const isUSD = item.currency === 'USD';
+                      const denomValue = parseFloat(denomination);
+
+                      const total = denomValue * count;
+
+                      return (
+                        <tr key={`${currency}-${index}`}>
+                          <td style={{ padding: '4px 0', fontWeight: '500' }}>
+                            {isUSD ? `$${denomination}` : `៛${denomination}`}
+                          </td>
+                          <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
+                          <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+                          <td style={{ padding: '4px 0', textAlign: 'right' }}>
+                            {isUSD ? total.toFixed(2) + '$' : Math.round(total) + '៛'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+
+                <tr>
+                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Start Dollar</td>
+                  <td style={{ padding: '4px 0' }}></td>
+                  <td style={{ padding: '4px 0' }}></td>
+                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
+                    {selectedShift?.open_total_usd} $
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Start Riel</td>
+                  <td style={{ padding: '4px 0' }}></td>
+                  <td style={{ padding: '4px 0' }}></td>
+                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
+                    {selectedShift?.start_currency_notes
+                      ? Object.entries(selectedShift.start_currency_notes)
+                          .filter(([denom]) => denom.includes('៛'))
+                          .reduce((acc, [denom, count]) => acc + parseFloat(denom.replace('៛', '')) * count, 0)
+                          .toFixed(0) + '៛'
+                      : '៛0'}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+
+          {/* End Currency */}
+          <div style={{ flex: 1 }}>
+            <h4
               style={{
-                backgroundColor: '#ffffff',
-                padding: '32px',
-                fontFamily: 'Segoe UI, sans-serif',
-                fontSize: '14px',
+                margin: '0 0 8px 0',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                borderBottom: '1px solid #ddd'
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '24px',
-                  borderBottom: '1px solid #ddd',
-                  paddingBottom: '16px',
-                }}
-              >
-                <img
-                  src=""
-                  alt="Company Logo"
-                  style={{ height: '50px', marginRight: '16px' }}
-                />
-                <h2 style={{ margin: 0, color: '#333', fontSize: '22px' }}>Shift Report</h2>
-              </div>
+              END CURRENCY NOTE
+            </h4>
 
-              <Descriptions bordered column={1}>
-                <Descriptions.Item label="Open Shift">{selectedShift.cashier_name	 || 'N/A'}</Descriptions.Item>
-                <Descriptions.Item label="Close Shift">{selectedShift.cashier_name	 || 'N/A'}</Descriptions.Item>
-                <Descriptions.Item label="Status">
-                  <Tag
-                    color={getStatusColor(selectedShift.status)}
-                    icon={getStatusIcon(selectedShift.status)}
-                  >
-                    {selectedShift.status?.charAt(0).toUpperCase() + selectedShift.status?.slice(1)}
-                  </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item label="Start Time">
-                  {moment(selectedShift.start_time).format('YYYY-MM-DD HH:mm')}
-                </Descriptions.Item>
-                <Descriptions.Item label="End Time">
-                  {selectedShift.end_time ? moment(selectedShift.end_time).format('YYYY-MM-DD HH:mm') : 'N/A'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Starting Cash">
-                  <TypographyText strong>
-                    ${selectedShift.open_total_usd || 0} USD / ៛{selectedShift.open_total_kh || 0} KHR
-                  </TypographyText>
-                </Descriptions.Item>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                {selectedShift?.close_cashes &&
+                  Object.entries(selectedShift.close_cashes).map(([currency, items]) =>
+                    items.map((item, index) => {
+                      const denomination = parseFloat(item.money_type);
+                      const count = Number(item.money_number);
+                      const total = denomination * count;
+                      const isUSD = item.currency === 'USD';
 
-                <Descriptions.Item label="Final Cash">
-                  <TypographyText strong>
-                    ${selectedShift.close_total_usd || 0} USD / ៛{selectedShift.close_total_kh || 0} KHR
-                  </TypographyText>
-                </Descriptions.Item>
+                      return (
+                        <tr key={`${currency}-${index}`}>
+                          <td style={{ padding: '4px 0', fontWeight: '500' }}>
+                            {isUSD ? `$${denomination}` : `៛${denomination}`}
+                          </td>
+                          <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
+                          <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+                          <td style={{ padding: '4px 0', textAlign: 'right' }}>
+                            {isUSD
+                              ? total.toFixed(2) + '$'
+                              : Math.round(total).toLocaleString() + '៛'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
 
-                {selectedShift.note && (
-                  <Descriptions.Item label="Notes">
-                    {selectedShift.note}
-                  </Descriptions.Item>
-                )}
-              </Descriptions>
+                {/* Total USD */}
+                <tr>
+                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total USD</td>
+                  <td></td>
+                  <td></td>
+                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
+                    {selectedShift?.close_cashes?.USD
+                      ? selectedShift.close_cashes.USD
+                          .reduce((sum, item) => sum + item.money_type * item.money_number, 0)
+                          .toFixed(2) + '$'
+                      : '$0.00'}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-              {/* Shift Sales Summary */}
-              {selectedShift.sales && selectedShift.sales.length > 0 && (
-                <>
-                  <Divider orientation="left" style={{ marginTop: '24px' }}>
-                    <Title level={5}>Sales Summary</Title>
-                  </Divider>
-                  <Table
-                    columns={[
-                      {
-                        title: 'Invoice',
-                        dataIndex: 'reference',
-                        key: 'reference',
-                        render: text => <TypographyText strong>{text}</TypographyText>
-                      },
-                      {
-                        title: 'Time',
-                        dataIndex: 'created_at',
-                        key: 'time',
-                        render: text => moment(text).format('HH:mm')
-                      },
-                      {
-                        title: 'Amount',
-                        dataIndex: 'total',
-                        key: 'total',
-                        render: text => <TypographyText strong>${text}</TypographyText>
-                      }
-                    ]}
-                    dataSource={selectedShift.sales}
-                    rowKey="id"
-                    pagination={false}
-                    size="small"
-                    style={{ marginBottom: '24px' }}
-                  />
-                </>
-              )}
+        </div>
 
-              {/* Footer Buttons */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: '12px',
-                  marginTop: '24px',
-                }}
-              >
-                <Button onClick={() => window.print()} type="primary">
-                  Print
-                </Button>
-                <Button onClick={() => setIsDetailModalVisible(false)}>
-                  Close
-                </Button>
-                <Button onClick={handleDownloadPDF}>Download PDF</Button>
-              </div>
-            </div>
-          )}
-        </Modal>
+        {/* Footer */}
+        <div style={{ textAlign: 'left', marginTop: '24px', borderTop: '1px solid #ddd', paddingTop: '8px',display:'flex',justifyContent:'space-between' }}>
+          <div>Print by: {selectedShift?.cashier_name || 'N/A'}</div>
+          <div>{selectedShift?.end_time ? moment(selectedShift.end_time).format('DD/MM/YYYY h:mm A') : 'N/A'}</div>
+        </div>
+      </div>
+    </Modal>
       </div>
     </Spin>
   );

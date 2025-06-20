@@ -30,9 +30,9 @@ const OperationReports = () => {
   const reports = [
     // Green reports (positive/completed)
     {
-      title: 'Register Report',
+      title: 'Shift Report',
       icon: <CalculatorOutlined />,
-      path: '/reports/operations/register',
+      path: '/reports/shift',
       color: colors.green,
       type: 'financial'
     },

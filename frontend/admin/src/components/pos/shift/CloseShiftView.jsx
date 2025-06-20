@@ -239,7 +239,7 @@ const CloseShiftModal = ({ open, onClose, shiftData, token, userData, warehouseI
         Cookies.remove('is_openshift');
         Cookies.remove('shift_opened_at');
         onShiftClosed?.(payload.open_shift_id);
-        onClose();
+        // onClose();
       } else {
         message.error(result?.message || 'Failed to close shift');
       }

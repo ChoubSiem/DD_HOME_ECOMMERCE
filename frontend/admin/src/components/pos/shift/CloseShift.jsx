@@ -183,9 +183,7 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
       
 
       const response = await handleCloseShiftCreate(shiftData, token);
-      
-      // console.log(response);
-      
+            
       // return;
       if (!response.success) {
         throw new Error('Failed to close shift');

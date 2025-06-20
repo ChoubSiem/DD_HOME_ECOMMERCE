@@ -51,7 +51,7 @@ const PurchaseReports = () => {
   const {getPurchaseReportData} = useReport();
   const [loading, setLoading] = useState(false);
   const [purchases, setPurchases] = useState([]);
-  const token = Cookies.get('token');
+  const token = localStorage.getItem('token');
   const userData = JSON.parse(Cookies.get('user'));
   const handlePurchase = async() =>{
     setLoading(true);

@@ -123,7 +123,7 @@ const itemMenuLeftTmp = [
     getItem("Stock Report", "/reports/stock", <StockOutlined />),
     getItem("Low Best Product Report", "/reports/low-best-reports", <LineChartOutlined />),
     getItem("Sale Report", "/reports/sale", <ShoppingCartOutlined />),
-    getItem("Purchase Report", "/reports/purchase", <ShoppingOutlined />),
+    getItem("Purchase Report", "/reports/purchase/list", <ShoppingOutlined />),
     // getItem("Adjustment Report", "/reports/adjustment", <ReloadOutlined />),
     getItem("Supplier Report", "/reports/supplier", <TeamOutlined />),
     getItem("Sale Return Report", "/reports/sale-return", <ShoppingCartOutlined />),

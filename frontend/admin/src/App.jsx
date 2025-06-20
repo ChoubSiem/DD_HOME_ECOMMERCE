@@ -51,15 +51,15 @@ import ProductReport from "./pages/report/Product";
 // import StockListReport from "./pages/report/stock_report/StockListReport";
 import StockListReport from "./pages/report/stock_report/StockListReport";
 import LowBestSellerReport from "./pages/report/low_best_product/LowestBestReport";
-import SaleReport from "./pages/report/sale_report/SaleListReport";
-// import PurchaseListReport from "./pages/report/purchase/Purchase";
+import SaleReportList from "./pages/report/sale_report/SaleListReport";
+import PurchaseReport from "./pages/report/purchase/Purchase";
 import PurchaseListReport from "./pages/report/purchase/PurchaseListReport";
 // import AdjustmentReport from "./pages/report/adjustment/Adjustment";
 import AdjustmentListReport from "./pages/report/adjustment/AdjustmentListReport";
 import SupplierListReport from "./pages/report/supplier/SupplierListReport";
 // import SupplierReport from "./pages/report/supplier/Supplier";
 import SaleReturnReport from "./pages/report/sale_return/SaleReturn";
-// import ShiftListReport from "./pages/report/shift_report/ShiftReport";
+import ShiftReport from "./pages/report/shift_report/ShiftReport";
 import ShiftListReport from "./pages/report/shift_report/ShiftListReport";
 // import AccountingPayment from "./pages/accounting/payment/Payment";
 import PaymentListReport from "./pages/accounting/payment/PaymentListReport";
@@ -168,12 +168,14 @@ const App = () => {
           <Route path="/reports/product" element={<ProductReport />} />
           <Route path="/reports/stock" element={<StockListReport />} />
           <Route path="/reports/low-best-reports" element={<LowBestSellerReport />} />
-          <Route path="/reports/sale" element={<SaleReport />} />
-          <Route path="/reports/purchase" element={<PurchaseListReport />} />
+          <Route path="/reports/sale" element={<SaleReportList />} />
+          <Route path="/reports/purchase/list" element={<PurchaseListReport />} />
+          <Route path="/reports/purchase" element={<PurchaseReport />} />
           <Route path="/reports/adjustment" element={<AdjustmentListReport />} />
           <Route path="/reports/supplier" element={<SupplierListReport />} />
           <Route path="/reports/sale-return" element={<SaleReturnReport />} />
-          <Route path="/reports/shift" element={<ShiftListReport />} />
+          <Route path="/reports/shift/list" element={<ShiftListReport />} />
+          <Route path="/reports/shift" element={<ShiftReport />} />
           <Route path="/setting" element={<Setting />} />
           <Route path="/pos/payment" element={<PaymentPos />} />
           <Route path="/accounting/payment" element={<PaymentListReport />} />
