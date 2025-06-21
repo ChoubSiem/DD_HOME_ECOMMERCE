@@ -152,6 +152,19 @@ const getRoleTag = (role) => (
             </motion.span>
         );
     };
+    const codeBodyTemplate = (rowData) => {
+        return (
+            <motion.span 
+                className="khmer-text customer-name d-flex justify-content-center align-items-center"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ height: '40px' ,fontSize:'15px',padding:0 }}
+            >
+                {rowData.customer_code}
+            </motion.span>
+        );
+    };
 
     const phoneBodyTemplate = (rowData) => {
         return (
@@ -250,52 +263,60 @@ const getRoleTag = (role) => (
                   className="p-datatable-sm p-datatable-striped p-datatable-gridlines"
                   style={{ width: '100%', flex: '1 1 auto' }}
               >
-    <Column 
-        field="username" 
-        header="Name" 
-        sortable 
-        body={nameBodyTemplate}
-        className="name-column text-center"
-        headerClassName="text-center"
-    />
-    <Column 
-        field="phone" 
-        header="Phone" 
-        sortable 
-        body={phoneBodyTemplate}
-        className="phone-column text-center"
-        headerClassName="text-center"
-        bodyStyle={{ textAlign: 'center' }}
-    />
-    <Column 
-        field="group_name" 
-        header="Group" 
-        sortable 
-        body={groupBodyTemplate}
-        className="group-column text-center"
-        headerClassName="text-center"
-        bodyStyle={{ textAlign: 'center' }}
-    />
-    <Column 
-        field="address" 
-        header="Address" 
-        sortable 
-        body={addressBodyTemplate}
-        className="address-column text-center"
-        headerClassName="text-center"
-        bodyStyle={{ textAlign: 'center' }}
-    />
-    <Column 
-        body={actionBodyTemplate} 
-        header="Actions"
-        className="actions-column text-center"
-        headerClassName="text-center"
-        bodyStyle={{ textAlign: 'center' }}
-        frozen
-        alignFrozen="right"
-        style={{padding:'10px'}}
-    />
-</DataTable>
+                <Column 
+                    field="username" 
+                    header="Name" 
+                    sortable 
+                    body={nameBodyTemplate}
+                    className="name-column text-center"
+                    headerClassName="text-center"
+                />
+                <Column 
+                    field="customer_code" 
+                    header="Code" 
+                    sortable 
+                    body={codeBodyTemplate}
+                    className="name-column text-center"
+                    headerClassName="text-center"
+                />
+                <Column 
+                    field="phone" 
+                    header="Phone" 
+                    sortable 
+                    body={phoneBodyTemplate}
+                    className="phone-column text-center"
+                    headerClassName="text-center"
+                    bodyStyle={{ textAlign: 'center' }}
+                />
+                <Column 
+                    field="group_name" 
+                    header="Group" 
+                    sortable 
+                    body={groupBodyTemplate}
+                    className="group-column text-center"
+                    headerClassName="text-center"
+                    bodyStyle={{ textAlign: 'center' }}
+                />
+                <Column 
+                    field="address" 
+                    header="Address" 
+                    sortable 
+                    body={addressBodyTemplate}
+                    className="address-column text-center"
+                    headerClassName="text-center"
+                    bodyStyle={{ textAlign: 'center' }}
+                />
+                <Column 
+                    body={actionBodyTemplate} 
+                    header="Actions"
+                    className="actions-column text-center"
+                    headerClassName="text-center"
+                    bodyStyle={{ textAlign: 'center' }}
+                    frozen
+                    alignFrozen="right"
+                    style={{padding:'10px'}}
+                />
+            </DataTable>
             </div>
 
             {selectedCustomer && (
@@ -314,24 +335,40 @@ const getRoleTag = (role) => (
 
             <Dialog 
                 visible={deleteCustomerDialog} 
-                style={{ width: '32rem' }} 
+                style={{ width: '28rem', borderRadius: '12px' }} 
                 breakpoints={{ '960px': '75vw', '641px': '90vw' }} 
-                header="Confirm Deletion" 
+                header="⚠️ Confirm Deletion" 
                 modal 
                 footer={deleteCustomerDialogFooter} 
                 onHide={() => setDeleteCustomerDialog(false)}
                 className="delete-dialog text-center"
                 headerClassName="text-center"
-            >
-                <div className="confirmation-content d-flex justify-content-center align-items-center">
-                    <i className="pi pi-exclamation-triangle mr-3 warning-icon" />
+                >
+                <div
+                    className="confirmation-content"
+                    style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '24px',
+                    textAlign: 'center',
+                    }}
+                >
+                    <i
+                    className="pi pi-exclamation-triangle"
+                    style={{ fontSize: '2.5rem', color: '#f59e0b', marginBottom: '16px' }}
+                    />
                     {selectedCustomer && (
-                        <span className="confirmation-message">
-                            Are you sure you want to delete <b>{selectedCustomer.username}</b>?
-                        </span>
+                    <span
+                        className="confirmation-message"
+                        style={{ fontSize: '1.1rem', lineHeight: 1.6 }}
+                    >
+                        Are you sure you want to delete <b>{selectedCustomer.username}</b>?
+                    </span>
                     )}
                 </div>
-            </Dialog>
+                </Dialog>
+
         </motion.div>
     );
 };
