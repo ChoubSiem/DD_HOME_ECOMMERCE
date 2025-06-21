@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { Modal, Button, Form, message,Upload,Card,Divider  } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
-
+import Cookies from 'js-cookie';
 const ImportProduct = ({ visible, onCancel, onImport }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const handleFileChange = (info) => {
     const selectedFile = info.file; 
     if (selectedFile) {
@@ -21,6 +20,7 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
     }
   };
   
+  const userData = JSON.parse(Cookies.get('user'));
   
 
   const handleFileUpload = () => {
@@ -71,7 +71,8 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
           dealer_price,
           depot_price,
           vip_price,
-          stock
+          stock,
+          warehouse_id: userData.warehouse_id,
         };
       });
 

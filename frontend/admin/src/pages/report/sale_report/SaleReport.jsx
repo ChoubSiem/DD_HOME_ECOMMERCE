@@ -503,70 +503,70 @@ function SalesReports() {
           }}
         >
           <div style={{ position: 'relative' }}>
-<DataTable
-  columns={columns}
-  data={filteredSales}
-  pagination
-  paginationPerPage={10}
-  paginationRowsPerPageOptions={[10, 25, 50, 100]}
-  highlightOnHover
-  selectableRows
-  onSelectedRowsChange={handleRowSelected}
-  customStyles={{
-    head: {
-      style: {
-        fontSize: '14px',
-        fontWeight: 600,
-        paddingLeft: '0',
-        paddingRight: '0',
-      },
-    },
-    headRow: {
-      style: {
-        backgroundColor: '#f8f8f8',
-        borderBottomWidth: '1px',
-        borderBottomColor: '#e7e7e7',
-        borderBottomStyle: 'solid',
-      },
-    },
-    headCells: {
-      style: {
-        paddingLeft: '12px',
-        paddingRight: '12px',
-        color: '#333',
-      },
-    },
-    cells: {
-      style: {
-        paddingLeft: '12px',
-        paddingRight: '12px',
-        fontSize: '13px',
-      },
-    },
-    rows: {
-      style: {
-        '&:not(:last-of-type)': {
-          borderBottomWidth: '1px',
-          borderBottomColor: '#f0f0f0',
-          borderBottomStyle: 'solid',
-        },
-        '&:hover': {
-          backgroundColor: '#f8f8f8 !important',
-        },
-      },
-    },
-    pagination: {
-      style: {
-        fontSize: '13px',
-        borderTopWidth: '1px',
-        borderTopColor: '#e7e7e7',
-        borderTopStyle: 'solid',
-      },
-    },
-  }}
-  fixedHeader
-  fixedHeaderScrollHeight="500px"
-/>
+            <DataTable
+              columns={columns}
+              data={filteredSales}
+              pagination
+              paginationPerPage={10}
+              paginationRowsPerPageOptions={[10, 25, 50, 100]}
+              highlightOnHover
+              selectableRows
+              onSelectedRowsChange={handleRowSelected}
+              customStyles={{
+                head: {
+                  style: {
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    paddingLeft: '0',
+                    paddingRight: '0',
+                  },
+                },
+                headRow: {
+                  style: {
+                    backgroundColor: '#f8f8f8',
+                    borderBottomWidth: '1px',
+                    borderBottomColor: '#e7e7e7',
+                    borderBottomStyle: 'solid',
+                  },
+                },
+                headCells: {
+                  style: {
+                    paddingLeft: '12px',
+                    paddingRight: '12px',
+                    color: '#333',
+                  },
+                },
+                cells: {
+                  style: {
+                    paddingLeft: '12px',
+                    paddingRight: '12px',
+                    fontSize: '13px',
+                  },
+                },
+                rows: {
+                  style: {
+                    '&:not(:last-of-type)': {
+                      borderBottomWidth: '1px',
+                      borderBottomColor: '#f0f0f0',
+                      borderBottomStyle: 'solid',
+                    },
+                    '&:hover': {
+                      backgroundColor: '#f8f8f8 !important',
+                    },
+                  },
+                },
+                pagination: {
+                  style: {
+                    fontSize: '13px',
+                    borderTopWidth: '1px',
+                    borderTopColor: '#e7e7e7',
+                    borderTopStyle: 'solid',
+                  },
+                },
+              }}
+              fixedHeader
+              fixedHeaderScrollHeight="500px"
+            />
             <CustomFooter />
           </div>
         </Card>

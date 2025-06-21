@@ -47,9 +47,6 @@ function PosAdd() {
       return null;
     }
   });
-
-  // console.log(selectedCustomer);
-  
   const [customerGroup, setCustomerGroup] = useState('');
   const [groupOptions, setGroupOptions] = useState([]);
   const [priceType, setPriceType] = useState('retail_price'); 
@@ -1365,43 +1362,43 @@ const printInvoice = (printData) => {
               )}
             </div>
 
-            <div className="options-list">
-              {filteredCustomers.length > 0 ? (
-                <>
-                  {(searchCustomerTerm ? filteredCustomers : filteredCustomers.slice(0, 10)).map(customer => (
-                    <div
-                      key={customer.id}
-                      className={`option ${selectedCustomer?.id === customer.id ? 'selected' : ''}`}
-                      onClick={() => handleSelect(customer)}
-                    >
-                      <div className="customer-info">
-                        <div className="username">{customer.username} ({customer.group_name})</div>
-                        {customer.phone && (
-                          <div className="phone">{customer.phone}</div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                        
-                </>
-              ) : (
-                <div className="no-results">
-                  {searchCustomerTerm ? "No matching customers" : "No customers available"}
-                </div>
-              )}
-            </div>
-
+    <div className="options-list">
+      {filteredCustomers.length > 0 ? (
+        <>
+          {(searchCustomerTerm ? filteredCustomers : filteredCustomers.slice(0, 10)).map(customer => (
             <div
-              className="add-option"
-              onClick={() => {
-                setIsModalVisible(true);
-                setIsOpen(false);
-              }}
+              key={customer.id}
+              className={`option ${selectedCustomer?.id === customer.id ? 'selected' : ''}`}
+              onClick={() => handleSelect(customer)}
             >
-              <FiPlus className="add-icon" />
-              <span>Add New Customer</span>
+              <div className="customer-info">
+                <div className="username">{customer.username} ({customer.group_name})</div>
+                {customer.phone && (
+                  <div className="phone">{customer.phone}</div>
+                )}
+              </div>
             </div>
-          </div>
+          ))}
+                
+        </>
+      ) : (
+        <div className="no-results">
+          {searchCustomerTerm ? "No matching customers" : "No customers available"}
+        </div>
+      )}
+    </div>
+
+  <div
+    className="add-option"
+    onClick={() => {
+      setIsModalVisible(true);
+      setIsOpen(false);
+    }}
+  >
+    <FiPlus className="add-icon" />
+    <span>Add New Customer</span>
+  </div>
+</div>
               )}
             </div>
           </div>

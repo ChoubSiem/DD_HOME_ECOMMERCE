@@ -112,18 +112,27 @@ const SaleDetailCard = ({
                   placeholder="Select customer"
                   onChange={handleCustomerChange}
                   allowClear
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.children || '')
+                      .toString()
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                 >
                   {customers?.length ? (
                     customers.map((customer) => (
                       <Option key={customer.id} value={customer.id}>
-                        {customer.username} ({customer.phone}) (<span style={{ color: 'green' }}>{customer.group_name}</span>)
-                      </Option> 
+                        {customer.username} ({customer.phone}){' '}
+                        <span style={{ color: 'green' }}>({customer.group_name})</span>
+                      </Option>
                     ))
                   ) : (
                     <Option disabled>No customers available</Option>
                   )}
                 </Select>
               </Form.Item>
+
             )}
           </Col>
         </Row>

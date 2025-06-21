@@ -95,11 +95,11 @@ const StockReports = () => {
       type: 'record'
     },
     {
-      title: 'Stock Variance',
+      title: 'Purchase Report',
       icon: <ExceptionOutlined />,
-      path: '/reports/stock/variance',
+      path: '/reports/purchase',
       color: colors.black,
-      type: 'audit'
+      type: 'purchase'
     }
   ];
 
@@ -159,7 +159,7 @@ const StockReports = () => {
                       {report.type === 'alert' && 'Items needing attention'}
                       {report.type === 'movement' && 'Inventory transfers'}
                       {report.type === 'record' && 'Historical stock data'}
-                      {report.type === 'audit' && 'Variance reports'}
+                      {report.type === 'purchase' && 'Purchase reports'}
                     </span>
                     <div style={{ marginTop: 8 }}>
                       <Tag 

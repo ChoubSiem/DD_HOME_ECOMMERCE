@@ -64,6 +64,8 @@ const ProductManagement = () => {
 
   const handleImport = async(importedProducts) => {
     setLoading(true);
+    console.log(importedProducts);
+    // return ;
     let result = await handleProductImport(importedProducts, token);    
     if (result.success) {
       setProducts(importedProducts);

@@ -50,9 +50,9 @@ const PurchaseReports = () => {
       hoverColor: colors.hoverGreen
     },
     {
-      title: 'Purchase Receipts',
+      title: 'Purchase Report',
       icon: <ReconciliationOutlined />,
-      path: '/reports/purchase/receipts',
+      path: '/reports/purchase',
       color: colors.green,
       type: 'receipt',
       hoverColor: colors.hoverGreen

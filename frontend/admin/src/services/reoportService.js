@@ -7,6 +7,8 @@ export const getPurchaseReports = async (warehouse_id,token) => {
     headers: { Authorization: `Bearer ${token}` },
     params: {warehouse_id}
   });  
+  // console.log(response);
+  
   return response.data;
 };
 export const getSaleReports = async (warehouse_id,token) => {

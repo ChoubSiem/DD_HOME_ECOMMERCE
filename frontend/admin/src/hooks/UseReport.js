@@ -4,10 +4,10 @@ import {getPurchaseReports , getSaleReports ,getShiftReports} from "../services/
 export const useReport = () => {
   const getPurchaseReportData = async(warehouse_id , token ) =>{
     const response = await getPurchaseReports(warehouse_id,token);
-    if (response.list) {
+    if (response.purchases) {
         return {
             success: true,
-            purchases: response.list,     
+            purchases: response.purchases,     
             message: response.message  
         };
     }
