@@ -264,7 +264,7 @@ const AddAdjustment = () => {
     setLoading(true);
     let warehouse_id = values.warehouse_id;
     let customer_id = null;
-    if (userData.warehouse_id != null) {
+    if (userData.warehouse_id) {
       warehouse_id = userData.warehouse_id;
       customer_id = selectedCustomer;
     }

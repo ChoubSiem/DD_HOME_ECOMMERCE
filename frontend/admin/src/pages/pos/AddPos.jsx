@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSearch, FiPlus, FiX, FiShoppingCart, FiUser, FiChevronDown, FiPercent, FiTag, FiChevronLeft, FiChevronRight, FiRefreshCw, FiPower } from "react-icons/fi";
-import { ShopOutlined, ShoppingCartOutlined, CreditCardOutlined, PoweroffOutlined, PlusCircleOutlined, EyeOutlined, ArrowLeftOutlined, PauseOutlined, EditOutlined, MenuOutlined, LockOutlined, StopOutlined, CloseCircleOutlined, UnlockOutlined,DollarOutlined,
+import { ShopOutlined, ShoppingCartOutlined, CreditCardOutlined, PoweroffOutlined, PlusCircleOutlined, PlusOutlined ,EyeOutlined, ArrowLeftOutlined, PauseOutlined, EditOutlined, MenuOutlined, LockOutlined, StopOutlined, CloseCircleOutlined, UnlockOutlined,DollarOutlined,
   BankOutlined,
   CheckCircleOutlined,
   WalletOutlined, } from '@ant-design/icons';
@@ -29,6 +29,7 @@ import InvoiceTemplate from "./InvoiceTemplate";
 import ReactDOM from "react-dom/client";
 import { DataView } from 'primereact/dataview';
 import { Skeleton } from 'primereact/skeleton';
+import PaymentMethods from './PaymentMethod';
 function PosAdd() {
   const [searchProductTerm, setSearchProductTerm] = useState("");
   const [searchCustomerTerm, setSearchCustomerTerm] = useState("");
@@ -54,6 +55,7 @@ function PosAdd() {
   const [newCustomerName, setNewCustomerName] = useState("");
   const [newCustomerPhone, setNewCustomerPhone] = useState("");
   const [customers, setCustomers] = useState([]);
+  const [change_due , setChange_due] = useState(0);
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem('posCartItems');
     try {
@@ -62,6 +64,55 @@ function PosAdd() {
       return [];
     }
   });
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("Cash");
+  const [payments, setPayments] = useState([]);
+  const paymentColumns = [
+  {
+    title: 'Method',
+    dataIndex: 'method',
+    key: 'method',
+    render: (method) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {paymentOptions.find(opt => opt.name === method)?.icon}
+        {method}
+      </div>
+    )
+  },
+  {
+    title: 'Amount',
+    dataIndex: 'amount',
+    key: 'amount',
+    render: (amount) => `$${amount.toFixed(2)}`
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    render: (_, record, index) => (
+      <Button 
+        type="link" 
+        danger 
+        onClick={() => {
+          const newPayments = [...payments];
+          newPayments.splice(index, 1);
+          setPayments(newPayments);
+        }}
+      >
+        Remove
+      </Button>
+    )
+  }
+];
+
+const handleAddPayment = () => {
+  if (!selectedPaymentMethod) return;
+  
+  setPayments([...payments, {
+    method: selectedPaymentMethod,
+    amount: 0 // You can modify this to allow amount input
+  }]);
+};
+
+
 
   const [editShiftVisible, setEditShiftVisible] = useState(false);
   const [shiftData, setShiftData] = useState(null);
@@ -84,6 +135,7 @@ function PosAdd() {
   const [closeModalVisible, setCloseModalVisible] = useState(false);
   const [isShiftOpen, setIsShiftOpen] = useState(Cookies.get('is_open_shift') === 'true');
   const [isViewShiftVisible, setIsViewShiftVisible] = useState(false);
+  // const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
   const handleChange = (value) => {
     setSelectedPayment(value);
   };
@@ -112,7 +164,7 @@ function PosAdd() {
   const { handleGetOneOpenShift,handleGetOneProcessingShift , handlePosSaleCreate } = useSale();
   const [shiftId, setShiftId] = useState(Cookies.get("shift_id"));
   const [activeCartTab, setActiveCartTab] = useState('items');
-  
+  const [paidAmount , setPaidAmount] = useState(0);
   const [deliveryOptions, setDeliveryOptions] = useState([
     { id: 1, name: 'Standard Delivery', price: 5.99, estimated: '2-3 days' },
     { id: 2, name: 'Express Delivery', price: 9.99, estimated: '1 day' },
@@ -639,7 +691,7 @@ function PosAdd() {
   const handleRefreshStock = async () => {
     setShouldFetchProducts(true);
     await handleProductsData();
-    message.success("Stock refreshed successfully");
+    // message.success("Stock refreshed successfully");
   };
 
   // Order functions
@@ -803,6 +855,11 @@ function PosAdd() {
       message.warning("Please add items to cart first");
       return;
     }
+    if (paidAmount <= 0) {
+      message.warning("Please add payment!");
+      return;
+    }
+    handleRefreshStock();
     handleCreatePosSaleData();
     
     // setIsPaymentModalVisible(true);
@@ -841,6 +898,16 @@ function PosAdd() {
     setEditingItem(item);
     setIsEditModalVisible(true);
   };
+
+  const handleSavePaymentMethods = (payments,change_due ) =>{
+    console.log(change_due);
+    console.log(payments);
+    const paidAmount = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+
+    setPaidAmount(paidAmount);
+    setIsPaymentModalVisible(false);
+    setPayments(payments);
+  }
 
   const handleSaveEdit = (values) => {
     // console.log(values.originalPrice - values.finalPrice);
@@ -998,10 +1065,7 @@ function PosAdd() {
         pagination={false}
       />
     </Modal>
-  );
-
-  // console.log(selectedCustomer);
-  
+  );  
 
 const handleCreatePosSaleData = async () => {
   if (!selectedCustomer) {
@@ -1030,19 +1094,22 @@ const handleCreatePosSaleData = async () => {
         total: item.price * item.quantity * (1 - (item.discount || 0) / 100)
       })),
       subtotal,
-      discount: itemDiscountTotal + calculatedCartDiscount,
+      total_discount: itemDiscountTotal + calculatedCartDiscount,
       discount_type: cartDiscountType,
-      discount_value: cartDiscount,
+      inv_discount: cartDiscount,
       tax,
       delivery_fee: selectedDelivery?.price || 0,
       total,
-      payment_method: selectedPayment,
-      amount_paid: total,
-      change_due: 0,
-      currency: 'USD',
+      amount_paid: paidAmount,
+      change_due: parseFloat(paidAmount - total).toFixed(2),
+      payments: payments,
       sale_type: 'POS',
       amount: total
     };
+
+    // console.log(paymentData);
+    // return;
+    
 
     const response = await handlePosSaleCreate(paymentData, token);
 
@@ -1096,11 +1163,9 @@ const handleCreatePosSaleData = async () => {
   }
 };
 const printInvoice = (printData) => {
-  // Create a hidden container for the receipt
   const receiptContainer = document.createElement('div');
   document.body.appendChild(receiptContainer);
 
-  // Create a root and render the receipt
   const root = ReactDOM.createRoot(receiptContainer);
   root.render(
     <InvoiceTemplate 
@@ -1110,9 +1175,7 @@ const printInvoice = (printData) => {
     />
   );
 
-  // Wait for rendering to complete
   setTimeout(() => {
-    // Get the HTML content with thermal printer specific styles
     const receiptHtml = `
       <!DOCTYPE html>
       <html>
@@ -1143,20 +1206,17 @@ const printInvoice = (printData) => {
       </html>
     `;
 
-    // Open a new window for printing
     const printWindow = window.open('', '_blank', 'width=300,height=500');
     printWindow.document.open();
     printWindow.document.write(receiptHtml);
     printWindow.document.close();
 
-    // Print after content loads
     printWindow.onload = function() {
       setTimeout(() => {
         printWindow.focus();
         printWindow.print();
         printWindow.close();
         
-        // Clean up
         document.body.removeChild(receiptContainer);
       }, 500);
     };
@@ -1281,13 +1341,6 @@ const printInvoice = (printData) => {
                   />
                 </Tooltip>
               </div>
-
-              {/* <EditOpenShift
-                open={editShiftVisible}
-                onClose={() => setEditShiftVisible(false)}
-                onSave={handleSaveEdit}
-                shiftData={shiftData}
-              /> */}
             </>
           )}
 
@@ -1503,7 +1556,7 @@ const printInvoice = (printData) => {
                 onClick={() => setActiveCartTab('delivery')}
               >
                 <img
-                  src="https://www.citypng.com/public/uploads/preview/fast-scooter-delivery-shipping-green-icon-transparent-png-701751695035mammal925qwavsg96sb.png"
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVP6mKJQDyI1JV3YMwdpQmHWJfSDZjPvk4vQMXJPtl2Z6O6w7cf3-ak_nEtC0gU9URlpg&usqp=CAU"
                   alt="Delivery Icon"
                   style={{ width: "20px", height: "20px", marginRight: "8px" }}
                 />
@@ -1661,8 +1714,8 @@ const printInvoice = (printData) => {
               </div>
             )}
             <div className="summary-row tax">
-              <span>Tax (0%)</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>payment (0%)</span>
+              <span>${paidAmount.toFixed(2)}</span>
             </div>
             <div className="summary-row total">
               <span>Total</span>
@@ -1674,8 +1727,7 @@ const printInvoice = (printData) => {
                 <span>${nextPaymentAmount.toFixed(2)} due on {nextPaymentDate}</span>
               </div>
             )}
-
-            <div style={{display:"flex",justifyContent:"space-between"}}>
+            <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
               <motion.button
                 className="apply-discount-btn"
                 whileHover={{ scale: 1.02 }}
@@ -1686,51 +1738,36 @@ const printInvoice = (printData) => {
                   color: "white",
                   border: "none",
                   padding: "8px 16px",
-                  marginTop: "10px",
+                  height: "32px", // Match AntD button height
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "8px",
+                  borderRadius: "4px", // Match AntD button border radius
                 }}
               >
                 <FiPercent />
                 Cart Dis
               </motion.button>
-                {/* <FiPercent />
-                Select Payment
-              </motion.button> */}
 
-              <div style={{ maxWidth: 300,marginTop:12 }}>
-                <Select
-                  placeholder="Select payment method"
-                  onChange={handleChange}
-                  value={selectedPayment || undefined}
-                  style={{
-                    width: "100%",
-                    maxWidth: 150,
-                    minWidth: 150,
-                  }}
-                  size="large"
-                  optionLabelProp="label"
+              <div style={{ maxWidth: 300 }}>
+                <Button 
+                  type="primary" 
+                  onClick={() => setIsPaymentModalVisible(true)}
+                  icon={<PlusOutlined />}
+                  style={{ height: "32px" }} // Explicit height to match
                 >
-                  <Option value="Cash" label="Cash">
-                    <DollarOutlined style={{ marginRight: 8 }} />
-                    Cash
-                  </Option>
-                  <Option value="ABA" label="ABA">
-                    <BankOutlined style={{ marginRight: 8 }} />
-                    ABA
-                  </Option>
-                  <Option value="AC" label="AC">
-                    <WalletOutlined style={{ marginRight: 8 }} />
-                    AC
-                  </Option>
-                  <Option value="Bakong" label="Bakong">
-                    <BankOutlined style={{ marginRight: 8 }} />
-                    Bakong
-                  </Option>
-  
-                </Select>
+                  {payments.length > 0 ? 'Edit Payment Methods' : 'Add Payment Methods'}
+                </Button>
+                <PaymentMethods
+                  payments={payments}
+                  setPayments={setPayments}
+                  onCancel={() => setIsPaymentModalVisible(false)}
+                  title="Select Payment Methods"
+                  open={isPaymentModalVisible}
+                  total={parseFloat(total.toFixed(2))}
+                  onOk={() => handleSavePaymentMethods(payments,change_due)}
+                />
               </div>
             </div>
           </div>
@@ -1766,7 +1803,7 @@ const printInvoice = (printData) => {
                   Pay ${total.toFixed(2)} ({selectedDelivery.name})
                 </>
               ) : (
-                `Checkout ($${total.toFixed(2)})`
+                `Checkout`
               )}
             </motion.button>
           </div>
@@ -1876,32 +1913,6 @@ const printInvoice = (printData) => {
               <p>No suspended orders found.</p>
             </div>
           )}
-        </Modal>
-
-        <Modal
-          style={{ body:{height: 'auto', maxHeight: '80vh', overflowY: 'auto' }}}
-          open={isPaymentModalVisible}
-          onCancel={() => setIsPaymentModalVisible(false)}
-          footer={null}
-          width="80%"
-          centered
-          styles={{
-            mask: { background: 'rgba(0, 0, 0, 0.6)' },
-          }}
-        >
-          <PaymentPos
-            order={{
-              items: cartItems,
-              customer: selectedCustomer,
-              subtotal,
-              discountTotal: itemDiscountTotal + calculatedCartDiscount,
-              tax,
-              delivery: selectedDelivery,
-              total
-            }}
-            onClose={() => setIsPaymentModalVisible(false)}
-            onPaymentSuccess={handlePaymentSuccess}
-          />
         </Modal>
 
         <Modal

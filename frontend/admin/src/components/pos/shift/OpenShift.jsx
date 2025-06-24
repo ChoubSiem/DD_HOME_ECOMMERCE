@@ -1,24 +1,32 @@
-import React, { useState, useRef } from 'react';
-import { Modal, Row, Col, Card, Input, Button, Typography, Divider, Space, message } from 'antd';
-import { DollarOutlined, CalculatorOutlined, SaveOutlined, ReloadOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import React, { useState, useRef, useEffect } from 'react';
+import { Modal, Row, Col, Card, Input, Button, Typography, Divider, Space, message, Select, InputNumber } from 'antd';
+import { DollarOutlined, SaveOutlined, ReloadOutlined, CloseCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import Cookies from 'js-cookie';
 const { Title, Text } = Typography;
+const { Option } = Select;
 import { useSale } from '../../../hooks/UseSale';
 
 const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
   const [amount, setAmount] = useState('');
-  const {handleOpenShiftCreate} = useSale();
+  const { handleOpenShiftCreate } = useSale();
   const [loading, setLoading] = useState(false);
   const [usdDenominations, setUsdDenominations] = useState({
-     50: 0, 20: 0, 10: 0, 5: 0, 1: 0, 0.25: 0
+    100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0
   });
   const [rielDenominations, setRielDenominations] = useState({
-    50000: 0, 20000: 0, 10000: 0, 5000: 0,
+    100000: 0, 50000: 0, 20000: 0, 10000: 0, 5000: 0,
     2000: 0, 1000: 0, 500: 0, 100: 0,
   });
   const [activeInput, setActiveInput] = useState(null);
   const [inputValue, setInputValue] = useState('');
+  const [exchangeRate, setExchangeRate] = useState(4000);
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const inputRef = useRef(null);
+
+  // Disable mouse wheel on number inputs
+  const disableMouseWheel = (e) => {
+    e.target.blur();
+  };
 
   const calculateTotal = (denominations) => {
     return Object.entries(denominations).reduce((total, [denom, count]) => {
@@ -28,8 +36,9 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
 
   const usdTotal = calculateTotal(usdDenominations);
   const rielTotal = calculateTotal(rielDenominations);
-  const totalAmount = usdTotal + (rielTotal / 4000); 
+  const totalAmount = usdTotal + (rielTotal / exchangeRate); // Use dynamic exchange rate
   const token = localStorage.getItem('token');
+
   const handleKeypadInput = (value) => {
     if (!activeInput) {
       message.warning('Please select a denomination field first');
@@ -74,10 +83,10 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
 
   const handleClearAll = () => {
     setUsdDenominations({
-       50: 0, 20: 0, 10: 0, 5: 0, 1: 0, 0.25: 0
+      100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0, 0.25: 0
     });
     setRielDenominations({
-       50000: 0, 20000: 0, 10000: 0, 5000: 0,
+      100000: 0, 50000: 0, 20000: 0, 10000: 0, 5000: 0,
       2000: 0, 1000: 0, 500: 0, 100: 0,
     });
     setInputValue('');
@@ -113,34 +122,31 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
           });
         }
       });
-      const now = new Date();
-      const localTime = now.toLocaleString(); 
+
       const shiftData = {
         total_usd: usdTotal,
         total_kh: rielTotal,
-        start_time: localTime,
+        start_time: new Date().toLocaleString(),
         user_id: userData.id,
         cash_detail,
-        warehouse_id:userData.warehouse_id
+        warehouse_id: userData.warehouse_id,
+        exchange_rate: exchangeRate??1
       };
-
-      // console.log("Shift opening data:", shiftData); 
-      // return;
-      const response = await handleOpenShiftCreate(shiftData,token)
-      // console.log(response);
+      
+      const response = await handleOpenShiftCreate(shiftData, token);
+    //   console.log(response);
+    //  return;
       
       if (!response.success) {
         throw new Error('Failed to open shift');
-      }else{
-        Cookies.set('is_open_shift' , true);
-        Cookies.set('shift_id' , response.shift.id);
+      } else {
+        Cookies.set('is_open_shift', true);
+        Cookies.set('shift_id', response.shift.id);
         location.reload();
       }
-      
 
-      const responseData = await response.shift;
       onShiftOpen({
-        shiftId: responseData.id || `shift_${Date.now()}`,
+        shiftId: response.shift.id,
         ...shiftData
       });
 
@@ -163,13 +169,10 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
               <Text strong>{currency === 'USD' ? '$' : '៛'}{denom}</Text>
             </Col>
             <Col span={16}>
-              <Input
-                type="number"
+              <InputNumber
                 min={0}
-                step={denom.includes('.') ? '0.01' : '1'}
                 value={count}
-                onChange={(e) => {
-                  const value = e.target.value;
+                onChange={(value) => {
                   const numericValue = parseFloat(value) || 0;
                   if (currency === 'USD') {
                     setUsdDenominations(prev => ({ ...prev, [denom]: numericValue }));
@@ -178,7 +181,10 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
                   }
                 }}
                 onFocus={(e) => handleInputFocus(`${currency.toLowerCase()}_${denom}`, count, e)}
-                style={{ textAlign: 'right' }}
+                style={{ width: '100%', textAlign: 'right' }}
+                step={denom.includes('.') ? 0.01 : 1}
+                precision={denom.includes('.') ? 2 : 0}
+                onWheel={disableMouseWheel}
               />
             </Col>
           </Row>
@@ -199,8 +205,32 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
       <Row gutter={24}>
         <Col span={12}>
           <Card>
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+              <Col span={12}>
+                <Select
+                  value={selectedCurrency}
+                  onChange={setSelectedCurrency}
+                  style={{ width: '100%' }}
+                >
+                  <Option value="USD">USD</Option>
+                  <Option value="KHR">KHR</Option>
+                </Select>
+              </Col>
+              <Col span={12}>
+                {selectedCurrency === 'KHR' && (
+                  <InputNumber
+                    min={1}
+                    value={exchangeRate}
+                    onChange={setExchangeRate}
+                    style={{ width: '100%' }}
+                    addonAfter="៛ per $1"
+                    onWheel={disableMouseWheel}
+                  />
+                )}
+              </Col>
+            </Row>
             
-            <div >
+            <div>
               <Title level={5}><DollarOutlined /> USD</Title>
               {renderDenominationInputs(usdDenominations, 'USD')}
               <Divider />
@@ -224,12 +254,16 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
               </Row>
               <Divider />
               <Row justify="space-between">
-                <Col><Text strong>Total Counted:</Text></Col>
+                <Col><Text strong>Exchange Rate:</Text></Col>
+                <Col><Text>1 USD = {exchangeRate} KHR</Text></Col>
+              </Row>
+              <Row justify="space-between">
+                <Col><Text strong>Total Counted (USD):</Text></Col>
                 <Col><Text strong>${totalAmount.toFixed(2)}</Text></Col>
               </Row>
             </Card>
-
-            <Card >
+{/* 
+            <Card>
               <Input
                 value={inputValue}
                 readOnly
@@ -246,7 +280,7 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
                   <Button block size="large" danger onClick={() => handleKeypadInput('backspace')}>⌫</Button>
                 </Col>
               </Row>
-            </Card>
+            </Card> */}
 
             <Card>
               <Row gutter={16} style={{ width: '100%' }}>
@@ -273,7 +307,6 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
                 </Col>
               </Row>
             </Card>
-
           </Space>
         </Col>
       </Row>

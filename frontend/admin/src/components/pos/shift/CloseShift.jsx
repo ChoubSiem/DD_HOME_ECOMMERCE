@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Row, Col, Card, Input, Button, Typography, Divider, Space, message, Descriptions, Select } from 'antd';
+import { Modal, Row, Col, Card, Input, Button, Typography, Divider, Space, message, Descriptions, Select, InputNumber } from 'antd';
 import { DollarOutlined, CalculatorOutlined, SaveOutlined, ReloadOutlined, CloseCircleOutlined, UserOutlined, ClockCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import Cookies from 'js-cookie';
 import moment from 'moment';
@@ -16,6 +16,8 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
   const [cashEntries, setCashEntries] = useState([]);
   const [activeInput, setActiveInput] = useState(null);
   const [inputValue, setInputValue] = useState('');
+  const [exchangeRate, setExchangeRate] = useState(4000);
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const inputRef = useRef(null);
 
   const availableDenominations = {
@@ -39,7 +41,6 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
       }
       
       const response = await handleGetOneOpenShift(shiftId, userData.warehouse_id, token);
-      console.log(response);
       
       if (response.success) {
         setShiftInfo(response.shift);
@@ -75,7 +76,7 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
       }
     });
 
-    totals.combined = totals.usd + (totals.kh / 4000); 
+    totals.combined = totals.usd + (totals.kh / exchangeRate); // Use dynamic exchange rate
     return totals;
   };
 
@@ -115,6 +116,11 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
     inputRef.current = event.target;
   };
 
+  // Disable mouse wheel on number inputs
+  const disableMouseWheel = (e) => {
+    e.target.blur();
+  };
+
   const formatCurrency = (amount, currency) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -130,11 +136,11 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
     setAmount('');
   };
 
-  const addNewCashEntry = (currency) => {
+  const addNewCashEntry = () => {
     const newEntry = {
       id: Math.random().toString(36).substr(2, 9),
-      currency,
-      money_type: availableDenominations[currency][0].toString(),
+      currency: selectedCurrency,
+      money_type: availableDenominations[selectedCurrency][0].toString(),
       money_number: 0
     };
     setCashEntries([...cashEntries, newEntry]);
@@ -165,26 +171,24 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
         money_type: parseFloat(entry.money_type),
         total: parseFloat(entry.money_type) * parseFloat(entry.money_number)
       }));
-      const now = new Date();
-      const localTime = now.toLocaleString(); 
 
       const shiftData = {
         total_usd: totals.usd,
         total_kh: totals.kh,
-        end_time: localTime,
+        end_time: new Date().toLocaleString(),
         user_id: userData.id,
-        open_shift_id:shiftId,
+        open_shift_id: shiftId,
         cash_detail,
-        warehouse_id: userData.warehouse_id
+        warehouse_id: userData.warehouse_id,
+        exchange_rate: exchangeRate??1
       };
 
-      // console.log(shiftData);
-      // return;
+      console.log(shiftData);
+      return;
       
 
       const response = await handleCloseShiftCreate(shiftData, token);
             
-      // return;
       if (!response.success) {
         throw new Error('Failed to close shift');
       } else {
@@ -210,6 +214,31 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
   const renderCashEntries = () => {
     return (
       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Row gutter={16} align="middle" style={{ marginBottom: 16 }}>
+          <Col span={12}>
+            <Select
+              value={selectedCurrency}
+              onChange={setSelectedCurrency}
+              style={{ width: '100%' }}
+            >
+              <Option value="USD">USD</Option>
+              <Option value="KHR">KHR</Option>
+            </Select>
+          </Col>
+          <Col span={12}>
+            {selectedCurrency === 'KHR' && (
+              <InputNumber
+                min={1}
+                value={exchangeRate}
+                onChange={setExchangeRate}
+                style={{ width: '100%' }}
+                addonAfter="៛ per $1"
+                onWheel={disableMouseWheel}
+              />
+            )}
+          </Col>
+        </Row>
+
         {cashEntries.map((entry) => (
           <Row key={entry.id} gutter={16} align="middle">
             <Col span={6}>
@@ -226,14 +255,15 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
               </Select>
             </Col>
             <Col span={14}>
-              <Input
-                type="number"
+              <InputNumber
                 min={0}
-                step={entry.currency === 'USD' ? '0.01' : '1'}
                 value={entry.money_number}
-                onChange={(e) => updateCashEntry(entry.id, 'money_number', e.target.value)}
+                onChange={(value) => updateCashEntry(entry.id, 'money_number', value)}
                 onFocus={(e) => handleInputFocus(entry.id, entry.money_number, e)}
-                style={{ textAlign: 'right' }}
+                style={{ width: '100%', textAlign: 'right' }}
+                step={entry.currency === 'USD' ? 0.01 : 1}
+                precision={entry.currency === 'USD' ? 2 : 0}
+                onWheel={disableMouseWheel}
               />
             </Col>
             <Col span={4}>
@@ -246,28 +276,14 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
           </Row>
         ))}
         
-        <Row gutter={16}>
-          <Col span={12}>
-            <Button 
-              type="dashed" 
-              onClick={() => addNewCashEntry('USD')} 
-              icon={<PlusOutlined />}
-              block
-            >
-              Add USD
-            </Button>
-          </Col>
-          <Col span={12}>
-            <Button 
-              type="dashed" 
-              onClick={() => addNewCashEntry('KHR')} 
-              icon={<PlusOutlined />}
-              block
-            >
-              Add KHR
-            </Button>
-          </Col>
-        </Row>
+        <Button 
+          type="dashed" 
+          onClick={addNewCashEntry} 
+          icon={<PlusOutlined />}
+          block
+        >
+          Add {selectedCurrency} Denomination
+        </Button>
       </Space>
     );
   };
@@ -293,10 +309,10 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
                   {moment(shiftInfo.data?.opened_at).format('YYYY-MM-DD HH:mm:ss')}
                 </Descriptions.Item>
                 <Descriptions.Item label={<><DollarOutlined /> Initial USD</>}>
-                  {(Number(shiftInfo.meta?.initial_cash?.usd) || 0).toFixed(2)}
+                  {formatCurrency(shiftInfo.meta?.initial_cash?.usd || 0, 'USD')}
                 </Descriptions.Item>
                 <Descriptions.Item label={<span>🇰🇭 Initial Riel</span>}>
-                  {(Number(shiftInfo.meta?.initial_cash?.kh) || 0).toFixed(0)}
+                  {formatCurrency(shiftInfo.meta?.initial_cash?.kh || 0, 'KHR')}
                 </Descriptions.Item>
               </Descriptions>
             )}
@@ -324,6 +340,10 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
               </Row>
               <Divider />
               <Row justify="space-between">
+                <Col><Text strong>Exchange Rate:</Text></Col>
+                <Col><Text>1 USD = {exchangeRate} KHR</Text></Col>
+              </Row>
+              <Row justify="space-between">
                 <Col><Text strong>Combined Total (USD):</Text></Col>
                 <Col><Text strong>${totals.combined.toFixed(2)}</Text></Col>
               </Row>
@@ -340,25 +360,6 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
                   </Row>
                 </>
               )}
-            </Card>
-
-            <Card >
-              <Input
-                value={inputValue}
-                readOnly
-                placeholder={activeInput ? 'Editing selected field' : 'Select a field'}
-                style={{ fontSize: '18px', textAlign: 'right', height: '50px', marginBottom: '16px' }}
-              />
-              <Row gutter={[8, 8]}>
-                {[7, 8, 9, 4, 5, 6, 1, 2, 3, 0, '.'].map(num => (
-                  <Col span={8} key={num}>
-                    <Button block size="large" onClick={() => handleKeypadInput(num.toString())}>{num}</Button>
-                  </Col>
-                ))}
-                <Col span={8}>
-                  <Button block size="large" danger onClick={() => handleKeypadInput('backspace')}>⌫</Button>
-                </Col>
-              </Row>
             </Card>
 
             <Card>

@@ -306,7 +306,7 @@ const AddPurchase = () => {
       reference: reference,
       purchaser: purchase.id,
       supplier_id : selectedSupplier,
-      warehouse_id: null,
+      warehouse_id: userData.warehouse_id,
       note: note || null,
       payment_type: payment.type,
       total: totalAmount,

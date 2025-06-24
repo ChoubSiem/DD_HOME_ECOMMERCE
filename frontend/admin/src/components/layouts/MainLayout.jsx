@@ -421,7 +421,7 @@ const MainLayout = () => {
           alignItems: "center", 
           height: "80px", 
           justifyContent: "space-between", 
-          padding: "0 24px" 
+          // padding: "0 24px" 
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
 

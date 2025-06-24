@@ -83,6 +83,13 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
     setEditPaymentModalVisible(false);
   };
 
+  const getSafe = (obj, path, defaultValue = "N/A") => {
+  return path.split('.').reduce((acc, key) => 
+    (acc && acc[key] !== undefined) ? acc[key] : defaultValue, 
+    obj
+  );
+};
+
   const getDropdownItems = (purchase) => [
     {
       key: "view",
@@ -145,13 +152,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       name: "Supplier",
       selector: (row) => (typeof row.supplier === "object" ? row.supplier.name : row.supplier),
       sortable: true,
-      cell: (row) => (
-        <strong>
-          {typeof row.supplier === "object"
-            ? row.supplier.name || row.supplier.username || "N/A"
-            : row.supplier || "N/A"}
-        </strong>
-      ),
+      cell: (row) => <strong>{getSafe(row, 'purchaser.username')}</strong>,
       width: "10%",
     },
     {
@@ -161,7 +162,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       cell: (row) => (
         <strong>
           {typeof row.purchaser === "object"
-            ? row.purchaser.name || row.purchaser.username || "N/A"
+            ? row.purchaser?.username || "N/A"
             : row.purchaser || "N/A"}
         </strong>
       ),
