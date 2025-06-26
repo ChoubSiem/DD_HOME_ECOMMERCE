@@ -1714,7 +1714,7 @@ const printInvoice = (printData) => {
               </div>
             )}
             <div className="summary-row tax">
-              <span>payment (0%)</span>
+              <span>payment</span>
               <span>${paidAmount.toFixed(2)}</span>
             </div>
             <div className="summary-row total">

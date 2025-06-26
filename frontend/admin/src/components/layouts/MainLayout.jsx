@@ -120,7 +120,8 @@ const itemMenuLeftTmp = [
 
   getItem("Reports", "reports", <BarChartOutlined />, [
     // getItem("Product Report", "/reports/product", <AppstoreOutlined />),
-    getItem("Stock Report", "/reports/stock", <StockOutlined />),
+    // getItem("Stock Report", "/reports/stock/list", <StockOutlined />),
+    getItem("Stock Report", "/stock", <StockOutlined />),
     getItem("Low Best Product Report", "/reports/low-best-reports", <LineChartOutlined />),
     getItem("Sale Report", "/reports/sale", <ShoppingCartOutlined />),
     getItem("Purchase Report", "/reports/purchase/list", <ShoppingOutlined />),

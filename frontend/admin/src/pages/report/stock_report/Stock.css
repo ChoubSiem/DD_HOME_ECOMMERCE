@@ -1,142 +1,95 @@
-.form-row{
-    display: flex;
-    justify-content: space-between;
-  }
-  /* Enhanced Filter Container Styles */
-  .filter-container {
-    opacity: 0;
-    transform: translateY(-10px); /* More subtle initial offset */
-    visibility: hidden;
-    max-height: 0; /* Better than height for smoother transitions */
-    overflow: hidden;
-    will-change: opacity, transform, max-height; /* Optimize animations */
-    transition: 
-      opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-      visibility 0s linear 0.3s;
-  }
-  
-  .filter-container.show {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-    max-height: 1000px; /* Adjust based on your content */
-    transition: 
-      opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-      max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-      visibility 0s linear 0s;
-  }
-  
-  /* Improved Form Layout */
-  .form-row {
-    display: flex;
-    flex-wrap: wrap;
-    /* gap: 16px; */
-    margin-bottom: 16px;
-  }
-  
-  .advanced-filter .form-row .ant-form-item {
-    min-width: 200px; /* Prevent items from getting too narrow */
-    margin-bottom: 0; /* Remove default bottom margin */
-  }
-  
-  /* Enhanced Container Styling */
-  .advanced-filter-container {
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    margin-bottom: 24px;
-  }
-  
-  /* Improved Action Buttons */
-  .filter-actions {
-    display: flex;
-    justify-content: flex-end; /* Align to right */
-    gap: 12px; /* Better than space-between for 2 buttons */
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid #f0f0f0;
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 768px) {
-    .advanced-filter .form-row .ant-form-item {
-      flex: 1 1 100%; /* Full width on mobile */
-    }
-    
-    .filter-actions {
-      flex-direction: column-reverse; /* Stack buttons on mobile */
-      gap: 8px;
-    }
-  }
-  
-  /* Input Field Enhancements */
-  .advanced-filter .ant-input,
-  .advanced-filter .ant-picker,
-  .advanced-filter .ant-select-selector {
-    border-radius: 4px !important;
-    height: 40px !important;
-    align-items: center !important;
-  }
-  
-  /* Label Styling */
-  .advanced-filter .ant-form-item-label > label {
-    font-weight: 500;
-    color: #333;
-  }
 
-  /* Stock Report Specific Styles */
-.stock-report .header-card {
-    margin-bottom: 16px;
-  }
-  
-  .stock-report .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .stock-report .filter-card {
-    margin-bottom: 16px;
-  }
-  
-  .stock-report .filter-content {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-  }
-  
-  .stock-report .filter-controls {
-    display: flex;
-    gap: 8px;
-  }
-  
-  /* Table row styling based on stock levels */
-  .stock-report .out-of-stock-row {
-    background-color: #fff1f0;
-  }
-  
-  .stock-report .low-stock-row {
-    background-color: #fffbe6;
-  }
-  
-  /* Inventory summary cards */
-  .stock-report .ant-statistic-content {
-    font-size: 18px;
-  }
-  
-  /* Advanced filter section */
-  .stock-report .advanced-filter {
-    transition: all 0.3s ease;
-  }
-  
-  .stock-report .filter-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 16px;
-  }
-  
-  
+.stock-report-container {
+  padding: 16px;
+}
+
+.header-card {
+  margin-bottom: 24px;
+  background: #f6ffed;
+}
+
+.report-title {
+  margin: 0;
+  color: #389e0d;
+}
+
+.warehouse-info {
+  margin-top: 8px;
+}
+
+.header-icon {
+  font-size: 48px;
+  color: #b7eb8f;
+  opacity: 0.8;
+}
+
+.summary-row {
+  margin-bottom: 24px;
+}
+
+.filter-card {
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.filter-buttons {
+  margin-top: 20px;
+}
+
+.stock-data-table {
+  min-width: 1000px;
+}
+
+.product-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.value-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.stock-level {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stock-level .icon-out {
+  color: #ff4d4f;
+  margin-right: 8px;
+}
+
+.stock-level .icon-low {
+  color: #faad14;
+  margin-right: 8px;
+}
+
+.stock-level .icon-normal {
+  color: #52c41a;
+  margin-right: 8px;
+}
+
+.stock-row.low-stock {
+  background-color: #fffbe6;
+}
+
+.stock-row.out-of-stock {
+  background-color: #fff1f0;
+}
+
+.table-footer {
+  display: grid;
+  grid-template-columns: 25% 15% 20% 20% 10%;
+  border-top: 1px solid #f0f0f0;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.error-container {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}

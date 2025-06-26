@@ -13,7 +13,7 @@ import Cookies from "js-cookie";
 import { useSale } from "../../hooks/UseSale";
 import { useNavigate } from "react-router-dom";
 
-const AddAdjustment = () => {
+const AddSale = () => {
   const { handleProducts } = useProductTerm();
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -43,6 +43,7 @@ const AddAdjustment = () => {
     value: 0,
     type: 'amount',
   });  
+  const [paymentMethods, setPaymentMethods] = useState([{ method: 'cash', amount: 0 }]);
   const [nextPaymentDate, setNextPaymentDate] = useState(null);
   const [creditAmount, setCreditAmount] = useState(0);
   const [customers, setCustomers] = useState(0);
@@ -268,6 +269,9 @@ const AddAdjustment = () => {
       warehouse_id = userData.warehouse_id;
       customer_id = selectedCustomer;
     }
+    const firstNextDate = paymentMethods?.[0]?.nextPaymentDate;
+    const creditMethod = paymentMethods.find(pm => pm.method === 'credit');
+    const creditAmount = creditMethod ? creditMethod.amount : null;
 
     const saleData = {
       date: values.date || dayjs().format("YYYY-MM-DD HH:mm:ss"),
@@ -277,7 +281,7 @@ const AddAdjustment = () => {
       from_warehouse_id: fromWarehouseId == 'company' ? null : fromWarehouseId,
       to_warehouse_id: toWarehouseId ?? null,
       note: note ?? null,
-      payment_method: paymentMethod,
+      payments: paymentMethods,
       discount: invoiceDiscount.value ?? 0,
       discount_type: invoiceDiscount.type ?? 'amount',
       credit_amount: creditAmount,
@@ -287,7 +291,7 @@ const AddAdjustment = () => {
       total: amount ?? 0,
       amount_paid: amount,
       customer_id: customer_id,
-      next_payment_date: nextPaymentDate != null ? dayjs(nextPaymentDate).format('YYYY-MM-DD') : null,
+      next_payment_date: firstNextDate != null ? dayjs(firstNextDate).format('YYYY-MM-DD') : null,
       items: selectedProducts.map(product => ({
         product_id: product.productId,
         quantity: product.quantity,
@@ -297,6 +301,9 @@ const AddAdjustment = () => {
         discount: product.discountAmount ?? 0,
       }))
     };
+
+    // console.log(saleData);
+    // return ;
 
     try {
       const result = await handlePosSaleCreate(saleData, token);
@@ -400,6 +407,8 @@ const AddAdjustment = () => {
         onAmountChange={setAmount}
         onTotalChange={(value) => setRawTotal(value)}
         total={rawTotal}
+        paymentMethods={paymentMethods}
+        onPaymentMethodsChange={setPaymentMethods}
       />
       
       <NoteSection note={note} setNote={setNote} />
@@ -419,4 +428,4 @@ const AddAdjustment = () => {
   );
 };
 
-export default AddAdjustment;
+export default AddSale;

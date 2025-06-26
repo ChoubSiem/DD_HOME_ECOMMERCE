@@ -32,7 +32,7 @@ const PaymentReports = () => {
     {
       title: 'Completed Payments',
       icon: <CheckCircleOutlined />,
-      path: '/reports/payments/completed',
+      path: '/reports/payments',
       color: colors.green,
       type: 'completed'
     },

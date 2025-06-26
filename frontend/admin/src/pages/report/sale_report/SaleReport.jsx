@@ -1,4 +1,3 @@
-// ```jsx
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Card,
@@ -15,6 +14,7 @@ import {
   message,
   Typography,
 } from 'antd';
+
 import {
   SearchOutlined,
   FilterOutlined,
@@ -25,7 +25,10 @@ import {
   SyncOutlined,
   ShoppingCartOutlined,
   ClearOutlined,
+  AppstoreOutlined 
 } from '@ant-design/icons';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import Cookies from 'js-cookie';
 import * as XLSX from 'xlsx';
 import generatePDF from 'react-to-pdf';
@@ -53,15 +56,27 @@ const { RangePicker } = DatePicker;
 const { Text, Title } = Typography;
 
 const SalesReports = () => {
-  // Consolidated filter state
-  const [filters, setFilters] = useState({
+  // Filter states
+  const [appliedFilters, setAppliedFilters] = useState({
     searchTerm: '',
     status: 'all',
     dateRange: null,
     customer: 'all',
     reportType: 'all',
     saleType: 'all',
+    groupBy: ['product'] // Default grouping by product
   });
+  
+  const [pendingFilters, setPendingFilters] = useState({
+    searchTerm: '',
+    status: 'all',
+    dateRange: null,
+    customer: 'all',
+    reportType: 'all',
+    saleType: 'all',
+    groupBy: ['product']
+  });
+
   const [selectedRows, setSelectedRows] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
   const [sales, setSales] = useState([]);
@@ -75,70 +90,77 @@ const SalesReports = () => {
   const userData = useMemo(() => JSON.parse(Cookies.get('user') || '{}'), []);
   const token = localStorage.getItem('token');
 
-  // Fetch data
+  // Fetch data with proper filters
   const fetchSalesReportData = async () => {
     try {
       setIsLoading(true);
-      const response = await getSaleReportsData(userData.warehouse_id, token);
+      
+      // Prepare filters based on appliedFilters state
+      const filters = {
+        warehouse_id: userData.warehouse_id,
+        sale_type: appliedFilters.saleType,
+        group_by: appliedFilters.groupBy,
+        start_date: appliedFilters.dateRange?.[0]?.format('YYYY-MM-DD'),
+        end_date: appliedFilters.dateRange?.[1]?.format('YYYY-MM-DD'),
+        status: appliedFilters.status !== 'all' ? appliedFilters.status : undefined,
+        customer: appliedFilters.customer !== 'all' ? appliedFilters.customer : undefined,
+        search_term: appliedFilters.searchTerm || undefined,
+        report_type: appliedFilters.reportType !== 'all' ? appliedFilters.reportType : undefined
+      };
+
+      // Remove undefined values to avoid sending empty filters
+      const cleanedFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, value]) => value !== undefined)
+      );
+
+      const response = await getSaleReportsData(cleanedFilters, token);
+      console.log(response);
+      
       if (response.success) {
         setSales(response.sales || []);
         setError(null);
-        setIsLoading(false);
       }
     } catch (err) {
- 
-        message.error('Failed to load sales data');
-    } 
+      console.error('Error fetching sales data:', err);
+      message.error('Failed to load sales data');
+      setError(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Fetch data when filters change
   useEffect(() => {
     fetchSalesReportData();
-  }, []);
+  }, [appliedFilters]);
 
-  // Debounced search
-  const debouncedSetSearch = useMemo(
-    () => debounce((value) => setFilters((prev) => ({ ...prev, searchTerm: value })), 200),
+  // Debounced search for pending filters
+  const debouncedSetPendingSearch = useMemo(
+    () => debounce((value) => setPendingFilters(prev => ({ ...prev, searchTerm: value })), 500),
     []
   );
 
   useEffect(() => {
     return () => {
-      debouncedSetSearch.cancel();
+      debouncedSetPendingSearch.cancel();
     };
-  }, [debouncedSetSearch]);
+  }, [debouncedSetPendingSearch]);
 
-  // Memoized customers
-  const customers = useMemo(
-    () => Array.from(new Set(sales.map((sale) => sale.customer?.username || '').filter(Boolean))),
-    [sales]
-  );
-
-  // Optimized filtered sales
-  const filteredSales = useMemo(() => {
-    if (!sales.length) return [];
-
-    const { searchTerm, status, customer, saleType, dateRange, reportType } = filters;
-    const lowerSearch = searchTerm.toLowerCase();
-    const today = dayjs().startOf('day');
-
-    return sales.filter((sale) => {
-      const idStr = sale.id?.toString() || '';
-      const customerStr = sale.customer?.username || '';
-      const saleDate = dayjs(sale.first_sale_date);
-      
-      return (
-        (!searchTerm || idStr.includes(lowerSearch) || customerStr.toLowerCase().includes(lowerSearch)) &&
-        (status === 'all' || sale.status === status) &&
-        (customer === 'all' || sale.customer?.username === customer) &&
-        (saleType === 'all' || (sale.type && sale.type.toLowerCase() === saleType.toLowerCase())) &&
-        (!dateRange?.[0] || !dateRange?.[1] || saleDate.isBetween(dayjs(dateRange[0]).startOf('day'), dayjs(dateRange[1]).endOf('day'), null, '[]')) &&
-        (reportType === 'all' ||
-          (reportType === 'daily' && saleDate.isSame(today, 'day')) ||
-          (reportType === 'monthly' && saleDate.isSame(today, 'month') && saleDate.isSame(today, 'year')))
-      );
+  // Memoized customers list
+  const customers = useMemo(() => {
+    const uniqueCustomers = new Set();
+    sales.forEach(sale => {
+      if (sale.customer_name) {
+        uniqueCustomers.add({
+          id: sale.customer_id,
+          name: sale.customer_name
+        });
+      }
     });
-  }, [sales, filters]);
+    return Array.from(uniqueCustomers);
+  }, [sales]);
 
-  // Combined totals and stats
+  // Calculate totals and stats
   const { totals, stats } = useMemo(() => {
     const totals = {
       totalCustomers: 0,
@@ -150,21 +172,22 @@ const SalesReports = () => {
       totalCost: 0,
       totalProfit: 0,
     };
+
     let totalSales = 0;
     let totalRevenue = 0;
     let totalProfit = 0;
     let completedSales = 0;
     let pendingSales = 0;
 
-    filteredSales.forEach((sale) => {
-      totals.totalCustomers += sale.total_customers || 0;
-      totals.totalQuantity += sale.total_quantity || 0;
-      totals.totalSubtotal += sale.total_subtotal || 0;
-      totals.totalInvoiceDiscount += sale.total_invoice_discount || 0;
-      totals.totalItemDiscount += sale.total_item_discount || 0;
-      totals.totalSale += sale.total_sale || 0;
-      totals.totalCost += sale.total_cost || 0;
-      totals.totalProfit += sale.profit || 0;
+    sales.forEach((sale) => {
+      totals.totalCustomers += sale.customer_count || 0;
+      totals.totalQuantity += Number(sale.quantity) || 0;
+      totals.totalSubtotal += Number(sale.unit_price * sale.quantity) || 0;
+      totals.totalInvoiceDiscount += Number(sale.inv_discount) || 0;
+      totals.totalItemDiscount += Number(sale.item_discount) || 0;
+      totals.totalSale += Number(sale.total_sale) || 0;
+      totals.totalCost += Number(sale.total_cost) || 0;
+      totals.totalProfit += Number(sale.profit) || 0;
 
       totalSales++;
       totalRevenue += sale.total_sale || 0;
@@ -179,117 +202,126 @@ const SalesReports = () => {
       totals,
       stats: { totalSales, totalRevenue, totalProfit, completedSales, pendingSales, completionRate },
     };
-  }, [filteredSales]);
+  }, [sales]);
+
+  console.log(totals);
+  
 
   // Row selection handler
   const handleRowSelected = useCallback((e) => {
     setSelectedRows(e.value.map((row) => row.id));
   }, []);
 
+  // Export handlers
 const handleExportExcel = useCallback(async () => {
   setExportLoading(true);
   try {
-    if (!filteredSales.length) {
+    if (!sales.length) {
       message.warning('No data available to export');
       return;
     }
 
-    // Format helper functions
-    const formatNumber = (num) => (num || 0).toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sales Report');
+
+    // Header
+    worksheet.addRow(['DD Home']).font = { size: 16, bold: true };
+    worksheet.addRow(['Address: Nº25, St.5, Dangkor, Phnom Penh, Cambodia']);
+    worksheet.addRow(['Phone: 081 90 50 50']);
+    worksheet.addRow([`View By Outlet: ${userData.warehouse_name || 'Chamroeun Phal'}`]);
+    worksheet.addRow(['View By Location: All']);
+    worksheet.addRow(['View As: Detail']);
+    worksheet.addRow([`Group By: ${appliedFilters.groupBy.join(', ') || 'None'}`]);
+    worksheet.addRow([
+      `From ${appliedFilters.dateRange?.[0] ? dayjs(appliedFilters.dateRange[0]).format('YYYY-MM-DD h:mm A') : 'N/A'}`,
+      `To ${appliedFilters.dateRange?.[1] ? dayjs(appliedFilters.dateRange[1]).format('YYYY-MM-DD h:mm A') : 'N/A'}`,
+    ]);
+    worksheet.addRow([]); // spacer
+
+    // Table headers
+    const headerRow = worksheet.addRow([
+      'Product Name',
+      'Customers',
+      'Quantity Sold',
+      'Sub Amount',
+      'Invoice Discount',
+      'Item Discount',
+      'Total Sale',
+      'Total Cost',
+      'Profit',
+    ]);
+
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' },
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        bottom: { style: 'thin' },
+        left: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
 
-    const formatDate = (date) => date ? dayjs(date).format('YYYY-MM-DD') : 'N/A';
-
-    const exportData = [
-      // Header section
-      [{ v: 'DD Home', s: { font: { bold: true, sz: 16 }, alignment: { horizontal: 'center' } }}],
-      ['Address: Nº25, St.5, Dangkor, Phnom Penh, Cambodia'],
-      ['Phone: 081 90 50 50'],
-      [`View By Outlet: ${userData.warehouse_name || 'Chamroeun Phal'}`],
-      ['View By Location: All'],
-      ['View As: Detail'],
-      ['Group By: None'],
-      [
-        `From ${filters.dateRange?.[0] ? dayjs(filters.dateRange[0]).format('YYYY-MM-DD h:mm A') : 'N/A'}`,
-        `To ${filters.dateRange?.[1] ? dayjs(filters.dateRange[1]).format('YYYY-MM-DD h:mm A') : 'N/A'}`
-      ],
-      [], // Spacer row
-
-      // Column headers with styling
-      [
-        { v: 'Product Name', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }},
-        { v: 'First Sale Date', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }},
-        { v: 'Customers', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }},
-        { v: 'Quantity Sold', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }},
-        { v: 'Subtotal', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }},
-        { v: 'Invoice Discount', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } }} },
-        { v: 'Item Discount', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }},
-        { v: 'Total Sale', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }},
-        { v: 'Total Cost', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }},
-        { v: 'Profit', s: { font: { bold: true }, fill: { fgColor: { rgb: "D3D3D3" } } }}
-      ],
-
-      // Data rows
-      ...filteredSales.map((sale) => [
+    // Sales data
+    sales.forEach((sale) => {
+      const row = worksheet.addRow([
         sale.product_name || 'N/A',
-        formatDate(sale.first_sale_date),
-        sale.total_customers || 0,
-        sale.total_quantity || 0,
-        formatNumber(sale.total_subtotal),
-        formatNumber(sale.total_invoice_discount),
-        formatNumber(sale.total_item_discount),
-        formatNumber(sale.total_sale),
-        formatNumber(sale.total_cost),
-        formatNumber(sale.profit)
-      ]),
-
-      // Totals row with styling
-      [
-        '',
-        '',
-        totals.totalCustomers,
-        totals.totalQuantity,
-        { v: formatNumber(totals.totalSubtotal), s: { font: { bold: true } } },
-        { v: formatNumber(totals.totalInvoiceDiscount), s: { font: { bold: true } } },
-        { v: formatNumber(totals.totalItemDiscount), s: { font: { bold: true } } },
-        { v: formatNumber(totals.totalSale), s: { font: { bold: true } } },
-        { v: formatNumber(totals.totalCost), s: { font: { bold: true } } },
-        { v: formatNumber(totals.totalProfit), s: { font: { bold: true } } }
-      ]
-    ];
-
-    // Create Excel sheet
-    const worksheet = XLSX.utils.aoa_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
-
-    // Set column widths and styles
-    worksheet['!cols'] = [
-      { wch: 30 }, // Product Name
-      { wch: 15 }, // First Sale Date
-      { wch: 12 }, // Customers
-      { wch: 14 }, // Quantity Sold
-      { wch: 14 }, // Subtotal
-      { wch: 16 }, // Invoice Discount
-      { wch: 14 }, // Item Discount
-      { wch: 14 }, // Total Sale
-      { wch: 14 }, // Total Cost
-      { wch: 14 }  // Profit
-    ];
-
-    // Add number formatting for currency columns
-    const currencyColumns = [4, 5, 6, 7, 8, 9]; // Zero-based indices
-    currencyColumns.forEach(col => {
-      XLSX.utils.sheet_add_aoa(worksheet, [[{ t: 'n', z: '#,##0.00' }]], {
-        origin: XLSX.utils.encode_cell({ r: 9, c: col }) // Start from data rows
+        sale.total_customer || 0,
+        parseFloat(sale.quantity)?.toFixed(2) || 0,
+        (sale.unit_price * sale.quantity) || 0,
+        sale.inv_discount || 0,
+        sale.item_discount || 0,
+        sale.total_sale || 0,
+        sale.total_cost || 0,
+        sale.profit || 0,
+      ]);
+      row.eachCell((cell) => {
+        cell.numFmt = '#,##0.00';
+        cell.alignment = { horizontal: 'start' };
       });
     });
 
-    // Generate and download the file
-    const fileName = `sales-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
+    // Totals row
+    const totalRow = worksheet.addRow([
+      '',
+      '',
+      totals.totalCustomers,
+      totals.totalQuantity,
+      totals.totalSubtotal,
+      totals.totalInvoiceDiscount,
+      totals.totalItemDiscount,
+      totals.totalSale,
+      totals.totalCost,
+      totals.totalProfit,
+    ]);
+    totalRow.eachCell((cell, colNumber) => {
+      if (colNumber > 2) {
+        cell.font = { bold: true };
+        cell.numFmt = '#,##0.00';
+        cell.alignment = { horizontal: 'right' };
+        cell.border = {
+          top: { style: 'thin' },
+        };
+      }
+    });
+
+    // Auto column width
+    worksheet.columns.forEach((col) => {
+      let max = 10;
+      col.eachCell?.((cell) => {
+        const val = cell.value ? cell.value.toString() : '';
+        max = Math.max(max, val.length);
+      });
+      col.width = max + 2;
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `sales-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`);
     message.success('Excel file exported successfully');
   } catch (error) {
     console.error('Export error:', error);
@@ -297,7 +329,7 @@ const handleExportExcel = useCallback(async () => {
   } finally {
     setExportLoading(false);
   }
-}, [filteredSales, totals, userData.warehouse_name, filters.dateRange]);
+}, [sales, totals, userData.warehouse_name, appliedFilters]);
 
   const handleExportPDF = useCallback(async () => {
     setExportLoading(true);
@@ -335,190 +367,162 @@ const handleExportExcel = useCallback(async () => {
     }
   }, []);
 
-  // Clear filters
+  // Filter handlers
+  const handleApplyFilters = useCallback(() => {
+    setAppliedFilters(pendingFilters);
+    // message.info('Filters applied');
+  }, [pendingFilters]);
+
   const handleClearFilters = useCallback(() => {
-    setFilters({
+    const clearedFilters = {
       searchTerm: '',
       status: 'all',
       dateRange: null,
       customer: 'all',
       reportType: 'all',
       saleType: 'all',
-    });
+      groupBy: ['product']
+    };
+    setPendingFilters(clearedFilters);
+    setAppliedFilters(clearedFilters);
     setSelectedRows([]);
     setPagination({ first: 0, rows: 10 });
+    message.info('Filters cleared');
   }, []);
+const columns = useMemo(() => {
+  const hasProductName = sales?.some(row => !!row.product_name);
+  const hasDate = sales?.some(row => !!row["DATE(date)"]);
 
-  // Apply filters
-  const handleApplyFilters = useCallback(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      
-      setIsLoading(false);
-      message.info('Filters applied');
-    }, 300);
-  }, []);
-
-  // Column definitions
-  const columns = useMemo(
-    () => [
-    {
+  const baseColumns = [
+    hasProductName && {
       field: 'product_name',
       header: 'Product',
       sortable: true,
       style: { width: '20%', minWidth: '150px' },
-      headerStyle: { textAlign: 'left' },
-      bodyStyle: { 
-        textAlign: 'left',
-        paddingLeft: '0',  
-        marginLeft: '0'     
-      },
       body: (rowData) => (
         <Text strong style={{ 
           fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif",
           display: 'block',
-          textAlign: 'left',  
-          paddingLeft: '5px',   
-          marginLeft: '0'     
+          textAlign: 'left'
         }}>
-          {rowData.product_name || 'N/A'}
+          {rowData.product_name}
         </Text>
       ),
     },
-      // {
-      //   field: 'first_sale_date',
-      //   header: 'Date',
-      //   sortable: true,
-      //   style: { width: '10%', minWidth: '100px' },
-      //   body: (rowData) => <Text>{dayjs(rowData.first_sale_date).format('YYYY-MM-DD')}</Text>,
-      // },
-      {
-        field: 'total_customers',
-        header: 'Customers',
-        sortable: true,
-        style: { width: '8%', textAlign: 'center', minWidth: '80px' },
-        body: (rowData) => <Text>{rowData.total_customers || 0}</Text>,
-      },
-      {
-        field: 'total_quantity',
-        header: 'Sold QTY',
-        sortable: true,
-        style: { width: '8%', textAlign: 'center', minWidth: '80px' },
-        body: (rowData) => <Text>{rowData.total_quantity || 0}</Text>,
-      },
-      {
-        field: 'unit_price',
-        header: 'Sub Amount',
-        sortable: true,
-        style: { width: '10%', textAlign: 'right', minWidth: '100px' },
+    hasDate && {
+      field: 'date',
+      header: 'Date',
+      sortable: true,
+      style: { width: '12%', minWidth: '100px', textAlign: 'center' },
       body: (rowData) => (
         <Text>
-          ${Number(rowData?.unit_price || 0).toFixed(2)}
+          {/* Access the date using string key */}
+          {rowData["DATE(date)"] ? new Date(rowData["DATE(date)"]).toLocaleDateString() : ''}
         </Text>
-      ),      
-      },
-      {
-        field: 'total_invoice_discount',
-        header: 'Invoice Dis',
-        sortable: true,
-        style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-        body: (rowData) => <Text>${(rowData.total_invoice_discount || 0).toFixed(2)}</Text>,
-      },
-      {
-        field: 'total_item_discount',
-        header: 'Item Dis',
-        sortable: true,
-        style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-        body: (rowData) => <Text>${(rowData.total_item_discount || 0).toFixed(2)}</Text>,
-      },
-      {
-        field: 'total_sale',
-        header: 'Total Sale',
-        sortable: true,
-        style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-        body: (rowData) => <Text>${(rowData.total_sale || 0).toFixed(2)}</Text>,
-      },
-      {
-        field: 'total_cost',
-        header: 'Total Cost',
-        sortable: true,
-        style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-        body: (rowData) => <Text>${(rowData.total_cost || 0).toFixed(2)}</Text>,
-      },
-      {
-        field: 'profit',
-        header: 'Profit',
-        sortable: true,
-        style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-        body: (rowData) => (
-          <Text style={{ color: (rowData.profit || 0) >= 0 ? '#52c41a' : '#f5222d' }}>
-            ${(rowData.profit || 0).toFixed(2)}
-          </Text>
-        ),
-      },
-    ],
-    []
-  );
+      ),
+    },
+    {
+      field: 'total_customers',
+      header: 'Customers',
+      sortable: true,
+      style: { width: '8%', textAlign: 'start', minWidth: '80px' },
+      body: (rowData) => <Text>{rowData.customer_name || rowData.customer_count || 0}</Text>,
+    },
+    {
+      field: 'quantity',
+      header: 'Sold QTY',
+      sortable: true,
+      style: { width: '8%', textAlign: 'center', minWidth: '80px' },
+      body: (rowData) => <Text>{rowData.quantity || 0}</Text>,
+    },
+    {
+      field: 'unit_price',
+      header: 'Sub Amount',
+      sortable: true,
+      style: { width: '10%', textAlign: 'right', minWidth: '100px' },
+      body: (rowData) => <Text>${Number(rowData?.unit_price * rowData.quantity || rowData.subtotal || 0).toFixed(2)}</Text>,
+    },
+    {
+      field: 'inv_discount',
+      header: 'Inv Dis',
+      sortable: true,
+      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
+      body: (rowData) => <Text>${parseFloat(rowData.inv_discount || 0).toFixed(2)}</Text>,
+    },
+    {
+      field: 'item_discount',
+      header: 'Item Dis',
+      sortable: true,
+      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
+      body: (rowData) => <Text>${parseFloat(rowData.item_discount || 0).toFixed(2)}</Text>,
+    },
+    {
+      field: 'total_sale',
+      header: 'Total Sale',
+      sortable: true,
+      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
+      body: (rowData) => <Text>${parseFloat(rowData.total_sale || 0).toFixed(2)}</Text>,
+    },
+    {
+      field: 'total_cost',
+      header: 'Cost',
+      sortable: true,
+      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
+      body: (rowData) => <Text>${parseFloat(rowData.total_cost || 0).toFixed(2)}</Text>
+    },
+    {
+      field: 'total_cost',
+      header: 'Total Cost',
+      sortable: true,
+      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
+      body: (rowData) => <Text>${parseFloat(rowData.total_cost * rowData.quantity).toFixed(2)}</Text>
+    },
+    {
+      field: 'profit',
+      header: 'Profit',
+      sortable: true,
+      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
+      body: (rowData) => (
+        <Text style={{ color: (rowData.profit || 0) >= 0 ? '#52c41a' : '#f5222d' }}>
+          ${parseFloat(rowData.total_sale - (rowData.total_cost * rowData.quantity)).toFixed(2)}
+        </Text>
+      ),
+    },
+  ];
+
+  return baseColumns.filter(Boolean);
+}, [sales]);
+
 
   // Footer component
-const CustomFooter = useMemo(
-  () => (
+  const CustomFooter = useMemo(() => (
     <div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '13% 10% 10% 8% 10% 10% 10% 10% 10% 10%', 
-          minWidth: '1200px', 
-          borderTop: '1px solid #f0f0f0',
-          fontSize: '14px',
-        }}
-      >
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '13% 10% 10% 8% 10% 10% 10% 10% 10% 10%', 
+        minWidth: '1200px', 
+        borderTop: '1px solid #f0f0f0',
+        fontSize: '14px',
+      }}>
         <div style={{ padding: '0 8px', textAlign: 'left' }}><Text strong>Total</Text></div>
         <div />
         <div style={{ textAlign: 'center' }}><Text strong>{totals.totalCustomers}</Text></div>
         <div style={{ textAlign: 'center' }}><Text strong>{totals.totalQuantity}</Text></div>
         <div style={{ textAlign: 'right' }}><Text strong>${totals.totalSubtotal.toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${totals.totalInvoiceDiscount.toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${totals.totalItemDiscount.toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${totals.totalSale.toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${totals.totalCost.toFixed(2)}</Text></div>
+        <div style={{ textAlign: 'right' }}><Text strong>${parseFloat(totals.totalInvoiceDiscount).toFixed(2)}</Text></div>
+        <div style={{ textAlign: 'right' }}><Text strong>${parseFloat(totals.totalItemDiscount).toFixed(2)}</Text></div>
+        <div style={{ textAlign: 'right' }}><Text strong>${parseFloat(totals.totalSale).toFixed(2)}</Text></div>
+        <div style={{ textAlign: 'right' }}><Text strong>${parseFloat(totals.totalCost).toFixed(2)}</Text></div>
         <div style={{ textAlign: 'right' }}>
           <Text strong style={{ color: totals.totalProfit >= 0 ? '#52c41a' : '#f5222d' }}>
-            ${totals.totalProfit.toFixed(2)}
+            ${parseFloat(totals.totalProfit).toFixed(2)}
           </Text>
         </div>
       </div>
     </div>
-  ),
-  [totals]
-);
+  ), [totals]);
 
-  // Retry handler with limit
-  const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 3;
-  const handleRetry = useCallback(() => {
-    if (retryCount >= maxRetries) {
-      message.error('Max retry attempts reached. Please check your connection.');
-      return;
-    }
-    setError(null);
-    setIsLoading(true);
-    setRetryCount((prev) => prev + 1);
-    axios
-      .get(`/api/sales?warehouse_id=${userData.warehouse_id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => {
-        setSales(response.data.sales || []);
-        setIsLoading(false);
-        setRetryCount(0);
-      })
-      .catch((err) => {
-        setError(err);
-        setIsLoading(false);
-      });
-  }, [userData.warehouse_id, token, retryCount]);
-
+  // Error handling
   if (error) {
     return (
       <div style={{ padding: '24px', maxWidth: 800, margin: '0 auto' }}>
@@ -526,11 +530,10 @@ const CustomFooter = useMemo(
           <Text type="danger">Error: {error.message || 'Failed to load sales data'}</Text>
           <Button
             type="primary"
-            onClick={handleRetry}
+            onClick={fetchSalesReportData}
             style={{ marginLeft: 16 }}
-            disabled={retryCount >= maxRetries}
           >
-            Retry ({maxRetries - retryCount} attempts left)
+            Retry
           </Button>
         </Card>
       </div>
@@ -541,16 +544,7 @@ const CustomFooter = useMemo(
     <Spin spinning={isLoading || exportLoading} tip={exportLoading ? 'Exporting...' : 'Loading sales data...'} size="large">
       <div>
         {/* Header Section */}
-        <Card
-          style={{
-            marginBottom: 24,
-            background: '#f6ffed',
-            borderRadius: 0,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            transition: 'all 0.3s',
-          }}
-          hoverable
-        >
+        <Card style={{ marginBottom: 24, background: '#f6ffed' }} hoverable>
           <Row align="middle" justify="space-between">
             <Col>
               <Title level={3} style={{ margin: 0, color: '#389e0d' }}>
@@ -563,42 +557,32 @@ const CustomFooter = useMemo(
               </div>
             </Col>
             <Col>
-              <ShoppingCartOutlined style={{ fontSize: 48, color: '#b7eb8f', opacity: 0.8, transition: 'opacity 0.3s' }} />
+              <ShoppingCartOutlined style={{ fontSize: 48, color: '#b7eb8f', opacity: 0.8 }} />
             </Col>
           </Row>
         </Card>
 
         {/* Filter Section */}
-        <Card
-          style={{
-            marginBottom: 24,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-            borderRadius: 8,
-            transition: 'all 0.3s',
-          }}
-          hoverable
-        >
+        <Card style={{ marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }} hoverable>
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} sm={12} md={6}>
               <Search
                 placeholder="Search invoice or customer"
                 prefix={<SearchOutlined style={{ color: '#52c41a' }} />}
-                onChange={(e) => debouncedSetSearch(e.target.value)}
+                onChange={(e) => debouncedSetPendingSearch(e.target.value)}
+                value={pendingFilters.searchTerm}
                 allowClear
                 size="large"
-                aria-label="Search invoices or customers"
               />
             </Col>
             <Col xs={24} sm={12} md={6}>
               <Select
                 style={{ width: '100%' }}
                 placeholder="Filter by sale type"
-                value={filters.saleType}
-                onChange={(value) => setFilters((prev) => ({ ...prev, saleType: value }))}
+                value={pendingFilters.saleType}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, saleType: value }))}
                 allowClear
-                suffixIcon={<FilterOutlined style={{ color: '#52c41a' }} />}
                 size="large"
-                aria-label="Filter by sale type"
               >
                 <Option value="all">All Sale Types</Option>
                 <Option value="pos">POS</Option>
@@ -609,31 +593,46 @@ const CustomFooter = useMemo(
               <RangePicker
                 style={{ width: '100%' }}
                 placeholder={['Start Date', 'End Date']}
-                value={filters.dateRange}
-                onChange={(dates) => setFilters((prev) => ({ ...prev, dateRange: dates }))}
+                value={pendingFilters.dateRange}
+                onChange={(dates) => setPendingFilters(prev => ({ ...prev, dateRange: dates }))}
                 size="large"
-                disabled={filters.reportType !== 'all'}
                 showTime={{ format: 'HH:mm' }}
                 format="YYYY-MM-DD HH:mm"
-                aria-label="Select date range"
               />
             </Col>
-         
-
+            <Col xs={24} sm={12} md={6}>
+            <Select
+              mode="multiple"
+              style={{ width: '100%' }}
+              placeholder="Group by"
+              value={pendingFilters.groupBy}
+              onChange={(value) => setPendingFilters(prev => ({ ...prev, groupBy: value }))}
+              allowClear
+              maxTagCount="responsive"
+              size="large"
+            >
+              <Option value="product">Product</Option>
+              <Option value="date">Date</Option>
+              <Option value="customer">Customer</Option>
+              {/* <Option value="invoice">Invoice</Option> */}
+              {/* <Option value="sales_person">Sales Person</Option> */}
+              {/* <Option value="warehouse">Warehouse</Option> */}
+              {/* <Option value="customer_type">Customer Type</Option> */}
+              {/* <Option value="category">Category</Option> */}
+            </Select>
+          </Col>
           </Row>
-          <Row style={{marginTop:'20px' , gap:'10px'}}>
-               <Col xs={24} sm={12} md={3}>
+          <Row style={{ marginTop: '20px', gap: '10px' }}>
+            <Col xs={24} sm={12} md={3}>
               <Button
                 type="primary"
                 icon={<SearchOutlined />}
                 onClick={handleApplyFilters}
                 size="large"
-                style={{ width: '100%', backgroundColor: '#52c41a', borderColor: '#52c41a', fontWeight: 600 }}
-                aria-label="Apply filters"
+                style={{ width: '100%', backgroundColor: '#52c41a', borderColor: '#52c41a' }}
               >
                 Apply Filters
               </Button>
-              
             </Col>
             <Col xs={24} sm={12} md={3}>
               <Button
@@ -641,8 +640,7 @@ const CustomFooter = useMemo(
                 icon={<ClearOutlined />}
                 onClick={handleClearFilters}
                 size="large"
-                style={{ width: '100%', fontWeight: 600 }}
-                aria-label="Clear filters"
+                style={{ width: '100%' }}
               >
                 Clear
               </Button>
@@ -652,25 +650,6 @@ const CustomFooter = useMemo(
 
         {/* DataTable Section */}
         <div ref={tableRef}>
-          <div style={{ marginBottom: 24, textAlign: 'left',display:'none' }}>
-            <Title level={4}>DD Home</Title>
-            <Text>Address: Nº25, St.5, Dangkor, Phnom Penh, Cambodia</Text>
-            <br />
-            <Text>Phone: 081 90 50 50</Text>
-            <br />
-            <Text>View By Outlet: {userData.warehouse_name || 'Chamroeun Phal'}</Text>
-            <br />
-            <Text>View By Location: All</Text>
-            <br />
-            <Text>View As: Detail</Text>
-            <br />
-            <Text>Group By: None</Text>
-            <br />
-            <Text>
-              From {filters.dateRange?.[0] ? dayjs(filters.dateRange[0]).format('YYYY-MM-DD h:mm A') : 'N/A'} To{' '}
-              {filters.dateRange?.[1] ? dayjs(filters.dateRange[1]).format('YYYY-MM-DD h:mm A') : 'N/A'}
-            </Text>
-          </div>
           <Card
             title={<Text strong style={{ fontSize: 18 }}>Sales Report Details</Text>}
             extra={
@@ -678,7 +657,6 @@ const CustomFooter = useMemo(
                 <Button
                   icon={<FileExcelOutlined />}
                   onClick={handleExportExcel}
-                  // disabled={selectedRows.length === 0 || exportLoading}
                   loading={exportLoading}
                   style={{ backgroundColor: '#52c41a', borderColor: '#52c41a', color: 'white' }}
                 >
@@ -704,41 +682,33 @@ const CustomFooter = useMemo(
                 </Button>
               </Space>
             }
-            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)', borderRadius: 0,padding:0 }}
+            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
           >
-          <DataTable
-              value={filteredSales}
-              selection={filteredSales.filter((row) => selectedRows.includes(row.id))}
+            <DataTable
+              value={sales}
+              selection={sales.filter((row) => selectedRows.includes(row.id))}
               onSelectionChange={handleRowSelected}
               dataKey="id"
               scrollable
               scrollHeight="600px"
               sortMode="multiple"
               footer={CustomFooter}
-              tableStyle={{ minWidth: '100%' }}
-              rowClassName={() => 'p-row-transition'}
+              tableStyle={{ minWidth: '100%', }}
               className="p-datatable-striped p-datatable-gridlines"
-              virtualScrollerOptions={{
-                itemSize: 50,
-                delay: 100,
-                lazy: true,
-              }}
               loading={isLoading}
               responsiveLayout="scroll"
             >
-            {/* <Column selectionMode="multiple" headerStyle={{ width: '10px' }} bodyStyle={{ textAlign: 'center' }} /> */}
-            {columns.map((col, index) => (
-              <Column
-                key={`${col.field}-${index}`}
-                field={col.field}
-                header={col.header}
-                sortable={col.sortable}
-                body={col.body}
-                style={col.style}
-              />
-            ))}
-          </DataTable>
-
+              {columns.map((col, index) => (
+                <Column
+                  key={`${col.field}-${index}`}
+                  field={col.field}
+                  header={col.header}
+                  sortable={col.sortable}
+                  body={col.body}
+                  style={col.style}
+                />
+              ))}
+            </DataTable>
           </Card>
         </div>
       </div>

@@ -35,16 +35,16 @@ const StockReports = () => {
   const reports = [
     // Green Reports (Positive/Additions)
     {
-      title: 'Stock Additions',
+      title: 'Stock Report',
       icon: <PlusOutlined />,
-      path: '/reports/stock/additions',
+      path: '/reports/stock',
       color: colors.green,
       type: 'increase'
     },
     {
-      title: 'Fast Moving Items',
+      title: 'Product Report',
       icon: <RiseOutlined />,
-      path: '/reports/stock/fast-moving',
+      path: '/reports/product',
       color: colors.green,
       type: 'trend'
     },

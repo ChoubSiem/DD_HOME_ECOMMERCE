@@ -1,17 +1,12 @@
-import { Table, InputNumber, Button, Popconfirm, Typography, Select, Row, Col, DatePicker, Form } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { Table, InputNumber, Button, Popconfirm, Typography, Select, Row, Col, DatePicker, Form, Divider, Space, Card } from "antd";
+import { DeleteOutlined, PlusOutlined, CloseOutlined } from "@ant-design/icons";
 import React, { useState, useEffect } from "react";
 
 const { Text } = Typography;
 const { Option } = Select;
 
 const currencyFormatter = (value) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
+  return `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
 const ProductsTable = ({ 
@@ -21,11 +16,12 @@ const ProductsTable = ({
   handleItemDiscountChange,
   handleRemoveProduct,
   onInvoiceDiscountChange,
-  onPaymentMethodChange = () => {},
-  onCreditDetailsChange = () => {},
-  paymentMethod = 'cash',
-  creditAmount = 0,
-  nextPaymentDate = null,
+  onPaymentMethodsChange,
+  paymentMethods = [],
+  currencies = [
+    { code: 'USD', name: 'US Dollar', symbol: '$', rate: 1 },
+    { code: 'KHR', name: 'Cambodian Riel', symbol: '៛', rate: 4100 },
+  ],
   onAmountChange = () => {},
   onTotalChange = () => {},
 }) => {
@@ -34,7 +30,17 @@ const ProductsTable = ({
   useEffect(() => {
     const totals = calculateTotals();
     onAmountChange(totals.grandTotal);
-    onTotalChange(totals.subtotal);  
+    onTotalChange(totals.subtotal);
+    
+    if (paymentMethods.length === 0 && totals.grandTotal > 0) {
+      const initialPayment = { 
+        method: 'cash', 
+        amount: totals.grandTotal,
+        currency: 'USD', 
+        exchange_rate: 1 
+      };
+      onPaymentMethodsChange([initialPayment]);
+    }
   }, [selectedProducts, invoiceDiscount]);
 
   const calculateTotals = () => {
@@ -64,17 +70,76 @@ const ProductsTable = ({
 
   const totals = calculateTotals();
 
-  const handlePaymentMethodChange = (value) => {
-    onPaymentMethodChange(value);
+  const formatCurrency = (value, currencyCode) => {
+    const currency = currencies.find(c => c.code === currencyCode) || currencies[0];
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value).replace(currency.code, currency.symbol);
   };
 
-  const handleCreditAmountChange = (value) => {
-    const amount = Math.min(value, totals.grandTotal); 
-    onCreditDetailsChange(amount, nextPaymentDate);
+  const handlePaymentMethodChange = (value, index) => {
+    const newPayments = [...paymentMethods];
+    newPayments[index].method = value;
+    
+    if (value !== 'credit') {
+      delete newPayments[index].nextPaymentDate;
+    }
+    
+    onPaymentMethodsChange(newPayments);
   };
 
-  const handleNextPaymentDateChange = (date) => {
-    onCreditDetailsChange(creditAmount, date);
+  const handlePaymentAmountChange = (value, index) => {
+    const newPayments = [...paymentMethods];
+    newPayments[index].amount = value || 0;
+    onPaymentMethodsChange(newPayments);
+  };
+
+  const handlePaymentCurrencyChange = (value, index) => {
+    const newPayments = [...paymentMethods];
+    const selectedCurrency = currencies.find(c => c.code === value) || currencies[0];
+    
+    const currentCurrency = currencies.find(c => c.code === newPayments[index].currency) || currencies[0];
+    newPayments[index].amount = (newPayments[index].amount * currentCurrency.rate) / selectedCurrency.rate;
+    
+    newPayments[index].currency = value;
+    newPayments[index].exchangeRate = selectedCurrency.rate;
+    onPaymentMethodsChange(newPayments);
+  };
+
+  const handleExchangeRateChange = (value, index) => {
+    const newPayments = [...paymentMethods];
+    newPayments[index].exchangeRate = value;
+    onPaymentMethodsChange(newPayments);
+  };
+
+  const handleNextPaymentDateChange = (date, index) => {
+    const newPayments = [...paymentMethods];
+    newPayments[index].nextPaymentDate = date;
+    onPaymentMethodsChange(newPayments);
+  };
+
+  const addPaymentMethod = () => {
+    onPaymentMethodsChange([
+      ...paymentMethods,
+      { method: 'cash', amount: 0, currency: 'USD', exchangeRate: 1 }
+    ]);
+  };
+
+  const removePaymentMethod = (index) => {
+    if (paymentMethods.length > 1) {
+      const newPayments = [...paymentMethods];
+      newPayments.splice(index, 1);
+      
+      // If removing the only payment with amount, set first payment to remaining balance
+      if (paymentMethods.reduce((sum, pm) => sum + pm.amount, 0) === totals.grandTotal) {
+        newPayments[0].amount = totals.grandTotal;
+      }
+      
+      onPaymentMethodsChange(newPayments);
+    }
   };
 
   const columns = [
@@ -180,15 +245,38 @@ const ProductsTable = ({
     },
   ];
 
-  const tableFooter = () => (
-    <div style={{ textAlign: 'right', paddingRight: 10, marginRight: "65px" }}>
-      <div><Text strong>Subtotal (No Discount): </Text><Text>{currencyFormatter(totals.subtotal)}</Text></div>
-      <div><Text strong>Item Discounts: </Text><Text type="danger">-{currencyFormatter(totals.itemDiscounts)}</Text></div>
-      <div><Text strong>Invoice Discount: </Text><Text type="danger">-{currencyFormatter(totals.invoiceDiscount)}</Text></div>
-      <div><Text strong>Total: </Text><Text>{currencyFormatter(totals.totalBeforeInvoiceDiscount)}</Text></div>
-      <div><Text strong style={{ fontSize: 16 }}>Grand Total: </Text><Text strong style={{ fontSize: 18 }}>{currencyFormatter(totals.grandTotal)}</Text></div>
-    </div>
-  );
+  const tableFooter = () => {
+    const paidAmountUSD = paymentMethods.reduce((sum, pm) => sum + (pm.amount / pm.exchangeRate), 0);
+    const remainingAmount = totals.grandTotal - paidAmountUSD;
+    
+    return (
+      <div style={{ textAlign: 'right', paddingRight: 10, marginRight: "65px" }}>
+        <div><Text strong>Subtotal (No Discount): </Text><Text>{formatCurrency(totals.subtotal, 'USD')}</Text></div>
+        <div><Text strong>Item Discounts: </Text><Text type="danger">-{formatCurrency(totals.itemDiscounts, 'USD')}</Text></div>
+        <div><Text strong>Invoice Discount: </Text><Text type="danger">-{formatCurrency(totals.invoiceDiscount, 'USD')}</Text></div>
+        <div><Text strong>Total: </Text><Text>{formatCurrency(totals.totalBeforeInvoiceDiscount, 'USD')}</Text></div>
+        <div><Text strong style={{ fontSize: 16 }}>Grand Total: </Text>
+          <Text strong style={{ fontSize: 18 }}>{formatCurrency(totals.grandTotal, 'USD')}</Text>
+        </div>
+        <Divider />
+        <div><Text strong>Paid Amount: </Text>
+          <Text type="success">
+            {paymentMethods.map((pm, i) => (
+              <span key={i}>
+                {formatCurrency(pm.amount, pm.currency)}{i < paymentMethods.length - 1 ? ' + ' : ''}
+              </span>
+            ))}
+            {` (${formatCurrency(paidAmountUSD, 'USD')})`}
+          </Text>
+        </div>
+        <div><Text strong>Remaining Amount: </Text>
+          <Text type={remainingAmount > 0 ? 'danger' : 'success'}>
+            {formatCurrency(Math.max(remainingAmount, 0), 'USD')}
+          </Text>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -205,13 +293,7 @@ const ProductsTable = ({
       
       <Row gutter={16} style={{ marginTop: 20 }}>
         <Col span={12}>
-          <div style={{ 
-            padding: 16, 
-            backgroundColor: '#fafafa',
-            border: '1px solid #f0f0f0',
-            borderRadius: 4
-          }}>
-            <Text strong style={{ display: 'block', marginBottom: 8 }}>Invoice Discount:</Text>
+          <Card title="Invoice Discount" bordered={false}>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <InputNumber
                 min={0}
@@ -235,54 +317,125 @@ const ProductsTable = ({
                 <Option value="percent">% Percentage</Option>
               </Select>
             </div>
-          </div>
+          </Card>
         </Col>
         <Col span={12}>
-          <div style={{ 
-            padding: 16, 
-            backgroundColor: '#fafafa',
-            border: '1px solid #f0f0f0',
-            borderRadius: 4
-          }}>
-            <Form layout="vertical">
-              <Form.Item label="Payment Method">
-                <Select
-                  value={paymentMethod}
-                  onChange={handlePaymentMethodChange}
-                  style={{ width: '100%', marginBottom: 8 }}
+          <Card 
+            title="Payment Methods"
+            extra={
+              <Button 
+                type="dashed" 
+                onClick={addPaymentMethod} 
+                icon={<PlusOutlined />}
+                size="small"
+              >
+                Add Payment
+              </Button>
+            }
+            bordered={false}
+          >
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {paymentMethods.map((payment, index) => (
+                <Card
+                  key={index}
+                  style={{ 
+                    position: 'relative',
+                    border: '1px solid #f0f0f0',
+                    borderRadius: 8
+                  }}
+                  bodyStyle={{ padding: 16 }}
                 >
-                  <Option value="cash">Cash</Option>
-                  <Option value="credit">Credit</Option>
-                  <Option value="ac">AC</Option>
-                  <Option value="aba">ABA</Option>
-                  <Option value="bakong">Bakong</Option>
-                </Select>
-              </Form.Item>
+                  {paymentMethods.length > 1 && (
+                    <Button
+                      danger
+                      type="text"
+                      icon={<CloseOutlined />}
+                      onClick={() => removePaymentMethod(index)}
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        zIndex: 1
+                      }}
+                    />
+                  )}
 
-              {paymentMethod === 'credit' && (
-                <>
-                  <Form.Item label="Credit Amount">
-                    <InputNumber
-                      min={0}
-                      max={totals.grandTotal}
-                      value={creditAmount}
-                      onChange={handleCreditAmountChange}
-                      formatter={currencyFormatter}
-                      parser={value => parseFloat(value.replace(/\$\s?|(,*)/g, ''))}
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                  <Form.Item label="Next Payment Date">
-                    <DatePicker
-                      value={nextPaymentDate}
-                      onChange={handleNextPaymentDateChange}
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </>
-              )}
-            </Form>
-          </div>
+                  <Form layout="vertical">
+                    <Row gutter={12}>
+                      <Col span={12}>
+                        <Form.Item label="Method">
+                          <Select
+                            value={payment.method}
+                            onChange={(value) => handlePaymentMethodChange(value, index)}
+                            style={{ width: '100%' }}
+                          >
+                            <Option value="cash">Cash</Option>
+                            <Option value="credit">Credit</Option>
+                            <Option value="ac">AC</Option>
+                            <Option value="aba">ABA</Option>
+                            <Option value="bakong">Bakong</Option>
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item label="Amount">
+                          <InputNumber
+                            min={0}
+                            value={payment.amount}
+                            onChange={(value) => handlePaymentAmountChange(value, index)}
+                            formatter={(value) => formatCurrency(value, payment.currency)}
+                            parser={value => parseFloat(value.replace(/[^\d.-]/g, ''))}
+                            style={{ width: '100%' }}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Row gutter={12}>
+                      <Col span={12}>
+                        <Form.Item label="Currency">
+                          <Select
+                            value={payment.currency}
+                            onChange={(value) => handlePaymentCurrencyChange(value, index)}
+                            style={{ width: '100%' }}
+                          >
+                            {currencies.map(currency => (
+                              <Option key={currency.code} value={currency.code}>
+                                {currency.name} ({currency.symbol})
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item label="Exchange Rate">
+                          <InputNumber
+                            min={0.0001}
+                            step={0.0001}
+                            value={payment.exchangeRate}
+                            onChange={(value) => handleExchangeRateChange(value, index)}
+                            style={{ width: '100%' }}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    {payment.method === 'credit' && (
+                      <Row gutter={12}>
+                        <Col span={12}>
+                          <Form.Item label="Next Payment Date">
+                            <DatePicker
+                              value={payment.nextPaymentDate}
+                              onChange={(date) => handleNextPaymentDateChange(date, index)}
+                              style={{ width: '100%' }}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    )}
+                  </Form>
+                </Card>
+              ))}
+            </Space>
+          </Card>
         </Col>
       </Row>
     </div>

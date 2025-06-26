@@ -47,8 +47,8 @@ import AddSaleReturn from "./pages/sale_return/AddSaleReturn";
 import EditSaleReturn from "./pages/sale_return/EditSaleReturn";
 import StockAlert from "./pages/notification/StockAlert";
 import RequestAlert from "./pages/notification/RequestAlert";
-import ProductReport from "./pages/report/Product";
-// import StockListReport from "./pages/report/stock_report/StockListReport";
+import ProductReport from "./pages/report/stock_report/ProductReport";
+import Stock from "./pages/report/stock_report/Stock";
 import StockListReport from "./pages/report/stock_report/StockListReport";
 import LowBestSellerReport from "./pages/report/low_best_product/LowestBestReport";
 import SaleReportList from "./pages/report/sale_report/SaleListReport";
@@ -61,7 +61,7 @@ import SupplierListReport from "./pages/report/supplier/SupplierListReport";
 import SaleReturnReport from "./pages/report/sale_return/SaleReturn";
 import ShiftReport from "./pages/report/shift_report/ShiftReport";
 import ShiftListReport from "./pages/report/shift_report/ShiftListReport";
-// import AccountingPayment from "./pages/accounting/payment/Payment";
+import PaymentReport from "./pages/accounting/payment/Payment";
 import PaymentListReport from "./pages/accounting/payment/PaymentListReport";
 import AccountingExpense from "./pages/accounting/expense/Expense";
 import AccountingRevenue from "./pages/accounting/revenue/RevenueReport";
@@ -106,7 +106,6 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
-        
         <Route element={<MainLayout />}>
           <Route index element={
             <ProtectedRoute>
@@ -166,7 +165,8 @@ const App = () => {
 
           <Route path="/reports/daily-sale" element={<DailySaleReport/>} />
           <Route path="/reports/product" element={<ProductReport />} />
-          <Route path="/reports/stock" element={<StockListReport />} />
+          <Route path="/reports/stock" element={<Stock />} />
+          <Route path="/stock" element={<StockListReport />} />
           <Route path="/reports/low-best-reports" element={<LowBestSellerReport />} />
           <Route path="/reports/sale" element={<SaleReportList />} />
           <Route path="/reports/purchase/list" element={<PurchaseListReport />} />
@@ -179,6 +179,7 @@ const App = () => {
           <Route path="/setting" element={<Setting />} />
           <Route path="/pos/payment" element={<PaymentPos />} />
           <Route path="/accounting/payment" element={<PaymentListReport />} />
+          <Route path="/reports/payments" element={<PaymentReport />} />
           <Route path="/accounting/expense" element={<AccountingExpense />} />
           <Route path="/accounting/revenue" element={<AccountingRevenue />} />
           <Route path="/uom-conversion" element={<UomConversion />} />
@@ -186,7 +187,7 @@ const App = () => {
           <Route path="/sale/add" element={<AddSale />} />
           <Route path="/sale/edit/:id" element={<EditSale />} />
         </Route>
-          <Route path="/pos/add" element={<AddPos />} />
+          <Route path="/pos/add" element={<AddPos/>} />
         
         {/* Catch-all route */}
         <Route path="*" element={isAuthenticated ? <NotFoundPage /> : <Navigate to="/login" replace />} />

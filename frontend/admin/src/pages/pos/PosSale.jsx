@@ -214,7 +214,21 @@ const PosSaleList = () => {
       sortable: true,
       width: "20%",
     },
+        {
+      name: "Sub Total ($)",
+      selector: (row) => row.subTotal,
+      sortable: true,
+      cell: (row) => `$${row.subTotal.toFixed(2)}`,
+      width: "10%",
+    },
     {
+      name: "Discount ($)",
+      selector: (row) => row.discount,
+      sortable: true,
+      cell: (row) => `$${row.discount.toFixed(2)}`,
+      width: "10%",
+    },
+        {
       name: "Total ($)",
       selector: (row) => row.totalPrice,
       sortable: true,
@@ -228,20 +242,7 @@ const PosSaleList = () => {
       cell: (row) => `$${row.paid.toFixed(2)}`,
       width: "10%",
     },
-    {
-      name: "Discount ($)",
-      selector: (row) => row.discount,
-      sortable: true,
-      cell: (row) => `$${row.discount.toFixed(2)}`,
-      width: "10%",
-    },
-    {
-      name: "Sub Total ($)",
-      selector: (row) => row.subTotal,
-      sortable: true,
-      cell: (row) => `$${row.subTotal.toFixed(2)}`,
-      width: "10%",
-    },
+
     {
       name: 'Actions',
       cell: (row) => (
