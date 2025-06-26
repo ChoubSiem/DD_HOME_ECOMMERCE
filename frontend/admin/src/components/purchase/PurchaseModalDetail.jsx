@@ -55,9 +55,11 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
 
   // Calculate totals
   const subtotal = purchase?.items?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;
+  console.log(subtotal);
+  
   const taxRate = 0.1; // 10% tax
   const tax = subtotal * taxRate;
-  const total = subtotal + tax;
+  const total = parseFloat(subtotal + tax).toFixed(2);
 
   const columns = [
     {

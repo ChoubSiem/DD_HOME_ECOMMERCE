@@ -308,7 +308,7 @@ const AddPurchase = () => {
       supplier_id : selectedSupplier,
       warehouse_id: userData.warehouse_id,
       note: note || null,
-      payment_type: payment.type,
+      payments: payment.payments,
       total: totalAmount,
       next_date: payment.date || null,
       credit_amount: payment.amount || null,
@@ -361,6 +361,7 @@ const AddPurchase = () => {
           purchase={purchase}
           onPaymentSubmit={setPayment} 
           selectSupplier = {setSelectedSupplier}
+          total={totalAmount}
         />
         
         <PurchaseSearchBar

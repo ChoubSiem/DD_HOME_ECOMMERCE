@@ -13,9 +13,7 @@ export const fetchWarehouse = async (token) => {
 export const createWarehouse = async (values, token) => {
   const response = await axios.post(`${API_BASE}/warehouse/create`, values, {
     headers: { Authorization: `Bearer ${token}` }
-  });
-  console.log(response);
-  
+  });  
   return response.data;
 };
 

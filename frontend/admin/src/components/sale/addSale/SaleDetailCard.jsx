@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, Row, Col, DatePicker, Input, Form, Select } from "antd";
 import dayjs from 'dayjs';
 import Cookies from "js-cookie";
-
+import { useUser } from "../../../hooks/UserUser";
 const { Option } = Select;
 
 const SaleDetailCard = ({
@@ -19,12 +19,21 @@ const SaleDetailCard = ({
   const now = dayjs();
   const [form] = Form.useForm();
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
+  const [salepersons, setSalePersons] = useState([]);
   const userData = JSON.parse(Cookies.get("user"));
+  const token = localStorage.getItem('token');
   const safeSalesperson = {
     name: salesperson?.name || '',
-    id: salesperson?.id || null
+    id: salesperson?.id || userData.id // Default to current user's ID if not provided
   };
+  const {handleEmployee} = useUser();
   
+  const handleEmployeeData = async() =>{
+    let result = await handleEmployee(token);
+    if (result.success) {
+      setSalePersons(result.employees);
+    }
+  }
 
   useEffect(() => {
     if (selectedWarehouse && selectedWarehouse !== "company") {
@@ -35,6 +44,7 @@ const SaleDetailCard = ({
     } else {
       setFilteredProducts(products);
     }
+    handleEmployeeData();
   }, [selectedWarehouse, products, setFilteredProducts]);
 
   const handleWarehouseChange = (value) => {
@@ -72,13 +82,24 @@ const SaleDetailCard = ({
           </Col>
 
           <Col xs={24} sm={8} md={8} lg={8}>
-            <Form.Item label="Salesperson" style={{ marginBottom: 0 }}>
-              <Input value={safeSalesperson.name} disabled />
-              <input
-                type="hidden"
-                name="salesperson_id"
-                value={safeSalesperson.id || ''}
-              />
+            <Form.Item label="Salesperson" name="salesperson_id" style={{ marginBottom: 0 }}>
+              <Select
+                placeholder="Select salesperson"
+                defaultValue={safeSalesperson.username}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.children || '')
+                    .toString()
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {salepersons.map((person) => (
+                  <Option key={person.id} value={person.username}>
+                    {person.name}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
           </Col>
 
@@ -132,7 +153,6 @@ const SaleDetailCard = ({
                   )}
                 </Select>
               </Form.Item>
-
             )}
           </Col>
         </Row>

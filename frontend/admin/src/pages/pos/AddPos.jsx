@@ -48,6 +48,22 @@ function PosAdd() {
       return null;
     }
   });
+   const handleSalespersonChange = (value) => {
+    setSelectedSalesperson(value);
+    console.log('Selected salesperson ID:', value);
+  };
+    const [salepersons, setSalePersons] = useState([]);
+    const [selectedSalesperson, setSelectedSalesperson] = useState(() => {
+      // You can load from localStorage if you want persistence
+      const saved = localStorage.getItem('posSelectedSalesperson');
+      return saved ? JSON.parse(saved) : null;
+    });
+    const handleEmployeeData = async() => {
+    let result = await handleEmployee(token);
+    if (result.success) {
+      setSalePersons(result.employees);
+    }
+  }
   const [customerGroup, setCustomerGroup] = useState('');
   const [groupOptions, setGroupOptions] = useState([]);
   const [priceType, setPriceType] = useState('retail_price'); 
@@ -123,7 +139,7 @@ const handleAddPayment = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { handleProducts, handleCategories } = useProductTerm();
-  const { handleCustomerQuickCreate, handleCustomers,handleGetCustomerGroup } = useUser();
+  const { handleCustomerQuickCreate, handleCustomers,handleGetCustomerGroup, handleEmployee } = useUser();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const [shiftOpen, setShiftOpen] = useState(false);
@@ -155,6 +171,12 @@ const handleAddPayment = () => {
       return [];
     }
   });
+    useEffect(() => {
+      handleEmployeeData();
+    if (selectedSalesperson) {
+      localStorage.setItem('posSelectedSalesperson', JSON.stringify(selectedSalesperson));
+    }
+  }, [selectedSalesperson]);
 
   const [categories, setCategories] = useState([]);
   const categoryScrollerRef = useRef(null);
@@ -250,19 +272,23 @@ const handleAddPayment = () => {
   const [showPriceWarning, setShowPriceWarning] = useState(false);
 
   // Helper function to map customer group to price type
-  const getPriceTypeFromCustomerGroup = (group) => {
-    switch (group?.toLowerCase()) {
-      case 'vip':
-        return 'vip_price';
-      case 'depot':
-        return 'depot_price';
-      case 'dealer':
-        return 'dealer_price';
-      case 'walkin':
-      default:
-        return 'retail_price';
-    }
-  };
+const getPriceTypeFromCustomerGroup = (group) => {
+  const normalizedGroup = group?.toLowerCase().replace(/[^a-z]/g, '');
+
+  switch (normalizedGroup) {
+    case 'vipcustomer':
+      return 'vip_price';
+    case 'depotcustomer':
+      return 'depot_price';
+    case 'dealercustomer':
+      return 'dealer_price';
+    case 'walkincustomer':
+      return 'retail_price';
+    default:
+      return 'retail_price';
+  }
+};
+
 
   // Helper functions
   const getCurrentProducts = () => {
@@ -1415,31 +1441,31 @@ const printInvoice = (printData) => {
               )}
             </div>
 
-    <div className="options-list">
-      {filteredCustomers.length > 0 ? (
-        <>
-          {(searchCustomerTerm ? filteredCustomers : filteredCustomers.slice(0, 10)).map(customer => (
-            <div
-              key={customer.id}
-              className={`option ${selectedCustomer?.id === customer.id ? 'selected' : ''}`}
-              onClick={() => handleSelect(customer)}
-            >
-              <div className="customer-info">
-                <div className="username">{customer.username} ({customer.group_name})</div>
-                {customer.phone && (
-                  <div className="phone">{customer.phone}</div>
-                )}
-              </div>
+            <div className="options-list">
+              {filteredCustomers.length > 0 ? (
+                <>
+                  {(searchCustomerTerm ? filteredCustomers : filteredCustomers.slice(0, 10)).map(customer => (
+                    <div
+                      key={customer.id}
+                      className={`option ${selectedCustomer?.id === customer.id ? 'selected' : ''}`}
+                      onClick={() => handleSelect(customer)}
+                    >
+                      <div className="customer-info">
+                        <div className="username">{customer.username} ({customer.group_name})</div>
+                        {customer.phone && (
+                          <div className="phone">{customer.phone}</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                        
+                </>
+              ) : (
+                <div className="no-results">
+                  {searchCustomerTerm ? "No matching customers" : "No customers available"}
+                </div>
+              )}
             </div>
-          ))}
-                
-        </>
-      ) : (
-        <div className="no-results">
-          {searchCustomerTerm ? "No matching customers" : "No customers available"}
-        </div>
-      )}
-    </div>
 
   <div
     className="add-option"
@@ -1454,7 +1480,20 @@ const printInvoice = (printData) => {
 </div>
               )}
             </div>
-          </div>
+              <Select 
+                onChange={handleSalespersonChange} 
+                value={selectedSalesperson}
+                style={{ width: 200 }} 
+                showSearch={false} // disables search
+                placeholder="Select salesperson"
+              >
+                {salepersons.map((person) => (
+                  <Option key={person.id} value={person}>
+                    {person.username}
+                  </Option>
+                ))}
+              </Select>
+            </div>
 
           <div className="products-grid">
               {loading ? (
@@ -1966,6 +2005,7 @@ const printInvoice = (printData) => {
           shiftId={shiftId}
           shiftData={shiftData}
         />
+
       </div>
     </>
   );

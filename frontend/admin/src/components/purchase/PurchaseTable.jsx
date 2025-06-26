@@ -34,11 +34,11 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       id: purchase.id,
       reference: purchase.reference || "N/A",
       supplier: typeof purchase.supplier === "object"
-        ? purchase.supplier.name || purchase.supplier.username || "N/A"
+        ? purchase.supplier?.name || purchase.supplier?.username || "N/A"
         : purchase.supplier || "N/A",
       createdBy: {
         username: typeof purchase.purchaser === "object"
-          ? purchase.purchaser.name || purchase.purchaser.username || "N/A"
+          ? purchase.purchaser?.name || purchase.purchaser?.username || "N/A"
           : purchase.purchaser || "N/A",
       },
       date: purchase.date || new Date().toISOString(),
