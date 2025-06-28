@@ -20,7 +20,7 @@ export const useProfileStore = create((set) => ({
   error: null,
   loading: true,
 
-  initialize: async () => {
+  initialize: async (navigate) => {
     // const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
