@@ -47,16 +47,16 @@ export const useProfileStore = create((set) => ({
         Cookies.remove("permission");
       }
     } catch (error) {
-      // set({
-      //   isAuthenticated: false,
-      //   token,
-      //   user: null,
-      //   permissions:null,
-      //   loading: false,
-      // });
-      // localStorage.removeItem('token');
-      // Cookies.remove('user');
-      // navigate("/login");
+      set({
+        isAuthenticated: false,
+        token,
+        user: null,
+        permissions:null,
+        loading: false,
+      });
+      localStorage.removeItem('token');
+      Cookies.remove('user');
+      navigate("/login");
     }
   },
   

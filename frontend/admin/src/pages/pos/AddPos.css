@@ -1087,3 +1087,8 @@ textarea:focus{
   max-height: 300px;
   overflow-y: auto;
 }
+.saleperson-select{
+  /* background: #000; */
+  height: 47px;
+  /* padding: 5px; */
+}

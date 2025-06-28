@@ -2,8 +2,8 @@ import { message } from 'antd';
 import {getPurchaseReports , getSaleReports ,getShiftReports ,getStockReports ,getProductReports ,getPaymentReport} from "../services/reoportService";
 
 export const useReport = () => {
-  const getPurchaseReportData = async(warehouse_id , token ) =>{
-    const response = await getPurchaseReports(warehouse_id,token);
+  const getPurchaseReportData = async(values , token ) =>{
+    const response = await getPurchaseReports(values,token);
     if (response.purchases) {
         return {
             success: true,

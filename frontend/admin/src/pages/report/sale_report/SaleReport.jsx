@@ -202,10 +202,7 @@ const SalesReports = () => {
       totals,
       stats: { totalSales, totalRevenue, totalProfit, completedSales, pendingSales, completionRate },
     };
-  }, [sales]);
-
-  console.log(totals);
-  
+  }, [sales]);  
 
   // Row selection handler
   const handleRowSelected = useCallback((e) => {
@@ -236,20 +233,39 @@ const handleExportExcel = useCallback(async () => {
       `From ${appliedFilters.dateRange?.[0] ? dayjs(appliedFilters.dateRange[0]).format('YYYY-MM-DD h:mm A') : 'N/A'}`,
       `To ${appliedFilters.dateRange?.[1] ? dayjs(appliedFilters.dateRange[1]).format('YYYY-MM-DD h:mm A') : 'N/A'}`,
     ]);
-    worksheet.addRow([]); // spacer
+    worksheet.addRow([]); // spacer 
+
+    // Determine dynamic columns based on groupBy
+    const hasDateGroup = appliedFilters.groupBy.includes('date');
+    const hasCustomerGroup = appliedFilters.groupBy.includes('customer');
+    const onlyCustomerGroup = appliedFilters.groupBy.length === 1 && hasCustomerGroup;
+    const showCustomerCount = !hasCustomerGroup;
 
     // Table headers
-    const headerRow = worksheet.addRow([
-      'Product Name',
-      'Customers',
+    const headers = [];
+    
+    if (!onlyCustomerGroup) {
+      headers.push('Product Name');
+    }
+    if (hasDateGroup) {
+      headers.push('Date');
+    }
+    if (hasCustomerGroup) {
+      headers.push('Customer Name');
+    }
+    
+    headers.push(
+      ...(showCustomerCount ? ['Customers'] : []),
       'Quantity Sold',
       'Sub Amount',
       'Invoice Discount',
       'Item Discount',
       'Total Sale',
       'Total Cost',
-      'Profit',
-    ]);
+      'Profit'
+    );
+
+    const headerRow = worksheet.addRow(headers);
 
     headerRow.eachCell((cell) => {
       cell.font = { bold: true };
@@ -267,41 +283,91 @@ const handleExportExcel = useCallback(async () => {
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
 
-    // Sales data
+    // Sales data - preserve original number formatting
     sales.forEach((sale) => {
-      const row = worksheet.addRow([
-        sale.product_name || 'N/A',
-        sale.total_customer || 0,
-        parseFloat(sale.quantity)?.toFixed(2) || 0,
-        (sale.unit_price * sale.quantity) || 0,
-        sale.inv_discount || 0,
-        sale.item_discount || 0,
-        sale.total_sale || 0,
-        sale.total_cost || 0,
-        sale.profit || 0,
-      ]);
+      const rowData = [];      
+      if (!onlyCustomerGroup) {
+        rowData.push(sale.product_name || 'N/A');
+      }
+      if (hasDateGroup) {
+        rowData.push(sale.date ? dayjs(sale.date).format('YYYY-MM-DD') : 'N/A');
+      }
+      if (hasCustomerGroup) {
+        rowData.push(sale.customer_name || 'N/A');
+      }
+      
+      // Push numeric values without fixed decimal formatting
+      rowData.push(
+        ...(showCustomerCount ? [sale.customer_count || 0] : []),
+        Number(sale.quantity) || 0,
+        Number(sale.unit_price * sale.quantity) || 0,
+        Number(sale.inv_discount) || 0,
+        Number(sale.item_discount) || 0,
+        Number(sale.total_sale) || 0,
+        Number(sale.total_cost) || 0,
+        Number(sale.profit) || 0
+      );
+
+      const row = worksheet.addRow(rowData);
       row.eachCell((cell) => {
-        cell.numFmt = '#,##0.00';
+        if (typeof cell.value === 'number') {
+          // Use general number format to preserve original decimal places
+          cell.numFmt = 'General';
+        }
         cell.alignment = { horizontal: 'start' };
       });
     });
 
-    // Totals row
-    const totalRow = worksheet.addRow([
-      '',
-      '',
-      totals.totalCustomers,
-      totals.totalQuantity,
-      totals.totalSubtotal,
-      totals.totalInvoiceDiscount,
-      totals.totalItemDiscount,
-      totals.totalSale,
-      totals.totalCost,
-      totals.totalProfit,
-    ]);
+    // Calculate totals
+    const calculatedTotals = sales.reduce((acc, sale) => {
+      acc.totalQuantity += Number(sale.quantity) || 0;
+      acc.totalSubtotal += Number(sale.unit_price * sale.quantity) || 0;
+      acc.totalInvoiceDiscount += Number(sale.inv_discount) || 0;
+      acc.totalItemDiscount += Number(sale.item_discount) || 0;
+      acc.totalSale += Number(sale.total_sale) || 0;
+      acc.totalCost += Number(sale.total_cost) || 0;
+      acc.totalProfit += Number(sale.profit) || 0;
+      return acc;
+    }, {
+      totalQuantity: 0,
+      totalSubtotal: 0,
+      totalInvoiceDiscount: 0,
+      totalItemDiscount: 0,
+      totalSale: 0,
+      totalCost: 0,
+      totalProfit: 0
+    });
+
+    // Totals row - format with 2 decimal places
+    const totalRowData = [];
+    
+    // Add empty cells for any groupBy columns
+    if (!onlyCustomerGroup) totalRowData.push('');
+    if (hasDateGroup) totalRowData.push('');
+    if (hasCustomerGroup) totalRowData.push('');
+    
+    totalRowData.push(
+      ...(showCustomerCount ? [''] : []),
+      calculatedTotals.totalQuantity,
+      calculatedTotals.totalSubtotal,
+      calculatedTotals.totalInvoiceDiscount,
+      calculatedTotals.totalItemDiscount,
+      calculatedTotals.totalSale,
+      calculatedTotals.totalCost,
+      calculatedTotals.totalProfit
+    );
+
+    const totalRow = worksheet.addRow(totalRowData);
     totalRow.eachCell((cell, colNumber) => {
-      if (colNumber > 2) {
+      const firstDataCol = 1 + 
+        (!onlyCustomerGroup ? 1 : 0) + 
+        (hasDateGroup ? 1 : 0) + 
+        (hasCustomerGroup ? 1 : 0) + 
+        (showCustomerCount ? 1 : 0);
+      
+      if (colNumber >= firstDataCol) {
         cell.font = { bold: true };
+        // Format totals with 2 decimal places
         cell.numFmt = '#,##0.00';
         cell.alignment = { horizontal: 'right' };
         cell.border = {
@@ -329,7 +395,7 @@ const handleExportExcel = useCallback(async () => {
   } finally {
     setExportLoading(false);
   }
-}, [sales, totals, userData.warehouse_name, appliedFilters]);
+}, [sales, userData.warehouse_name, appliedFilters]);
 
   const handleExportPDF = useCallback(async () => {
     setExportLoading(true);
@@ -494,33 +560,256 @@ const columns = useMemo(() => {
 }, [sales]);
 
 
-  // Footer component
-  const CustomFooter = useMemo(() => (
-    <div>
+const CustomFooter = useMemo(() => {
+  // Calculate totals
+  const calculateTotals = () => {
+    const totals = {
+      totalQuantity: 0,
+      totalSubtotal: 0,
+      totalInvoiceDiscount: 0,
+      totalItemDiscount: 0,
+      totalSale: 0,
+      totalCost: 0,
+      totalProfit: 0,
+      totalItems: 0
+    };
+
+    const isGroupedByCustomer = appliedFilters.groupBy.includes('customer');
+    const isGroupedByDate = appliedFilters.groupBy.includes('date');
+    const isGroupedByProduct = appliedFilters.groupBy.includes('product');
+    const isCustomerOnly = isGroupedByCustomer && appliedFilters.groupBy.length === 1;
+
+    sales.forEach((sale) => {
+      totals.totalQuantity += Number(sale.quantity) || 0;
+      totals.totalSubtotal += Number(sale.unit_price * sale.quantity) || 0;
+      totals.totalInvoiceDiscount += Number(sale.inv_discount) || 0;
+      totals.totalItemDiscount += Number(sale.item_discount) || 0;
+      totals.totalSale += Number(sale.total_sale) || 0;
+      totals.totalCost += Number(sale.total_cost * sale.quantity) || 0;
+      totals.totalProfit += Number(sale.profit) || (sale.total_sale - (sale.total_cost * sale.quantity)) || 0;
+      totals.totalItems += 1;
+    });
+
+    return totals;
+  };
+
+  const footerTotals = calculateTotals();
+  const isGroupedByCustomer = appliedFilters.groupBy.includes('customer');
+  const isGroupedByDate = appliedFilters.groupBy.includes('date');
+  const isGroupedByProduct = appliedFilters.groupBy.includes('product');
+  const isCustomerOnly = isGroupedByCustomer && appliedFilters.groupBy.length === 1;
+  const isProductOnly = isGroupedByProduct && appliedFilters.groupBy.length === 1;
+  const allThreeGroupings = isGroupedByProduct && isGroupedByDate && isGroupedByCustomer;
+
+  // Determine column visibility
+  const showCustomerColumn = isGroupedByCustomer;
+  const showCustomerCount = !isGroupedByCustomer;
+  const showProductColumn = isGroupedByProduct && !isProductOnly;
+  const showDateColumn = isGroupedByDate && !isCustomerOnly;
+
+  // Calculate dynamic widths
+  const productColWidth = allThreeGroupings ? '200px' : '270px';
+  const dateColWidth = allThreeGroupings ? '100px' : '120px';
+  const customerColWidth = isCustomerOnly ? '270px' : '100px';
+  const quantityWidth = allThreeGroupings ? '160px' : '80px';
+  const subAmountWidth = allThreeGroupings ? '100px' : '120px';
+  const discountWidth = allThreeGroupings ? '100px' : '120px';
+  const totalSaleWidth = allThreeGroupings ? '80px' : '120px';
+  const costWidth = '100px';
+  const profitWidth = allThreeGroupings ? '120px' : '100px';
+
+  // Determine column template based on grouping
+  const getGridTemplateColumns = () => {
+    if (isCustomerOnly) {
+      return [
+        '270px', // Customer name
+        '80px',  // Quantity
+        '120px', // Sub Amount
+        '120px', // Invoice Discount
+        '120px', // Item Discount
+        '120px', // Total Sale
+        '100px', // Cost
+        '100px', // Total Cost
+        '100px'  // Profit
+      ].join(' ');
+    }
+    
+    return [
+      isProductOnly ? '270px' : (showProductColumn && productColWidth),
+      showDateColumn && dateColWidth,
+      showCustomerCount && customerColWidth,
+      quantityWidth,
+      subAmountWidth,
+      discountWidth,
+      discountWidth,
+      totalSaleWidth,
+      costWidth,
+      costWidth,
+      profitWidth
+    ].filter(Boolean).join(' ');
+  };
+
+  // Determine column positions
+  const getColumnPosition = (basePosition) => {
+    if (isCustomerOnly) {
+      return basePosition > 1 ? basePosition + 0 : basePosition;
+    }
+    return basePosition;
+  };
+
+  return (
+    <div style={{
+      width: '100%',
+      background: '#f8f9fa',
+    }}>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '13% 10% 10% 8% 10% 10% 10% 10% 10% 10%', 
-        minWidth: '1200px', 
-        borderTop: '1px solid #f0f0f0',
-        fontSize: '14px',
+        gridTemplateColumns: getGridTemplateColumns(),
+        minWidth: '100%',
+        width: 'fit-content'
       }}>
-        <div style={{ padding: '0 8px', textAlign: 'left' }}><Text strong>Total</Text></div>
-        <div />
-        <div style={{ textAlign: 'center' }}><Text strong>{totals.totalCustomers}</Text></div>
-        <div style={{ textAlign: 'center' }}><Text strong>{totals.totalQuantity}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${totals.totalSubtotal.toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${parseFloat(totals.totalInvoiceDiscount).toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${parseFloat(totals.totalItemDiscount).toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${parseFloat(totals.totalSale).toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}><Text strong>${parseFloat(totals.totalCost).toFixed(2)}</Text></div>
-        <div style={{ textAlign: 'right' }}>
-          <Text strong style={{ color: totals.totalProfit >= 0 ? '#52c41a' : '#f5222d' }}>
-            ${parseFloat(totals.totalProfit).toFixed(2)}
-          </Text>
+        {/* Total label */}
+        <div style={{
+          padding: '0.5rem',
+          fontWeight: 'bold',
+          position: 'sticky',
+          left: 0,
+          background: '#f8f9fa',
+          gridColumn: '1'
+        }}>
+          Total
+        </div>
+
+        {/* Customer column - only shown when grouped by customer */}
+        {showCustomerColumn && isCustomerOnly && (
+          <div style={{
+            padding: '0.5rem',
+            gridColumn: '2'
+          }}></div>
+        )}
+
+        {/* Quantity */}
+        <div style={{
+          padding: '0.5rem',
+          textAlign: 'center',
+          gridColumn: getColumnPosition(isCustomerOnly ? 3 : (
+            showCustomerCount ? 
+              (showDateColumn ? (showProductColumn ? '5' : '4') : 
+              (showProductColumn ? '4' : '3')) : 
+              (showDateColumn ? (showProductColumn ? '4' : '3') : 
+              (showProductColumn ? '3' : '2'))
+          ))
+        }}>
+          {footerTotals.totalQuantity}
+        </div>
+
+        {/* Sub Amount */}
+        <div style={{
+          padding: '0.5rem',
+          textAlign: 'right',
+          gridColumn: getColumnPosition(isCustomerOnly ? 4 : (
+            showCustomerCount ? 
+              (showDateColumn ? (showProductColumn ? '6' : '5') : 
+              (showProductColumn ? '5' : '4')) : 
+              (showDateColumn ? (showProductColumn ? '5' : '4') : 
+              (showProductColumn ? '4' : '3'))
+          ))
+        }}>
+          ${footerTotals.totalSubtotal.toFixed(2)}
+        </div>
+
+        {/* Invoice Discount */}
+        <div style={{
+          padding: '0.5rem',
+          textAlign: 'right',
+          gridColumn: getColumnPosition(isCustomerOnly ? 5 : (
+            showCustomerCount ? 
+              (showDateColumn ? (showProductColumn ? '7' : '6') : 
+              (showProductColumn ? '6' : '5')) : 
+              (showDateColumn ? (showProductColumn ? '6' : '5') : 
+              (showProductColumn ? '5' : '4'))
+          ))
+        }}>
+          ${footerTotals.totalInvoiceDiscount.toFixed(2)}
+        </div>
+
+        {/* Item Discount */}
+        <div style={{
+          padding: '0.5rem',
+          textAlign: 'right',
+          gridColumn: getColumnPosition(isCustomerOnly ? 6 : (
+            showCustomerCount ? 
+              (showDateColumn ? (showProductColumn ? '8' : '7') : 
+              (showProductColumn ? '7' : '6')) : 
+              (showDateColumn ? (showProductColumn ? '7' : '6') : 
+              (showProductColumn ? '6' : '5'))
+          ))
+        }}>
+          ${footerTotals.totalItemDiscount.toFixed(2)}
+        </div>
+
+        {/* Total Sale */}
+        <div style={{
+          padding: '0.5rem',
+          textAlign: 'right',
+          gridColumn: getColumnPosition(isCustomerOnly ? 7 : (
+            showCustomerCount ? 
+              (showDateColumn ? (showProductColumn ? '9' : '8') : 
+              (showProductColumn ? '8' : '7')) : 
+              (showDateColumn ? (showProductColumn ? '8' : '7') : 
+              (showProductColumn ? '7' : '6'))
+          ))
+        }}>
+          ${footerTotals.totalSale.toFixed(2)}
+        </div>
+
+        {/* Empty Cost cell */}
+        <div style={{
+          padding: '0.5rem',
+          textAlign: 'right',
+          gridColumn: getColumnPosition(isCustomerOnly ? 8 : (
+            showCustomerCount ? 
+              (showDateColumn ? (showProductColumn ? '10' : '9') : 
+              (showProductColumn ? '9' : '8')) : 
+              (showDateColumn ? (showProductColumn ? '9' : '8') : 
+              (showProductColumn ? '8' : '7'))
+          ))
+        }}></div>
+
+        {/* Total Cost */}
+        <div style={{
+          padding: '0.5rem',
+          textAlign: 'right',
+          gridColumn: getColumnPosition(isCustomerOnly ? 9 : (
+            showCustomerCount ? 
+              (showDateColumn ? (showProductColumn ? '11' : '10') : 
+              (showProductColumn ? '10' : '9')) : 
+              (showDateColumn ? (showProductColumn ? '10' : '9') : 
+              (showProductColumn ? '9' : '8'))
+          ))
+        }}>
+          ${footerTotals.totalCost.toFixed(2)}
+        </div>
+
+        {/* Profit */}
+        <div style={{
+          padding: '0.5rem',
+          textAlign: 'right',
+          color: footerTotals.totalProfit >= 0 ? '#52c41a' : '#f5222d',
+          gridColumn: getColumnPosition(isCustomerOnly ? 10 : (
+            showCustomerCount ? 
+              (showDateColumn ? (showProductColumn ? '12' : '11') : 
+              (showProductColumn ? '11' : '10')) : 
+              (showDateColumn ? (showProductColumn ? '11' : '10') : 
+              (showProductColumn ? '10' : '9'))
+          ))
+        }}>
+          ${footerTotals.totalProfit.toFixed(2)}
         </div>
       </div>
     </div>
-  ), [totals]);
+  );
+}, [sales, appliedFilters.groupBy]);
 
   // Error handling
   if (error) {

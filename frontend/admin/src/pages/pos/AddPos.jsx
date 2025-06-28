@@ -48,22 +48,28 @@ function PosAdd() {
       return null;
     }
   });
-   const handleSalespersonChange = (value) => {
-    setSelectedSalesperson(value);
-    console.log('Selected salesperson ID:', value);
+  const handleSalespersonChange = (selectedId) => {
+    const selectedPerson = salepersons.find(person => person.id === selectedId);
+    // console.log(selectedPerson);
+    
+    setSelectedSalesperson(selectedPerson);
   };
     const [salepersons, setSalePersons] = useState([]);
-    const [selectedSalesperson, setSelectedSalesperson] = useState(() => {
-      // You can load from localStorage if you want persistence
-      const saved = localStorage.getItem('posSelectedSalesperson');
-      return saved ? JSON.parse(saved) : null;
-    });
+    // const [selectedSalesperson, setSelectedSalesperson] = useState(() => {
+    //   const saved = localStorage.getItem('posSelectedSalesperson');
+    //   try {
+    //     return saved ? JSON.parse(saved) : null;
+    //   } catch {
+    //     return null;
+    //   }
+    // });
     const handleEmployeeData = async() => {
     let result = await handleEmployee(token);
     if (result.success) {
       setSalePersons(result.employees);
     }
   }
+  const [selectedSalesperson, setSelectedSalesperson] = useState(null);
   const [customerGroup, setCustomerGroup] = useState('');
   const [groupOptions, setGroupOptions] = useState([]);
   const [priceType, setPriceType] = useState('retail_price'); 
@@ -1102,6 +1108,10 @@ const handleCreatePosSaleData = async () => {
   if (cartItems.length === 0) {
     message.warning("Please add items to cart first");
     return;
+  }  
+ if (!selectedSalesperson) {  
+    message.warning("Please select a salesperson");
+    return;
   }
 
   try {
@@ -1130,7 +1140,8 @@ const handleCreatePosSaleData = async () => {
       change_due: parseFloat(paidAmount - total).toFixed(2),
       payments: payments,
       sale_type: 'POS',
-      amount: total
+      amount: total,
+      saleperson: selectedSalesperson.id
     };
 
     // console.log(paymentData);
@@ -1467,28 +1478,29 @@ const printInvoice = (printData) => {
               )}
             </div>
 
-  <div
-    className="add-option"
-    onClick={() => {
-      setIsModalVisible(true);
-      setIsOpen(false);
-    }}
-  >
-    <FiPlus className="add-icon" />
-    <span>Add New Customer</span>
-  </div>
-</div>
+            <div
+              className="add-option"
+              onClick={() => {
+                setIsModalVisible(true);
+                setIsOpen(false);
+              }}
+            >
+              <FiPlus className="add-icon" />
+              <span>Add New Customer</span>
+            </div>
+          </div>
               )}
             </div>
               <Select 
                 onChange={handleSalespersonChange} 
-                value={selectedSalesperson}
+                value={selectedSalesperson?.id} 
                 style={{ width: 200 }} 
-                showSearch={false} // disables search
+                showSearch={false}
                 placeholder="Select salesperson"
+                className = "saleperson-select"
               >
                 {salepersons.map((person) => (
-                  <Option key={person.id} value={person}>
+                  <Option key={person.id} value={person.id}> 
                     {person.username}
                   </Option>
                 ))}

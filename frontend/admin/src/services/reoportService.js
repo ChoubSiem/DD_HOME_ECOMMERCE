@@ -1,11 +1,11 @@
 import axios from 'axios';
 const API_BASE = 'https://backend.ddhomekh.com/api';
 
-export const getPurchaseReports = async (warehouse_id,token) => {
+export const getPurchaseReports = async (values,token) => {
   
   const response = await axios.get(`${API_BASE}/report/purchases`, {
     headers: { Authorization: `Bearer ${token}` },
-    params: {warehouse_id}
+    params: values
   });  
   // console.log(res);
   

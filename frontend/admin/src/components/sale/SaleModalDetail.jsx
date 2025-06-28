@@ -10,15 +10,15 @@ const SaleModalDetail = ({ open, onCancel, onEdit, sale }) => {
 
   useEffect(() => {
     console.log('Modal open:', open);
-    console.log('printRef:', printRef.current);
-    console.log('Sale data:', sale);
-    console.log('Sale items:', sale?.items);
+    // console.log('printRef:', printRef.current);
+    // console.log('Sale data:', sale);
+    // console.log('Sale items:', sale?.items);
   }, [open, sale]);
 
   useEffect(() => {
     if (!open) {
       setIsPrintReady(false);
-      console.log('Modal closed, resetting print state');
+      // console.log('Modal closed, resetting print state');
     }
   }, [open]);
 
@@ -46,7 +46,7 @@ const SaleModalDetail = ({ open, onCancel, onEdit, sale }) => {
 
   const handlePrint = () => {
     if (!printRef.current) {
-      console.error('printRef is null, cannot print');
+      // console.error('printRef is null, cannot print');
       alert('Cannot print: Content is not available. Check console for details.');
       setIsPrintReady(false);
       return;
@@ -57,7 +57,7 @@ const SaleModalDetail = ({ open, onCancel, onEdit, sale }) => {
     const printWindow = window.open('', '_blank');
 
     if (!printWindow) {
-      console.error('Failed to open print window. Check pop-up blocker.');
+      // console.error('Failed to open print window. Check pop-up blocker.');
       alert('Failed to open print window. Please allow pop-ups for this site.');
       setIsPrintReady(false);
       return;
@@ -162,7 +162,7 @@ const SaleModalDetail = ({ open, onCancel, onEdit, sale }) => {
 
   // Guard clause for missing sale data
   if (!sale) {
-    console.log('No sale data provided');
+    // console.log('No sale data provided');
     return (
       <Modal open={open} onCancel={onCancel} footer={null} width="60%">
         <div>No sale data available</div>

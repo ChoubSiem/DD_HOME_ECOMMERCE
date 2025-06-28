@@ -34,6 +34,8 @@ import { motion } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import debounce from 'lodash.debounce';
 import dayjs from 'dayjs';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import generatePDF from 'react-to-pdf';
 import html2canvas from 'html2canvas';
@@ -171,7 +173,7 @@ const ProductReport = React.memo(() => {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: 3,
     }).format(value || 0);
   }, []);
 
@@ -183,56 +185,106 @@ const handleExportExcel = useCallback(async () => {
       return;
     }
 
-    // Create headers based on your DataTable columns
+    // Create workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Product Report');
+    
+    // Company Header
+    worksheet.addRow(['DD Home']).font = { size: 16, bold: true };
+    worksheet.addRow(['Address: Nº25, St.5, Dangkor, Phnom Penh, Cambodia']);
+    worksheet.addRow(['Phone: 081 90 50 50']);
+    worksheet.addRow([`Generated: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`]);
+    worksheet.addRow([]); 
+
+    // Column Headers
     const headers = [
-      { header: "Code", key: "code", width: 10 },
-      { header: "Name", key: "name", width: 20 },
-      { header: "Category", key: "category", width: 10 },
-      { header: "Unit", key: "unit", width: 10 },
-      { header: "Cost", key: "cost", width: 10 },
-      { header: "Price", key: "price", width: 10 },
-      { header: "Retail Price", key: "retail_price", width: 10 },
-      { header: "Dealer Price", key: "dealer_price", width: 10 },
-      { header: "Depot Price", key: "depot_price", width: 10 },
+      'Code',
+      'Name',
+      'Category',
+      'Unit',
+      'Cost',
+      'Price',
+      'Retail Price',
+      'Dealer Price',
+      'Depot Price',
+      'VIP Price'  // Added VIP Price column
     ];
 
-    // Prepare the data in the same order as headers
-    const data = products.map(product => ({
-      code: product.code || 'N/A',
-      name: product.name || 'N/A',
-      category: product.category || 'N/A',
-      unit: product.unit || 'N/A',
-      cost: formatCurrency(product.cost),
-      price: formatCurrency(product.price),
-      retail_price: formatCurrency(product.retail_price),
-      dealer_price: formatCurrency(product.dealer_price),
-      depot_price: formatCurrency(product.depot_price),
-    }));
+    const headerRow = worksheet.addRow(headers);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
 
-    // Create workbook and worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    
-    // Add headers to the worksheet
-    XLSX.utils.sheet_add_aoa(worksheet, [headers.map(h => h.header)], { origin: 'A1' });
+    // Data Rows - without currency symbols
+    products.forEach((product) => {
+      const row = worksheet.addRow([
+        product.code || 'N/A',
+        product.name || 'N/A',
+        product.category || 'N/A',
+        product.unit || 'N/A',
+        product.cost || 0,  // Raw number without formatting
+        product.price || 0,
+        product.retail_price || 0,
+        product.dealer_price || 0,
+        product.depot_price || 0,
+        product.vip_price || 0  // Added VIP price
+      ]);
+
+      // Format numeric cells (price columns)
+      row.eachCell((cell, colNumber) => {
+        if (colNumber >= 5 && colNumber <= 10) { // Price columns (now includes VIP price)
+          cell.numFmt = '#,##0.00';
+          cell.alignment = { horizontal: 'right' };
+        } else if (colNumber === 2) { // Product name
+          cell.alignment = { horizontal: 'left', wrapText: true };
+        } else {
+          cell.alignment = { horizontal: 'left' };
+        }
+      });
+    });
 
     // Set column widths
-    worksheet['!cols'] = headers.map(h => ({ width: h.width }));
+    worksheet.columns = [
+      { key: 'code', width: 10 },
+      { key: 'name', width: 30 },
+      { key: 'category', width: 15 },
+      { key: 'unit', width: 10 },
+      { key: 'cost', width: 12 },
+      { key: 'price', width: 12 },
+      { key: 'retail_price', width: 12 },
+      { key: 'dealer_price', width: 12 },
+      { key: 'depot_price', width: 12 },
+      { key: 'vip_price', width: 12 }  // Added VIP price column width
+    ];
 
-    // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Product Report');
+    // Set row heights
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+      row.height = 20;
+    });
 
-    // Generate file
-    XLSX.writeFile(workbook, `product-report-${dayjs().format('YYYY-MM-DD-HHmmss')}.xlsx`);
+    // Generate and download the file
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `product-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`);
     
-    toast.current.show({ severity: 'success', summary: 'Success', detail: 'Excel exported successfully', life: 3000 });
+    toast.current.show({ 
+      severity: 'success', 
+      summary: 'Success', 
+      detail: 'Product report exported successfully', 
+      life: 3000 
+    });
   } catch (error) {
     console.error('Export error:', error);
-    toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to export Excel', life: 3000 });
+    toast.current.show({ 
+      severity: 'error', 
+      summary: 'Error', 
+      detail: 'Failed to export product report', 
+      life: 3000 
+    });
   } finally {
     setExportLoading(false);
   }
-}, [products, formatCurrency]);
+}, [products]);
 
   const handleExportPDF = useCallback(async () => {
     setExportLoading((prev) => ({ ...prev, pdf: true }));
@@ -301,7 +353,7 @@ const handleExportExcel = useCallback(async () => {
         field: 'code',
         header: 'Code',
         sortable: true,
-        style: { width: '10%' },
+        style: { width: '8%' },
         body: (rowData) => (
           <motion.div
             initial={{ opacity: 0, x: -10 }}
@@ -346,7 +398,7 @@ const handleExportExcel = useCallback(async () => {
         field: 'unit',
         header: 'Unit',
         sortable: true,
-        style: { width: '10%' },
+        style: { width: '8%' },
         body: (rowData) => (
           <motion.div
             initial={{ opacity: 0 }}
@@ -361,7 +413,7 @@ const handleExportExcel = useCallback(async () => {
         field: 'cost',
         header: 'Cost',
         sortable: true,
-        style: { width: '10%' },
+        style: { width: '8%' },
         body: (rowData) => (
           <motion.div
             initial={{ opacity: 0 }}
@@ -376,7 +428,7 @@ const handleExportExcel = useCallback(async () => {
         field: 'price',
         header: 'Price',
         sortable: true,
-        style: { width: '10%' },
+        style: { width: '8%' },
         body: (rowData) => (
           <motion.div
             initial={{ opacity: 0 }}
@@ -429,6 +481,21 @@ const handleExportExcel = useCallback(async () => {
             transition={{ duration: 0.3 }}
           >
             <Text type="success">{formatCurrency(rowData.depot_price)}</Text>
+          </motion.div>
+        ),
+      },
+      {
+        field: 'vip_price',
+        header: 'VIP Price',
+        sortable: true,
+        style: { width: '10%' },
+        body: (rowData) => (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Text type="success">{formatCurrency(rowData.vip_price)}</Text>
           </motion.div>
         ),
       },

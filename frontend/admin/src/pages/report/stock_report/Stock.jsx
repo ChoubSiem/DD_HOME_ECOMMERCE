@@ -33,6 +33,8 @@ import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import debounce from 'lodash.debounce';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import dayjs from 'dayjs';
 import * as XLSX from 'xlsx';
 import generatePDF from 'react-to-pdf';
@@ -182,69 +184,157 @@ const StockReport = React.memo(() => {
     setSortOrder(event.sortOrder);
   }, []);
 
-  // Export handlers
-  const handleExportExcel = useCallback(async () => {
-    setExportLoading(true);
-    try {
-      if (!products.length) {
-        toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'No data to export', life: 3000 });
-        return;
-      }
-      if (products.length > 10000) {
-        toast.current.show({
-          severity: 'warn',
-          summary: 'Warning',
-          detail: 'Large dataset detected. Consider server-side export for better performance.',
-          life: 5000,
-        });
-      }
-
-      const formatNumber = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-      const exportData = [
-        [{ v: 'Stock Report', s: { font: { bold: true, sz: 16 }, alignment: { horizontal: 'center' } } }],
-        [`Warehouse: ${userData.warehouse_name || 'N/A'} (ID: ${userData.warehouse_id || 'N/A'})`],
-        [`Generated: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`],
-        [`Filters: Search="${filters.search_term || 'None'}", Status=${filters.status}, Category=${filters.category}, Stock Level=${filters.stock_level}, Date Range=${filters.date_range ? filters.date_range.map(d => d.format('YYYY-MM-DD')).join(' to ') : 'None'}`],
-        [],
-        [
-          { v: 'Product', s: { font: { bold: true }, fill: { fgColor: { rgb: 'E6E6E6' } } } },
-          { v: 'Code', s: { font: { bold: true }, fill: { fgColor: { rgb: 'E6E6E6' } } } },
-          { v: 'Category', s: { font: { bold: true }, fill: { fgColor: { rgb: 'E6E6E6' } } } },
-          { v: 'Stock', s: { font: { bold: true }, fill: { fgColor: { rgb: 'E6E6E6' } } } },
-          // { v: 'Cost Value', s: { font: { bold: true }, fill: { fgColor: { rgb: 'E6E6E6' } } } },
-          // { v: 'Retail Value', s: { font: { bold: true }, fill: { fgColor: { rgb: 'E6E6E6' } } } },
-          // { v: 'Status', s: { font: { bold: true }, fill: { fgColor: { rgb: 'E6E6E6' } } } },
-        ],
-        ...products.map((p) => [
-          p.name || 'N/A',
-          p.code || 'N/A',
-          p.category || 'N/A',
-          `${p.stock || 0} ${p.units || ''}`,
-          formatNumber((p.cost || 0) * (p.stock || 0)),
-          formatNumber((p.price || 0) * (p.stock || 0)),
-          p.status?.toUpperCase() || 'N/A',
-        ]),
-      ];
-
-      if (meta) {
-        exportData.push(['', '', '', `Total: ${meta.total_products || 0}`, `$${formatNumber(meta.total_value || 0)}`, '', '']);
-      }
-
-      const worksheet = XLSX.utils.aoa_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Stock Report');
-      worksheet['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
-      worksheet['!freeze'] = { xSplit: 0, ySplit: 6 }; // Freeze header rows
-      XLSX.writeFile(workbook, `stock-report-${dayjs().format('YYYY-MM-DD-HHmmss')}.xlsx`);
-      toast.current.show({ severity: 'success', summary: 'Success', detail: 'Excel exported successfully', life: 3000 });
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to export Excel', life: 3000 });
-    } finally {
-      setExportLoading(false);
+const handleExportExcel = useCallback(async () => {
+  setExportLoading(true);
+  try {
+    if (!products.length) {
+      toast.current.show({ 
+        severity: 'warn', 
+        summary: 'Warning', 
+        detail: 'No data to export', 
+        life: 3000 
+      });
+      return;
     }
-  }, [products, meta, userData, filters]);
+
+    // Create workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Stock Report');
+
+    // Header Section
+    worksheet.addRow(['DD Home']).font = { size: 16, bold: true };
+    worksheet.addRow(['Address: Nº25, St.5, Dangkor, Phnom Penh, Cambodia']);
+    worksheet.addRow(['Phone: 081 90 50 50']);
+    worksheet.addRow([`View By Outlet: ${userData.warehouse_name || 'All Warehouses'}`]);
+    worksheet.addRow(['View By Location: All']);
+    worksheet.addRow(['View As: Detail']);
+    worksheet.addRow([`Generated: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`]);
+    worksheet.addRow([]); // Spacer
+
+    // Column Headers
+    const headers = [
+      'No.',
+      'Product Code',
+      'Barcode',
+      'Product Name',
+      'Category',
+      'UOM',
+      'Stock',
+    ];
+
+    const headerRow = worksheet.addRow(headers);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' },
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        bottom: { style: 'thin' },
+        left: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    // Data Rows
+    products.forEach((product, index) => {
+      const row = worksheet.addRow([
+        index + 1,
+        product.code || 'N/A',
+        product.barcode || 'N/A',
+        product.name || 'N/A',
+        product.category || 'N/A',
+        product.unit || 'N/A',
+        product.stock || 0,
+      ]);
+
+      // Format numeric cells
+      row.eachCell((cell, colNumber) => {
+        if (colNumber === 7) { // Stock column (1-based index)
+          cell.numFmt = '#,##0';
+          cell.alignment = { horizontal: 'right' };
+        } else if (colNumber === 1) { // Row number column
+          cell.alignment = { horizontal: 'center' };
+        } else {
+          cell.alignment = { horizontal: 'left' };
+        }
+        
+        // Enable text wrapping for product name
+        if (colNumber === 4) {
+          cell.alignment = { ...cell.alignment, wrapText: true };
+        }
+      });
+    });
+
+    // Calculate totals
+    const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
+
+    // Add totals row
+    const totalRow = worksheet.addRow([
+      '', '', '', '', '', '', totalStock
+    ]);
+
+    // Style the totals row cells (UOM and Stock columns only)
+    const uomCell = totalRow.getCell(6); // UOM column (1-based index)
+    const stockCell = totalRow.getCell(7); // Stock column
+
+    // Apply top border to both cells
+    const topBorderStyle = { style: 'medium', color: { argb: 'FF000000' } };
+    
+    uomCell.border = {
+      top: topBorderStyle
+    };
+    
+    stockCell.border = {
+      top: topBorderStyle
+    };
+    stockCell.font = { bold: true };
+    stockCell.numFmt = '#,##0';
+    stockCell.alignment = { horizontal: 'right' };
+
+    // Set column widths
+    worksheet.columns = [
+      { key: 'no', width: 5 },          // No.
+      { key: 'code', width: 12 },       // Product Code
+      { key: 'barcode', width: 15 },    // Barcode
+      { key: 'name', width: 40 },       // Product Name
+      { key: 'category', width: 20 },   // Category
+      { key: 'uom', width: 8 },         // UOM
+      { key: 'stock', width: 12 },      // Current Stock
+    ];
+
+    // Set row heights for data rows
+    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+      if (rowNumber > 9) { // Skip header rows
+        row.height = 20;
+      }
+    });
+
+    // Generate and download the file
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `stock-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`);
+    
+    toast.current.show({ 
+      severity: 'success', 
+      summary: 'Success', 
+      detail: 'Stock report exported successfully', 
+      life: 3000 
+    });
+  } catch (error) {
+    console.error('Export error:', error);
+    toast.current.show({ 
+      severity: 'error', 
+      summary: 'Error', 
+      detail: 'Failed to export stock report', 
+      life: 3000 
+    });
+  } finally {
+    setExportLoading(false);
+  }
+}, [products, userData]);
 
   const handleExportPDF = useCallback(async () => {
     setExportLoading(true);
