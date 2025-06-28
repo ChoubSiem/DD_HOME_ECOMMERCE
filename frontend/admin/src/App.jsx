@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate  } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./components/layouts/MainLayout";
 import Profile from "./pages/profile/UserProfile";
@@ -81,13 +81,13 @@ import EmployeeEdit from "./components/policy/employee/edit/EmployeeForm/Employe
 import UomConversion from "./pages/inventory/UomConversion/UomConversion";
 import BrandManagement from "./pages/brand/Brand";
 
+// import { useNavigate } from 'react-router-dom';
 
 // sale report 
 import DailySaleReport from "./pages/report/sale_report/SaleReport";
 
 const App = () => {
   const { initialize, login, logout, isAuthenticated, user, loading } = useProfileStore();
-  
   useEffect(() => {        
     if (!isAuthenticated) {
       initialize();
