@@ -302,7 +302,7 @@ const AddSale = () => {
       }))
     };
 
-    // console.log(saleData);
+    console.log(saleData);
     // return ;
 
     try {

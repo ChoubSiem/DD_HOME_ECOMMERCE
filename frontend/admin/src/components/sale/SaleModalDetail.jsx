@@ -1,322 +1,347 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Modal, Button, Divider, Table } from 'antd';
-import { PrinterOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons';
-import 'antd/dist/reset.css';
+import React, { useRef, useState, useMemo } from 'react';
+import { Modal, Button, message, Spin } from 'antd';
+import { PrinterOutlined, CloseOutlined, FilePdfOutlined, DownloadOutlined } from '@ant-design/icons';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import logo from '../../assets/logo/DD_Home_Logo 2.jpg';
 import "./SaleModalDetail.css";
-const SaleModalDetail = ({ open, onCancel, onEdit, sale }) => {
-  const printRef = useRef();
-  const [isPrintReady, setIsPrintReady] = useState(false);
 
-  useEffect(() => {
-    console.log('Modal open:', open);
-    // console.log('printRef:', printRef.current);
-    // console.log('Sale data:', sale);
-    // console.log('Sale items:', sale?.items);
-  }, [open, sale]);
+const SaleModalDetail = ({ open, onCancel, sale }) => {
+  const invoiceRef = useRef();
+  const [isExporting, setIsExporting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!open) {
-      setIsPrintReady(false);
-      // console.log('Modal closed, resetting print state');
-    }
-  }, [open]);
-
-  const calculateTotal = () => {
-    if (!sale || !sale.items) return 0;
-    return sale.items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0).toFixed(2);
-  };
-
-  const fillEmptyRows = (items) => {
-    const minRows = 20; 
-    const emptyRow = {
-      productName: '',
-      unit: '',
-      quantity: '',
-      price: '',
-      discount: '',
-      total: '',
+  // Memoized formatted date to prevent unnecessary recalculations
+  const formatDate = useMemo(() => {
+    return (dateString) => {
+      if (!dateString) return '';
+      const options = { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      };
+      return new Date(dateString).toLocaleString('en-GB', options);
     };
-    const filledItems = [...(items || [])];
-    while (filledItems.length < minRows) {
-      filledItems.push({ ...emptyRow, key: `empty-${filledItems.length}` });
+  }, []);
+
+  // Calculate totals with memoization
+  const { subTotal, discount, grandTotal } = useMemo(() => {
+    if (!sale?.items) return { subTotal: '0.00', discount: '0.00', grandTotal: '0.00' };
+    
+    const subTotal = sale.items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
+    const discount = sale.items.reduce((sum, item) => sum + (parseFloat(item.discount) || 0), 0);
+    
+    return {
+      subTotal: subTotal.toFixed(2),
+      discount: discount.toFixed(2),
+      grandTotal: (subTotal - discount).toFixed(2),
+    };
+  }, [sale]);
+
+  // Enhanced PDF export with better error handling
+  const exportToPDF = async () => {
+    if (!invoiceRef.current) {
+      message.warning('Invoice content not ready for export');
+      return;
     }
-    return filledItems;
+    
+    setIsExporting(true);
+    setLoading(true);
+    
+    try {
+      const canvas = await html2canvas(invoiceRef.current, { 
+        scale: 3,
+        logging: false,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(canvas);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(canvas, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`DDHome_Invoice_${sale?.reference || new Date().getTime()}.pdf`);
+      
+      message.success('PDF exported successfully');
+    } catch (error) {
+      message.error('Failed to export PDF');
+    } finally {
+      setIsExporting(false);
+      setLoading(false);
+    }
   };
 
-  const handlePrint = () => {
-    if (!printRef.current) {
-      // console.error('printRef is null, cannot print');
-      alert('Cannot print: Content is not available. Check console for details.');
-      setIsPrintReady(false);
+  // Export as image (PNG)
+  const exportToImage = async () => {
+    if (!invoiceRef.current) {
+      message.warning('Invoice content not ready for export');
       return;
     }
+    
+    setIsExporting(true);
+    setLoading(true);
+    
+    try {
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const link = document.createElement('a');
+      link.download = `DDHome_Invoice_${sale?.reference || new Date().getTime()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      message.success('Image downloaded successfully');
+    } catch (error) {
+      message.error('Failed to export image');
+    } finally {
+      setIsExporting(false);
+      setLoading(false);
+    }
+  };
 
-    setIsPrintReady(true);
-    const printContent = printRef.current.innerHTML;
-    const printWindow = window.open('', '_blank');
-
-    if (!printWindow) {
-      // console.error('Failed to open print window. Check pop-up blocker.');
-      alert('Failed to open print window. Please allow pop-ups for this site.');
-      setIsPrintReady(false);
+  // Direct print function with fallback
+  const handlePrint = async () => {
+    if (!invoiceRef.current) {
+      message.warning('Invoice content not ready for printing');
       return;
     }
+    
+    setLoading(true);
+    try {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        throw new Error('Popup blocked. Please allow popups for this site.');
+      }
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>DD Home Invoice - ${sale?.reference || ''}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+              @page { size: auto; margin: 0mm; }
+            </style>
+          </head>
+          <body>
+            ${invoiceRef.current.innerHTML}
+            <script>
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 300);
+            </script>
+          </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+    } catch (error) {
+      message.error('Printing failed: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Invoice #${sale?.reference || 'N/A'}</title>
-          <style>
-            @page { size: A4; margin: 15mm; }
-            body { font-family: 'Roboto', Arial, sans-serif; color: #333; }
-            .invoice-container { padding: 20px; width: 100%; max-width: 900px; margin: 0 auto; }
-            .no-print { display: none; }
-            .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; }
-            .header-left, .header-right { width: 45%; }
-            .company-logo img { width: 120px; margin-bottom: 15px; }
-            .document-title { font-size: 30px; font-weight: 700; color: #1a3c34; margin: 0; }
-            .invoice-details, .customer-details { font-size: 14px; color: #555; line-height: 1.6; }
-            .section-divider { border-top: 0.1px solid #1a3c34; margin: 25px 0; }
-            .notes-section { margin-bottom: 25px; }
-            .notes-section .section-title { font-size: 16px; font-weight: 600; color: #1a3c34; }
-            .note-text { font-size: 14px; color: #333; line-height: 1.6; }
-            .ant-table { border: 1px solid #e8e8e8; border-radius: 4px; min-height: 600px; }
-            .ant-table-content { min-height: 600px; display: flex; flex-direction: column; }
-            .ant-table-tbody { flex: 1; }
-            .ant-table-tbody > tr > td { border-bottom: 1px solid #e8e8e8; font-size: 13px; color: #333; padding: 12px; }
-            .ant-table-tbody > tr:empty > td { border-bottom: none; }
-            .ant-table-thead > tr > th { background: #f5f5f5; font-weight: 600; color: #1a3c34; border-bottom: 2px solid #1a3c34; font-size: 14px; padding: 12px; }
-            .ant-table-tbody > tr:nth-child(odd) { background: #fafafa; }
-            .total-section { margin-top: 25px; text-align: right; padding: 15px; background: #f5f5f5; border-radius: 4px; }
-            .total-label { font-size: 16px; font-weight: 700; color: #1a3c34; margin-right: 15px; }
-            .total-amount { font-size: 18px; font-weight: 700; color: #d32f2f; }
-            .footer-notes { margin-top: 25px; font-size: 12px; color: #555; text-align: center; }
-          </style>
-        </head>
-        <body>
-          ${printContent}
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-      setIsPrintReady(false);
-    }, 500);
-  }
-
-  const columns = [
-    {
-      title: 'No',
-      key: 'no',
-      render: (text, record, index) => <span>{record.productName ? index + 1 : ''}</span>,
-      width: '5%',
-    },
-    {
-      title: 'Product',
-      key: 'productName',
-      render: (record) => <span>{record.productName || ''}</span>,
-      width: '25%',
-      align: 'left',
-    },
-    {
-      title: 'Unit',
-      key: 'unit',
-      render: (record) => <span>{record.unit || ''}</span>,
-      width: '15%',
-      align: 'center',
-    },
-    {
-      title: 'Quantity',
-      key: 'quantity',
-      render: (record) => <span>{record.quantity || ''}</span>,
-      width: '10%',
-      align: 'center',
-    },
-    {
-      title: 'Price ($)',
-      key: 'price',
-      render: (_, record) => <span>{record.price ? parseFloat(record.price).toFixed(2) : ''}</span>,
-      width: '15%',
-      align: 'right',
-    },
-    {
-      title: 'Discount ($)',
-      key: 'discount',
-      render: (_, record) => <span>{record.discount ? parseFloat(record.discount).toFixed(2) : ''}</span>,
-      width: '15%',
-      align: 'right',
-    },
-    {
-      title: 'Total ($)',
-      key: 'total',
-      render: (_, record) => <span>{record.total ? parseFloat(record.total).toFixed(2) : ''}</span>,
-      width: '15%',
-      align: 'right',
-    },
-  ];
-
-  // Guard clause for missing sale data
   if (!sale) {
-    // console.log('No sale data provided');
     return (
-      <Modal open={open} onCancel={onCancel} footer={null} width="60%">
-        <div>No sale data available</div>
+      <Modal open={open} onCancel={onCancel} footer={null}>
+        <div className="empty-state">No invoice data available</div>
       </Modal>
     );
   }
 
-  // Company details (hardcoded or extend sale prop if needed)
-  const companyDetails = {
-    name: 'DD Home',
-    address: '123 Business Street, City, Country',
-    phone: '+1 (123) 456-7890',
-    email: 'contact@ddhome.com',
-  };
-
   return (
     <Modal
-      className="stock-modal"
       open={open}
       onCancel={onCancel}
       footer={null}
-      width="50%"
-      styles={{ body: { padding: 0 } }}
-      destroyOnClose={false}
+      width="80%"
+      style={{ maxWidth: '900px' }}
+      className="invoice-modal"
+      destroyOnClose
+      closable={!loading}
     >
-      <div
-        ref={printRef}
-        className="invoice-container"
-        style={{
-          padding: '20px',
-          background: '#fff',
-          borderRadius: '8px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          maxWidth: '900px',
-          margin: '0 auto',
-        }}
-      >
-        <header className="invoice-header" style={{ paddingBottom: '20px' }}>
-          <div
-            style={{
-              display: 'flex',
-              // flexDirection: 'column',
-              // alignItems: 'center',
-              // textAlign: 'center',
-              // marginBottom: '20px'
-            }}
-          >
-            <img src={logo} alt="Logo" style={{ width: '120px' }} />
-            <div style={{marginLeft:10}}>
-              <p style={{ fontSize: '18px', fontWeight: 'bold'}}>
-                {companyDetails.name}
-              </p>
-              <p style={{ fontSize: '14px',}}>
-                    Invoice #: {sale.reference || 'N/A'}
-              </p>
-
-              <p style={{ fontSize: '14px',}}>
-                    Customer: {sale.customerName || 'N/A'}
-              </p>
-
+      <Spin spinning={loading} tip={isExporting ? "Exporting..." : "Preparing..."}>
+        <div ref={invoiceRef} className="invoice-container">
+          {/* Header Section */}
+          <header className="invoice-header">
+            <div className="logo-container">
+              <img src={logo} alt="DD Home Logo" className="logo" />
             </div>
-          </div>
+            <div className="company-details">
+              <h1 className="company-name">DD Home</h1>
+              <div className="company-info">
+                <p><strong>Address:</strong> N°26, St.6, Dangkor, Phnom Penh, Cambodia</p>
+                <p><strong>Phone:</strong> 081 90 50 50 / 078 90 50 50</p>
+                <p><strong>Email:</strong> dd.home81@gmail.com</p>
+                <p><strong>Website:</strong> www.ddhomekh.com</p>
+              </div>
+            </div>
+          </header>
 
-          <div
-            style={{
-              display: 'flex',
-              // justifyContent: 'space-between',
-              alignItems: 'flex-end',
-            }}
-          >
-            <p style={{ fontSize: '14px',}}>
-                Date: {sale.saleDate || 'N/A'}
-              </p>
+          <div className="divider" />
 
-          </div>
-        </header>
-
-
-        <Divider className="section-divider" style={{ borderTop: '2px solid #1a3c34', margin: '25px 0' }} />
-
-        {sale.note && (
-          <section className="notes-section" style={{ marginBottom: '25px' }}>
-            <Divider orientation="left" className="section-title" style={{ fontSize: '16px', fontWeight: 600, color: '#1a3c34' }}>
-              Notes
-            </Divider>
-            <div className="notes-content">
-              <p className="note-text" style={{ fontSize: '14px', color: '#333', lineHeight: 1.6 }}>{sale.note}</p>
+          {/* Invoice Title Section */}
+          <section className="invoice-title-section">
+            <h2 className="invoice-title">INVOICE</h2>
+            <div className="invoice-meta">
+              <span className="invoice-number">{sale.reference || 'N/A'}</span>
             </div>
           </section>
-        )}
 
-        <Table
-          dataSource={fillEmptyRows(sale.items)}
-          columns={columns}
-          pagination={false}
-          rowKey={(record) => record.id || record.key || record.product?.id || JSON.stringify(record)}
-          bordered
-          size="middle"
-          className="items-table"
-          rowClassName={(record, index) => (index % 2 === 0 ? 'table-row-even' : 'table-row-odd')}
-          style={{ minHeight: '600px', marginBottom: '25px' }}
-        />
-
-        <div className="total-section" style={{ textAlign: 'right', padding: '15px', background: '#f5f5f5', borderRadius: '4px' }}>
-          <span className="total-label" style={{ fontSize: '16px', fontWeight: 700, color: '#1a3c34', marginRight: '15px' }}>
-            Total Amount:
-          </span>
-          <span className="total-amount" style={{ fontSize: '18px', fontWeight: 700, color: '#d32f2f' }}>
-            ${calculateTotal()}
-          </span>
+          {/* Invoice Details */}
+      <section className="invoice-details">
+        <div className="detail-row">
+          <span className="detail-label">Invoice Date:</span>
+          <span className="detail-value">{formatDate(sale.saleDate)}</span>
         </div>
-
-        <div className="footer-notes" style={{ marginTop: '25px', fontSize: '12px', color: '#555', textAlign: 'center' }}>
-          <p style={{ margin: '2px 0' }}>Thank you for your business!</p>
-          <p style={{ margin: '2px 0' }}>Payment Terms: Due within 30 days. Please contact us at {companyDetails.email} for any inquiries.</p>
+        <div className="detail-row">
+          <span className="detail-label">Customer:</span>
+          <span className="detail-value">{sale.customerName || 'N/A'}</span>
         </div>
+      </section>
+
+
+          <div className="divider" />
+
+          {/* Items Table */}
+          <section className="items-section">
+            <table className="items-table">
+              <thead>
+                <tr>
+                  <th className="col-no">No.</th>
+                  <th className="col-desc">Description</th>
+                  <th className="col-price">Price ($)</th>
+                  <th className="col-qty">QTY UOM</th>
+                  <th className="col-discount">Discount ($)</th>
+                  <th className="col-total">Amount ($)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sale.items?.map((item, index) => (
+                  <tr key={index}>
+                    <td className="col-no">{index + 1}</td>
+                    <td className="col-desc">
+                      <div className="product-code">{item.productCode || ''}</div>
+                      <div className="product-name">{item.productName || ''}</div>
+                    </td>
+                    <td className="col-price">{parseFloat(item.price || 0).toFixed(2)}</td>
+                    <td className="col-qty">
+                      {item.quantity} {item.unit || ''}
+                    </td>
+                    <td className="col-discount">{parseFloat(item.discount || 0).toFixed(2)}</td>
+                    <td className="col-total">{parseFloat(item.total || 0).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+
+          <div className="divider" />
+
+          {/* Totals Section */}
+          <section className="totals-section">
+            <div className="total-row">
+              <span className="total-label">Sub Total:</span>
+              <span className="total-value">${subTotal}</span>
+            </div>
+            <div className="total-row">
+              <span className="total-label">Discount:</span>
+              <span className="total-value">${discount}</span>
+            </div>
+            <div className="total-row grand-total">
+              <span className="total-label">Grand Total:</span>
+              <span className="total-value">${grandTotal}</span>
+            </div>
+            <div className="total-row">
+              <span className="total-label">Payment:</span>
+              <span className="total-value">${grandTotal}</span>
+            </div>
+            <div className="total-row">
+              <span className="total-label">Balance:</span>
+              <span className="total-value">$0.00</span>
+            </div>
+          </section>
+
+          <div className="divider" />
+
+          {/* Signatures Section */}
+          <section className="signatures-section">
+            <div className="signature-grid">
+              <div className="signature-box">
+                <div className="signature-line"></div>
+                <div className="signature-label">Authorized Signature</div>
+              </div>
+              <div className="signature-box">
+                <div className="signature-line"></div>
+                <div className="signature-label">Customer Signature</div>
+              </div>
+              <div className="signature-box">
+                <div className="signature-text">{sale.customerName || 'Customer Name'}</div>
+                <div className="signature-label">Customer Name</div>
+              </div>
+              <div className="signature-box">
+                <div className="signature-text">{formatDate(new Date())}</div>
+                <div className="signature-label">Date</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Footer */}
+          <footer className="invoice-footer">
+            <div className="footer-text">
+              Printed by {sale.createdBy || 'System'}, {formatDate(new Date())} • Page 1 of 1
+            </div>
+          </footer>
+        </div>
+      </Spin>
+
+      {/* Action Buttons */}
+      <div className="action-buttons">
+        <Button 
+          onClick={onCancel} 
+          icon={<CloseOutlined />} 
+          disabled={loading}
+          className="cancel-btn"
+        >
+          Close
+        </Button>
+        <Button 
+          onClick={exportToPDF} 
+          icon={<FilePdfOutlined />} 
+          loading={isExporting}
+          type="primary"
+          className="export-btn"
+        >
+          Export PDF
+        </Button>
+        <Button 
+          onClick={exportToImage} 
+          icon={<DownloadOutlined />} 
+          loading={isExporting}
+          className="download-btn"
+        >
+          Save as Image
+        </Button>
+        <Button 
+          onClick={handlePrint} 
+          icon={<PrinterOutlined />}
+          disabled={loading}
+          className="print-btn"
+        >
+          Print
+        </Button>
       </div>
-
-      <footer
-        className="invoice-footer no-print"
-        style={{ padding: '15px 20px', background: '#f5f5f5', borderTop: '1px solid #e8e8e8' }}
-      >
-        <div className="action-buttons" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-          <Button
-            onClick={onCancel}
-            icon={<CloseOutlined />}
-            className="close-button"
-            style={{ border: '1px solid #d32f2f', color: '#d32f2f', borderRadius: '4px' }}
-          >
-            Close
-          </Button>
-          <Button
-            icon={<PrinterOutlined />}
-            onClick={handlePrint}
-            className="print-button"
-            loading={isPrintReady}
-            disabled={!open}
-            style={{ color: '#52c41a', borderRadius: '4px' }}
-          >
-            Print Invoice
-          </Button>
-          {onEdit && (
-            <Button
-              type="primary"
-              onClick={onEdit}
-              icon={<EditOutlined />}
-              className="edit-button"
-              style={{ borderRadius: '4px' }}
-            >
-              Edit Stock
-            </Button>
-          )}
-        </div>
-      </footer>
     </Modal>
   );
 };
