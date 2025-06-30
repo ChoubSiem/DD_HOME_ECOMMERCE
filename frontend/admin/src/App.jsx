@@ -80,7 +80,7 @@ import EmployeeCreate from "./components/policy/employee/create/EmployeeCreate";
 import EmployeeEdit from "./components/policy/employee/edit/EmployeeForm/EmployeeForm";
 import UomConversion from "./pages/inventory/UomConversion/UomConversion";
 import BrandManagement from "./pages/brand/Brand";
-
+// import AddSaleReturn from "./pages/sale_return/AddSaleReturn";
 // import { useNavigate } from 'react-router-dom';
 
 // sale report 
@@ -156,9 +156,13 @@ const App = () => {
           <Route path="/customer" element={<Customer />} />
           <Route path="/customer-group" element={<CustomerGroup />} />
           <Route path="/sale-return" element={<SaleReturn />} />
+          <Route path="/sale-return/add/:id" element={<AddSaleReturn />} />
+          <Route path="/sale-return/show/:saleReturnId" element={<SaleReturn />} />
+          <Route path="/sale-return/update/:saleReturnId" element={<SaleReturn />} />
+          <Route path="/sale-return/delete/:saleReturnId" element={<SaleReturn />} />
 
-          <Route path="/sale-return/add" element={<AddSaleReturn />} />
-          <Route path="/sale-return/edit" element={<EditSaleReturn />} />
+          {/* <Route path="/sale-return/add" element={<AddSaleReturn />} /> */}
+          {/* <Route path="/sale-return/edit" element={<EditSaleReturn />} /> */}
           <Route path="/stock-alert" element={<StockAlert />} />
           <Route path="/request-alert" element={<RequestAlert />} />
           {/* ============== sale report =============== */}

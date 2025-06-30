@@ -10,7 +10,8 @@ import {
   FilePdfOutlined,
   FileExcelOutlined,
   PrinterOutlined,
-  PlusOutlined
+  PlusOutlined,
+  RollbackOutlined
 } from "@ant-design/icons";
 import SaleModalDetail from "./SaleModalDetail";
 import { formatDate, formatCurrency } from "../../util/helper";
@@ -132,7 +133,8 @@ const SalesTable = ({
   onExportExcel,
   onPrint,
   totalSales,
-  averageSale
+  averageSale,
+  handleAddSaleReturn
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
@@ -185,18 +187,18 @@ const SalesTable = ({
       selector: row => row.saleDate,
       sortable: true,
       width: '120px',
-      cell: (row) => <Text>{formatDate(row.saleDate)}</Text>,
+      cell: (row) => <Text>{row.saleDate}</Text>,
     },
-  {
-      name: 'Type',
-      selector: row => row.type,
-      sortable: true,
-      cell: (row) => (
-        <div>
-          {row.type === 'warehouse' ? 'Warehouse' : 'Customer'}
-        </div>
-      ),
-    },
+  // {
+  //     name: 'Type',
+  //     selector: row => row.type,
+  //     sortable: true,
+  //     cell: (row) => (
+  //       <div>
+  //         {row.type === 'warehouse' ? 'Warehouse' : 'Customer'}
+  //       </div>
+  //     ),
+  //   },
   {
     name: `Customer / Warehouse`,
     selector: row => 
@@ -347,6 +349,12 @@ const SalesTable = ({
             <DeleteOutlined style={{ color: greenTheme.error }} /> Delete
           </Space>
         ),
+      },
+       {
+        key: 'add-sale-return',
+        icon: <RollbackOutlined />, 
+        label: 'Add Sale Return',
+        onClick: () => handleAddSaleReturn(row.id),
       },
     ];
 

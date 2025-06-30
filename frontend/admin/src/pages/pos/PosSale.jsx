@@ -24,6 +24,7 @@ import {
   EyeOutlined,
   DollarOutlined,
   HistoryOutlined,
+  RollbackOutlined
 } from "@ant-design/icons";
 import PosSaleDetail from "../../components/pos/PosDetail";
 import AddPaymentModal from "../../components/pos/payment/AddPayment";
@@ -69,9 +70,7 @@ const PosSaleList = () => {
   const fetchSales = async () => {
     setLoading(true);
     try {
-      const result = await handlePosSales(userData.warehouse_id, token);
-      console.log(result);
-      
+      const result = await handlePosSales(userData.warehouse_id, token);      
       if (result?.success) {
         const formattedSales = result.sales.map((sale) => ({
           id: sale.id,
@@ -164,6 +163,13 @@ const PosSaleList = () => {
         label: 'View Payment',
         onClick: () => handleViewPayment(row),
       },
+      {
+        key: 'add-sale-return',
+        icon: <RollbackOutlined />, // use a relevant icon from Ant Design
+        label: 'Add Sale Return',
+        onClick: () => handleAddSaleReturn(row),
+      },
+
       {
         key: 'delete',
         icon: <DeleteOutlined />,

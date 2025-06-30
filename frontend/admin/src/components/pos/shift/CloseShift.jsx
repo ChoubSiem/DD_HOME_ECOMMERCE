@@ -182,9 +182,6 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
         warehouse_id: userData.warehouse_id,
         exchange_rate: exchangeRate??1
       };
-
-      console.log(shiftData);
-      return;
       
 
       const response = await handleCloseShiftCreate(shiftData, token);

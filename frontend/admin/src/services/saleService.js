@@ -275,3 +275,81 @@ export const deletePosSale = async (saleId,token) => {
     return false;
   }
 };
+ 
+export const getSaleReturn = async (warehouseId,token) => {  
+  try {
+    const response = await axios.get(`${API_URL}/sale-return/list`, {
+      headers: { 
+        Authorization: `Bearer ${token}` ,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+      },
+      params:{warehouse_id: warehouseId}
+    });        
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return false;
+  }
+};
+export const getOneSaleReturn = async (saleReturnId,token) => {  
+  try {
+    const response = await axios.get(`${API_URL}/sale-return/show/${saleReturnId}`, {
+      headers: { 
+        Authorization: `Bearer ${token}` ,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+      }
+    });        
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return false;
+  }
+};
+
+export const addSaleReturn = async (saleId,values,token) => {  
+  try {
+    const response = await axios.post(`${API_URL}/sale-return/add/${saleId}`,values, {
+      headers: { 
+        Authorization: `Bearer ${token}` ,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+      }
+    });        
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return false;
+  }
+};
+export const updateSaleReturn = async (saleReturnId,token) => {  
+  try {
+    const response = await axios.put(`${API_URL}/sale-return/update/${saleReturnId}`, {
+      headers: { 
+        Authorization: `Bearer ${token}` ,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+      }
+    });        
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return false;
+  }
+};
+export const deleteSaleReturn = async (saleReturnId,token) => {  
+  try {
+    const response = await axios.delete(`${API_URL}/sale-return/delete/${saleReturnId}`, {
+      headers: { 
+        Authorization: `Bearer ${token}` ,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+      }
+    });        
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return false;
+  }
+};

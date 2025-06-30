@@ -60,6 +60,10 @@ const StockTransferPage = () => {
     setShowFilter(!showFilter);
   };
 
+  const handleAddSaleReturn =(saleId) =>{
+    navigate(`/sale-return/add/${saleId}`)
+  }
+
   const handleSalesInveontoryData = async() =>{
     setLoading(true);
     const result = await handleSaleInventory(user.warehouse_id , token);    
@@ -253,6 +257,7 @@ const StockTransferPage = () => {
         onDetail={handleDetail}
         onViewPayment = {handleViewPayment}
         onAddPayment = {handleAddPayment }
+        handleAddSaleReturn = {handleAddSaleReturn }
       />
 
         <Modal

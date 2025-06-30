@@ -84,7 +84,8 @@ const itemMenuLeftTmp = [
   getItem("Sales", "pos-sales", <ShoppingCartOutlined />, [
     getItem("POS Sale", "/pos", <ShopOutlined />),
     getItem("Sale Inventory", "/sale", <ShoppingCartOutlined  />),
-    getItem("Add Pos Sales", "/pos/add", <AppstoreOutlined />),
+    getItem("Sale Return", "/sale-return", <AppstoreOutlined />),
+    // getItem("Add Pos Sales", "/pos/add", <AppstoreOutlined />),
   ]),
 
   getItem("Customers", "customers", <UserOutlined />, [
@@ -113,10 +114,10 @@ const itemMenuLeftTmp = [
     getItem("Add Purchase", "/purchase/add", <AppstoreOutlined />),
   ]),
 
-  getItem("Sale Returns", "sale-returns", <ShoppingCartOutlined />, [
-    getItem("Add Sale Return", "/sale-return/add", <AppstoreOutlined />),
-    getItem("Sale Returns", "/sale-return", <ShoppingCartOutlined />),
-  ]),
+  // getItem("Sale Returns", "sale-returns", <ShoppingCartOutlined />, [
+  //   getItem("Add Sale Return", "/sale-return/add", <AppstoreOutlined />),
+  //   getItem("Sale Returns", "/sale-return", <ShoppingCartOutlined />),
+  // ]),
 
   getItem("Reports", "reports", <BarChartOutlined />, [
     // getItem("Product Report", "/reports/product", <AppstoreOutlined />),

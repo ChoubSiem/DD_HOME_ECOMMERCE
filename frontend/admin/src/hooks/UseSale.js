@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { getPosSales,addPosSale,addOpenShift ,getOneOpenShift,UpdateOpenShift,addCloseShift,getSalesInventory,getSalePaymentOne,getOneInventorySale,updateSaleInventory,deleteSaleInventory, deletePosSale, getOneProcessingShift} from '../services/saleService';
+import { getPosSales,addPosSale,addOpenShift ,getOneOpenShift,UpdateOpenShift,addCloseShift,getSalesInventory,getSalePaymentOne,getOneInventorySale,updateSaleInventory,deleteSaleInventory, deletePosSale, getOneProcessingShift,getSaleReturn,getOneSaleReturn,addSaleReturn,updateSaleReturn,deleteSaleReturn} from '../services/saleService';
 export const useSale = () => {
   const handlePosSales = async (warehouseId,token) => {
     try {
@@ -175,6 +175,59 @@ export const useSale = () => {
       
     }
   };
+  const handleSaleReturns = async (warehouseId,token) => {
+    try {
+      const saleData = await getSaleReturn(warehouseId,token);            
+      return {
+        success: true,
+        data: saleData,
+        sale: saleData.data, 
+      };
+      
+    } catch (error) {
+      
+    }
+  };
+ const handleAddSaleReturn = async (saleId, values, token) => {
+    try {
+      const result = await addSaleReturn(saleId, values, token);
+      return {
+        success: true,
+        data: result,
+        sale: result?.data,
+      };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+  const handleGetOneSaleReturn = async (id, token) => {
+    try {
+      const result = await getOneSaleReturn(id, token);
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+  const handleUpdateSaleReturn = async (id, values, token) => {
+    try {
+      const result = await updateSaleReturn(id, values, token);
+      return { success: true, data: result };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
+
+  const handleDeleteSaleReturn = async (id, token) => {
+    try {
+      const result = await deleteSaleReturn(id, token);
+      return { success: true, data: result };
+    } catch (error) {
+      return { success: false, error };
+    }
+  };
   return {
     
     handlePosSales,
@@ -189,7 +242,12 @@ export const useSale = () => {
     handleUpdateSaleInventory,
     handleDeleteSaleInventory,
     handleDeleteSalePos,
-    handleGetOneProcessingShift
+    handleGetOneProcessingShift,
+    handleSaleReturns,
+    handleAddSaleReturn,
+    handleGetOneSaleReturn,
+    handleDeleteSaleReturn,
+    handleUpdateSaleReturn
   
   };
 };
