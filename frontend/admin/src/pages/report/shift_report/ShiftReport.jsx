@@ -65,9 +65,7 @@ const ShiftReports = () => {
 
   const handleShifts = async () => {
     setLoading(true);
-    let result = await getShiftReportData(userData.warehouse_id, token);    
-    console.log(result);
-    
+    let result = await getShiftReportData(userData.warehouse_id, token);        
     if (result.success) {
       setShifts(result.shifts);
       setLoading(false);
@@ -85,6 +83,10 @@ const ShiftReports = () => {
       link.click();
     }
   };
+
+  let exchange_rate = selectedShift?.close_cashes?.KHR?.[0]?.exchange_rate;
+  console.log(selectedShift);
+  
 
   useEffect(() => {
     handleShifts();
@@ -252,8 +254,6 @@ const ShiftReports = () => {
   const openShifts = filteredShifts?.filter(s => s.status === 'processing').length;
   const closedShifts = filteredShifts?.filter(s => s.status === 'completed').length;
   const totalSales = filteredShifts?.reduce((sum, s) => sum + (s.total_sales || 0), 0);
-console.log(selectedShift);
-
   return (
     <Spin spinning={loading}>
       <div className="shift-reports" style={{ padding: '24px' }}>
@@ -611,7 +611,7 @@ console.log(selectedShift);
       {selectedShift?.payments_by_type && selectedShift.payments_by_type.length > 0 ? (
         selectedShift.payments_by_type.map(({ payment_method, total }) => {
           // Decide currency symbol and formatting based on payment method or your logic
-          const isUSD = payment_method.toLowerCase().includes('usd') || payment_method.toLowerCase().includes('cash'); 
+          const isUSD = payment_method.toLowerCase().includes('usd') || payment_method.toLowerCase().includes('cash') || payment_method.toLowerCase().includes('aba'); 
           // You can improve this detection based on your data
 
           const amount = parseFloat(total);
@@ -808,7 +808,7 @@ console.log(selectedShift);
 
   {/* Total USD + (Riel / 4000) */}
   <tr>
-    <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total (USD + Riel ÷ 4000)</td>
+    <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total (USD + Riel ÷ {exchange_rate})</td>
     <td></td>
     <td></td>
     <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold', color: 'green' }}>
@@ -819,15 +819,22 @@ console.log(selectedShift);
               0
             )
           : 0;
+        let exchange_rate = 1;
 
-        const totalRiel = selectedShift?.close_cashes?.KHR
-          ? selectedShift.close_cashes.KHR.reduce(
-              (sum, item) => sum + item.money_type * item.money_number,
-              0
-            )
-          : 0;
+          const khrCash = selectedShift?.close_cashes?.KHR;
 
-        const convertedRielToUSD = totalRiel / 4000;
+          if (khrCash && khrCash.length > 0) {
+            exchange_rate = khrCash[0].exchange_rate || 4000; // fallback to 4000 if not defined
+          }
+
+          const totalRiel = khrCash
+            ? khrCash.reduce(
+                (sum, item) => sum + item.money_type * item.money_number,
+                0
+              )
+            : 0;
+
+          const convertedRielToUSD = totalRiel / exchange_rate;
 
         return (totalUSD + convertedRielToUSD).toFixed(2) + '$';
       })()}

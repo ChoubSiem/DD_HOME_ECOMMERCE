@@ -33,7 +33,7 @@ const SalesReturnPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const { handleGetSalesReturns, handleDeleteSalesReturn } = useSale();
+  const { handleSaleReturns, handleDeleteSaleReturn } = useSale();
   const [returns, setReturns] = useState([]);
   const token = localStorage.getItem("token");
   const user = JSON.parse(Cookies.get("user"));
@@ -62,9 +62,11 @@ const SalesReturnPage = () => {
   };
 
   const handleSalesReturnData = async () => {
-    let result = await handleGetSalesReturns(user.warehouse_id, token);    
+    let result = await handleSaleReturns(user.warehouse_id, token);   
+    console.log(result);
+     
     if (result.success) {
-      setReturns(result.salesReturns);
+      setReturns(result.data);
     }
   }
 
@@ -86,9 +88,9 @@ const SalesReturnPage = () => {
 
   const handleDelete = async (returnId) => {
     try {
-      const response = await handleDeleteSalesReturn(token, returnId);
+      const response = await handleDeleteSaleReturn(returnId,token);
       if (response.success) {
-        message.success(`Return ${returnId} deleted successfully`);
+        message.success(`Return deleted successfully`);
         await handleSalesReturnData();
       }
     } catch (error) {
@@ -204,7 +206,7 @@ const SalesReturnPage = () => {
               </Form.Item>
             </div>
             <div style={{ flex: 1 }}>
-              <Form.Item label="Total Amount" name="total_amount" rules={[{ required: true }]}>
+              <Form.Item label="Total Amount" name="refund_amount" rules={[{ required: true }]}>
                 <InputNumber min={0} style={{ width: "100%" }} disabled />
               </Form.Item>
               <Form.Item label="Status" name="status" rules={[{ required: true }]}>

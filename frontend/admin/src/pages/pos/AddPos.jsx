@@ -1109,10 +1109,10 @@ const handleCreatePosSaleData = async () => {
     message.warning("Please add items to cart first");
     return;
   }  
- if (!selectedSalesperson) {  
-    message.warning("Please select a salesperson");
-    return;
-  }
+//  if (!selectedSalesperson) {  
+//     message.warning("Please select a salesperson");
+//     return;
+//   }
 
   try {
     const paymentData = {
@@ -1141,7 +1141,7 @@ const handleCreatePosSaleData = async () => {
       payments: payments,
       sale_type: 'POS',
       amount: total,
-      saleperson: selectedSalesperson.id
+      sale_person: selectedSalesperson?.id?? null
     };
 
     // console.log(paymentData);

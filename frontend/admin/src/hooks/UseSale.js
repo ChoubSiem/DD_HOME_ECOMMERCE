@@ -188,9 +188,9 @@ export const useSale = () => {
       
     }
   };
- const handleAddSaleReturn = async (saleId, values, token) => {
+ const handleAddSaleReturn = async ( values, token) => {
     try {
-      const result = await addSaleReturn(saleId, values, token);
+      const result = await addSaleReturn(values, token);
       return {
         success: true,
         data: result,

@@ -308,9 +308,9 @@ export const getOneSaleReturn = async (saleReturnId,token) => {
   }
 };
 
-export const addSaleReturn = async (saleId,values,token) => {  
+export const addSaleReturn = async (values,token) => {  
   try {
-    const response = await axios.post(`${API_URL}/sale-return/add/${saleId}`,values, {
+    const response = await axios.post(`${API_URL}/sale-return/add`,values, {
       headers: { 
         Authorization: `Bearer ${token}` ,
           "Content-Type": "application/json",

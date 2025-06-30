@@ -118,10 +118,10 @@ const SalesReturnsTable = ({ data, onEdit, onDelete, onDetail, loading }) => {
     },
     {
       name: "Original Sale",
-      selector: row => row.sale_reference,
+      selector: row => row.original_sale,
       sortable: true,
       cell: row => (
-        <Tag color="blue">{row.sale_reference || 'N/A'}</Tag>
+        <span color="blue">{row.original_sale || 'N/A'}</span>
       ),
       width: '150px'
     },
@@ -134,29 +134,13 @@ const SalesReturnsTable = ({ data, onEdit, onDelete, onDetail, loading }) => {
       )
     },
     {
-      name: "Items",
-      selector: row => row.items_count,
-      sortable: true,
-      cell: row => (
-        <Tag>{row.items_count} items</Tag>
-      ),
-      width: '100px'
-    },
-    {
       name: "Total Amount",
       selector: row => row.total_amount,
       sortable: true,
       cell: row => (
-        <strong>${parseFloat(row.total_amount).toFixed(2)}</strong>
+        <strong>${parseFloat(row.refund_amount).toFixed(2)}</strong>
       ),
       right: true,
-      width: '120px'
-    },
-    {
-      name: "Status",
-      selector: row => row.status,
-      sortable: true,
-      cell: row => statusBadge(row.status),
       width: '120px'
     },
     {
