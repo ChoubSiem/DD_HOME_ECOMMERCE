@@ -36,91 +36,19 @@ if (user) {
 }
 
 const customStyles = {
-  table: {
+  tableWrapper: {
     style: {
-      backgroundColor: greenTheme.background,
-    },
+      maxHeight: '500px',
+    }
   },
   headRow: {
     style: {
-      borderTopWidth: '1px',
-      borderTopColor: greenTheme.border,
-      borderTopStyle: 'solid',
-    },
-  },
-  headCells: {
-    style: {
-      backgroundColor: greenTheme.primary,
-      color: 'white',
-      fontWeight: 600,
-      textTransform: 'uppercase',
-      fontSize: '0.75rem',
-      paddingLeft: '16px',
-      paddingRight: '16px',
-    },
-  },
-  cells: {
-    style: {
-      paddingLeft: '16px',
-      paddingRight: '16px',
-      fontSize: '0.875rem',
-      '&:hover': {
-        color: greenTheme.dark,
-      },
-    },
-  },
-  rows: {
-    style: {
-      color: greenTheme.text,
-      borderBottomColor: greenTheme.border,
-      '&:hover': {
-        backgroundColor: greenTheme.light,
-      },
-      '&:nth-child(even)': {
-        backgroundColor: '#fafafa',
-      },
-    },
-  },
-  pagination: {
-    style: {
-      borderTop: `2px solid ${greenTheme.primary}`,
-      backgroundColor: greenTheme.light,
-    },
-  },
-  pageButtons: {
-    style: {
-      color: greenTheme.primary,
-      backgroundColor: greenTheme.background,
-      border: `1px solid ${greenTheme.primary}`,
-      borderRadius: '4px',
-      '&:hover:not(:disabled)': {
-        backgroundColor: greenTheme.light,
-      },
-    },
-    activeStyle: {
-      backgroundColor: greenTheme.primary,
-      color: greenTheme.background,
-      '&:hover': {
-        backgroundColor: greenTheme.dark,
-      },
-    },
-    disabledStyle: {
-      color: greenTheme.muted,
-      backgroundColor: greenTheme.background,
-    },
-  },
-  paginationOptions: {
-    style: {
-      backgroundColor: greenTheme.background,
-      border: `1px solid ${greenTheme.primary}`,
-      borderRadius: '4px',
-      color: greenTheme.text,
-      '&:hover': {
-        backgroundColor: greenTheme.light,
-      },
-    },
-  },
+      backgroundColor: '#f9fafb',
+      fontWeight: 'bold'
+    }
+  }
 };
+
 
 const SalesTable = ({ 
   data, 
@@ -186,7 +114,7 @@ const SalesTable = ({
       name: "DATE",
       selector: row => row.saleDate,
       sortable: true,
-      width: '120px',
+      width: '180px',
       cell: (row) => <Text>{row.saleDate}</Text>,
     },
   // {
@@ -240,7 +168,7 @@ const SalesTable = ({
       selector: row => row.subTotal,
       sortable: true,
       right: true,
-      width: '130px',
+      width: '100px',
       cell: (row) => (
         <Text strong style={{ color: greenTheme.dark }}>
           {formatCurrency(row.subTotal)}
@@ -253,7 +181,7 @@ const SalesTable = ({
       selector: row => row.discount,
       sortable: true,
       right: true,
-      width: '130px',
+      width: '80px',
       cell: (row) => (
         <Text strong style={{ color: greenTheme.dark }}>
           {row.discount_type == 'percent'
@@ -269,7 +197,7 @@ const SalesTable = ({
       selector: row => row.totalPrice,
       sortable: true,
       right: true,
-      width: '130px',
+      width: '100px',
       cell: (row) => (
         <Text strong style={{ color: greenTheme.dark }}>
           {formatCurrency(row.totalPrice)}
@@ -281,7 +209,7 @@ const SalesTable = ({
       selector: row => row.paid,
       sortable: true,
       right: true,
-      width: '130px',
+      width: '100px',
       cell: (row) => (
         <Text strong style={{ color: greenTheme.dark }}>
           {formatCurrency(row.paid)}
@@ -354,7 +282,7 @@ const SalesTable = ({
         key: 'add-sale-return',
         icon: <RollbackOutlined />, 
         label: 'Add Sale Return',
-        onClick: () => handleAddSaleReturn(row.id),
+        onClick: () => handleAddSaleReturn(row.id,'inventory'),
       },
     ];
 
@@ -379,25 +307,25 @@ const SalesTable = ({
 
   ];
 
-  const SummaryRow = () => (
-    <div style={{ 
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: '16px',
-      backgroundColor: greenTheme.light,
-      // borderTop: `1px solid ${greenTheme.primary}`
-    }}>
-      <Text strong>
-        Total Sales: <span style={{ color: greenTheme.dark }}>{formatCurrency(totalSales)}</span>
-      </Text>
-      <Text strong>
-        Average Sale: <span style={{ color: greenTheme.dark }}>{formatCurrency(averageSale)}</span>
-      </Text>
-      <Text strong>
-        Total Records: <span style={{ color: greenTheme.dark }}>{data?.length || 0}</span>
-      </Text>
-    </div>
-  );
+  // const SummaryRow = () => (
+  //   <div style={{ 
+  //     display: 'flex',
+  //     justifyContent: 'space-between',
+  //     padding: '16px',
+  //     backgroundColor: greenTheme.light,
+  //     // borderTop: `1px solid ${greenTheme.primary}`
+  //   }}>
+  //     <Text strong>
+  //       Total Sales: <span style={{ color: greenTheme.dark }}>{formatCurrency(totalSales)}</span>
+  //     </Text>
+  //     <Text strong>
+  //       Average Sale: <span style={{ color: greenTheme.dark }}>{formatCurrency(averageSale)}</span>
+  //     </Text>
+  //     <Text strong>
+  //       Total Records: <span style={{ color: greenTheme.dark }}>{data?.length || 0}</span>
+  //     </Text>
+  //   </div>
+  // );
 
   return (
     <div style={{ 
@@ -437,34 +365,37 @@ const SalesTable = ({
         </Space>
       </div>
       
-      <DataTable
-        columns={columns}
-        data={data}
-        progressPending={loading}
-        progressComponent={
-          <div style={{ padding: '24px' }}>
-            <Text>Loading sales data...</Text>
-          </div>
-        }
-        pagination
-        paginationPerPage={10}
-        paginationRowsPerPageOptions={[10, 25, 50, 100]}
-        customStyles={customStyles}
-        highlightOnHover
-        pointerOnHover
-        onRowClicked={(row, event) => {
-          if (!event.target.closest('button, .ant-dropdown')) {
-            showModal(row);
+      {data && data.length > 0 ? (
+        <DataTable
+          columns={columns}
+          data={data}
+          fixedHeader
+          fixedHeaderScrollHeight="500px"
+          progressPending={loading}
+          progressComponent={
+            <div style={{ padding: '24px' }}>
+              <Text>Loading sales data...</Text>
+            </div>
           }
-        }}
-        noDataComponent={
-          <div style={{ padding: '40px', textAlign: 'center' }}>
-            <Text type="secondary">No sales records found</Text>
-          </div>
-        }
-      />
+          customStyles={customStyles}
+          highlightOnHover
+          pointerOnHover
+          onRowClicked={(row, event) => {
+            if (!event.target.closest('button, .ant-dropdown')) {
+              showModal(row);
+            }
+          }}
+        />
+      ) : !loading && (
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <Text type="secondary">No sales records found</Text>
+        </div>
+      )}
+
+
+
       
-      <SummaryRow />
+      {/* <SummaryRow /> */}
 
       <SaleModalDetail
         open={isModalOpen}

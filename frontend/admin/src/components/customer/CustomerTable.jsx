@@ -116,6 +116,7 @@ const getRoleTag = (role) => (
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
                 className="action-buttons d-flex justify-content-center gap-1"
+                style={{padding:0}}
             >
                 <Button 
                     icon="pi pi-pencil" 
@@ -250,7 +251,7 @@ const getRoleTag = (role) => (
                   value={currentData}
                   dataKey="id"
                   scrollable
-                  scrollHeight="500px"
+                  scrollHeight="400px"
                   virtualScrollerOptions={{ itemSize: 40 }}
                   paginator={rows !== allCustomers.length}
                   rows={rows}

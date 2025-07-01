@@ -156,7 +156,7 @@ const App = () => {
           <Route path="/customer" element={<Customer />} />
           <Route path="/customer-group" element={<CustomerGroup />} />
           <Route path="/sale-return" element={<SaleReturn />} />
-          <Route path="/sale-return/add/:id" element={<AddSaleReturn />} />
+          <Route path="/sale-return/add/:type/:id" element={<AddSaleReturn />} />
           <Route path="/sale-return/show/:saleReturnId" element={<SaleReturn />} />
           <Route path="/sale-return/update/:saleReturnId" element={<SaleReturn />} />
           <Route path="/sale-return/delete/:saleReturnId" element={<SaleReturn />} />

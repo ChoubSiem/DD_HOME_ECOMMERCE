@@ -230,6 +230,21 @@ export const getOneInventorySale = async (saleId,token) => {
     return false;
   }
 };
+export const getOnePosSale = async (saleId,token) => {  
+  try {
+    const response = await axios.get(`${API_URL}/pos-sale/edit/${saleId}`, {
+      headers: { 
+        Authorization: `Bearer ${token}` ,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+      }
+    });        
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return false;
+  }
+};
 export const updateSaleInventory = async (saleId,values,token) => {  
   try {
     const response = await axios.put(`${API_URL}/sale/update/${saleId}`,values, {

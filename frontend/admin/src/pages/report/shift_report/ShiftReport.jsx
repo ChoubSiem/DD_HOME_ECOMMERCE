@@ -324,77 +324,6 @@ const ShiftReports = () => {
             </Col>
           </Row>
         </Card>
-
-        {/* Summary Cards */}
-        <div style={{ width: '100%', marginBottom: '24px' }}>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} md={8}>
-              <Card
-                style={{
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                  height: '100%',
-                }}
-              >
-                <Statistic
-                  title="Total Shifts"
-                  value={totalShifts}
-                  prefix={<ClockCircleOutlined style={{ color: '#1890ff' }} />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-                <Progress
-                  percent={100}
-                  showInfo={false}
-                  strokeColor="#d9f7be"
-                  trailColor="#f6ffed"
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Card
-                style={{
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                  height: '100%',
-                }}
-              >
-                <Statistic
-                  title="Open Shifts"
-                  value={openShifts}
-                  prefix={<SyncOutlined spin style={{ color: '#faad14' }} />}
-                  valueStyle={{ color: '#faad14' }}
-                />
-                <Progress
-                  percent={totalShifts > 0 ? Math.round((openShifts / totalShifts) * 100) : 0}
-                  showInfo={false}
-                  strokeColor="#faad14"
-                  trailColor="#fffbe6"
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Card
-                style={{
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                  height: '100%',
-                }}
-              >
-                <Statistic
-                  title="Total Sales"
-                  value={totalSales}
-                  prefix={<DollarOutlined style={{ color: '#52c41a' }} />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-                <Progress
-                  percent={100}
-                  showInfo={false}
-                  strokeColor="#b7eb8f"
-                  trailColor="#f6ffed"
-                />
-              </Card>
-            </Col>
-          </Row>
-        </div>
-
-        {/* Shifts Table */}
         <Card
           title={<span style={{ fontSize: '18px', fontWeight: '500' }}>Shift Transactions</span>}
           extra={
@@ -563,7 +492,7 @@ const ShiftReports = () => {
               <tr>
                 <td style={{ padding: '6px 0', fontWeight: '500' }}>Refunds</td>
                 <td style={{ padding: '6px 0' }}>:</td>
-                <td style={{ padding: '6px 0' }}>{selectedShift?.refunds ? `$${selectedShift.refunds}` : '$0.00'}</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.total_refund_amount ? `$${selectedShift.total_refund_amount}` : '$0.00'}</td>
               </tr>
               <tr>
                 <td style={{ padding: '6px 0', fontWeight: '500' }}>Tax Amount</td>
@@ -588,7 +517,7 @@ const ShiftReports = () => {
               <tr>
                 <td style={{ padding: '6px 0', fontWeight: '500' }}>Num of Refund</td>
                 <td style={{ padding: '6px 0' }}>:</td>
-                <td style={{ padding: '6px 0' }}>{selectedShift?.num_refund || '0'}</td>
+                <td style={{ padding: '6px 0' }}>{selectedShift?.total_return_invoices || '0'}</td>
               </tr>
             </tbody>
           </table>
@@ -738,109 +667,109 @@ const ShiftReports = () => {
             </h4>
 
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <tbody>
-  {/* USD cash list */}
-  {selectedShift?.close_cashes?.USD &&
-    selectedShift.close_cashes.USD.map((item, index) => {
-      const denomination = parseFloat(item.money_type);
-      const count = Number(item.money_number);
-      const total = denomination * count;
+              <tbody>
+                {/* USD cash list */}
+                {selectedShift?.close_cashes?.USD &&
+                  selectedShift.close_cashes.USD.map((item, index) => {
+                    const denomination = parseFloat(item.money_type);
+                    const count = Number(item.money_number);
+                    const total = denomination * count;
 
-      return (
-        <tr key={`usd-${index}`}>
-          <td style={{ padding: '4px 0', fontWeight: '500' }}>${denomination}</td>
-          <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
-          <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
-          <td style={{ padding: '4px 0', textAlign: 'right' }}>{total.toFixed(2)}$</td>
-        </tr>
-      );
-    })}
+                    return (
+                      <tr key={`usd-${index}`}>
+                        <td style={{ padding: '4px 0', fontWeight: '500' }}>${denomination}</td>
+                        <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
+                        <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+                        <td style={{ padding: '4px 0', textAlign: 'right' }}>{total.toFixed(2)}$</td>
+                      </tr>
+                    );
+                  })}
 
-  {/* Total USD */}
-  <tr>
-    <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total USD</td>
-    <td></td>
-    <td></td>
-    <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
-      {selectedShift?.close_cashes?.USD
-        ? selectedShift.close_cashes.USD
-            .reduce((sum, item) => sum + item.money_type * item.money_number, 0)
-            .toFixed(2) + '$'
-        : '$0.00'}
-    </td>
-  </tr>
+                {/* Total USD */}
+                <tr>
+                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total USD</td>
+                  <td></td>
+                  <td></td>
+                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
+                    {selectedShift?.close_cashes?.USD
+                      ? selectedShift.close_cashes.USD
+                          .reduce((sum, item) => sum + item.money_type * item.money_number, 0)
+                          .toFixed(2) + '$'
+                      : '$0.00'}
+                  </td>
+                </tr>
 
-  {/* Riel cash list */}
-  {selectedShift?.close_cashes?.KHR &&
-    selectedShift.close_cashes.KHR.map((item, index) => {
-      const denomination = parseFloat(item.money_type);
-      const count = Number(item.money_number);
-      const total = denomination * count;
+                {/* Riel cash list */}
+                {selectedShift?.close_cashes?.KHR &&
+                  selectedShift.close_cashes.KHR.map((item, index) => {
+                    const denomination = parseFloat(item.money_type);
+                    const count = Number(item.money_number);
+                    const total = denomination * count;
 
-      return (
-        <tr key={`kh-${index}`}>
-          <td style={{ padding: '4px 0', fontWeight: '500' }}>៛{denomination}</td>
-          <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
-          <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
-          <td style={{ padding: '4px 0', textAlign: 'right' }}>
-            {Math.round(total).toLocaleString()}៛
-          </td>
-        </tr>
-      );
-    })}
+                    return (
+                      <tr key={`kh-${index}`}>
+                        <td style={{ padding: '4px 0', fontWeight: '500',width:'45%' }}>៛{denomination}</td>
+                        <td style={{ padding: '4px 0', textAlign: 'center' }}>x</td>
+                        <td style={{ padding: '4px 0', textAlign: 'right' }}>{count}</td>
+                        <td style={{ padding: '4px 0', textAlign: 'right' }}>
+                          {Math.round(total).toLocaleString()}៛
+                        </td>
+                      </tr>
+                    );
+                  })}
 
-  {/* Total Riel */}
-  <tr>
-    <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total Riel</td>
-    <td></td>
-    <td></td>
-    <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
-      {selectedShift?.close_cashes?.KHR
-        ? Math.round(
-            selectedShift.close_cashes.KHR.reduce(
-              (sum, item) => sum + item.money_type * item.money_number,
-              0
-            )
-          ).toLocaleString() + '៛'
-        : '៛0'}
-    </td>
-  </tr>
+                {/* Total Riel */}
+                <tr>
+                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total Riel</td>
+                  <td></td>
+                  <td></td>
+                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold' }}>
+                    {selectedShift?.close_cashes?.KHR
+                      ? Math.round(
+                          selectedShift.close_cashes.KHR.reduce(
+                            (sum, item) => sum + item.money_type * item.money_number,
+                            0
+                          )
+                        ).toLocaleString() + '៛'
+                      : '៛0'}
+                  </td>
+                </tr>
 
-  {/* Total USD + (Riel / 4000) */}
-  <tr>
-    <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total (USD + Riel ÷ {exchange_rate})</td>
-    <td></td>
-    <td></td>
-    <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold', color: 'green' }}>
-      {(() => {
-        const totalUSD = selectedShift?.close_cashes?.USD
-          ? selectedShift.close_cashes.USD.reduce(
-              (sum, item) => sum + item.money_type * item.money_number,
-              0
-            )
-          : 0;
-        let exchange_rate = 1;
+                {/* Total USD + (Riel / 4000) */}
+                <tr>
+                  <td style={{ padding: '4px 0', fontWeight: 'bold' }}>Total (USD + Riel ÷ {exchange_rate})</td>
+                  <td></td>
+                  <td></td>
+                  <td style={{ padding: '4px 0', textAlign: 'right', fontWeight: 'bold', color: 'green' }}>
+                    {(() => {
+                      const totalUSD = selectedShift?.close_cashes?.USD
+                        ? selectedShift.close_cashes.USD.reduce(
+                            (sum, item) => sum + item.money_type * item.money_number,
+                            0
+                          )
+                        : 0;
+                      let exchange_rate = 1;
 
-          const khrCash = selectedShift?.close_cashes?.KHR;
+                        const khrCash = selectedShift?.close_cashes?.KHR;
 
-          if (khrCash && khrCash.length > 0) {
-            exchange_rate = khrCash[0].exchange_rate || 4000; // fallback to 4000 if not defined
-          }
+                        if (khrCash && khrCash.length > 0) {
+                          exchange_rate = khrCash[0].exchange_rate || 4000; // fallback to 4000 if not defined
+                        }
 
-          const totalRiel = khrCash
-            ? khrCash.reduce(
-                (sum, item) => sum + item.money_type * item.money_number,
-                0
-              )
-            : 0;
+                        const totalRiel = khrCash
+                          ? khrCash.reduce(
+                              (sum, item) => sum + item.money_type * item.money_number,
+                              0
+                            )
+                          : 0;
 
-          const convertedRielToUSD = totalRiel / exchange_rate;
+                        const convertedRielToUSD = totalRiel / exchange_rate;
 
-        return (totalUSD + convertedRielToUSD).toFixed(2) + '$';
-      })()}
-    </td>
-  </tr>
-</tbody>
+                      return (totalUSD + convertedRielToUSD).toFixed(2) + '$';
+                    })()}
+                  </td>
+                </tr>
+              </tbody>
 
             </table>
           </div>

@@ -62,11 +62,9 @@ const SalesReturnPage = () => {
   };
 
   const handleSalesReturnData = async () => {
-    let result = await handleSaleReturns(user.warehouse_id, token);   
-    console.log(result);
-     
+    let result = await handleSaleReturns(user.warehouse_id, token);        
     if (result.success) {
-      setReturns(result.data);
+      setReturns(result.sale);
     }
   }
 
@@ -186,49 +184,6 @@ const SalesReturnPage = () => {
         onDelete={handleDelete}
         onDetail={handleDetail}
       />
-
-      {/* Edit Modal */}
-      <Modal
-        title="Return Details"
-        open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        footer={null}
-        width={800}
-      >
-        <Form layout="vertical" initialValues={currentReturn} onFinish={handleSave}>
-          <div style={{ display: "flex", gap: 16 }}>
-            <div style={{ flex: 1 }}>
-              <Form.Item label="Reference" name="reference" rules={[{ required: true }]}>
-                <Input placeholder="Return reference" />
-              </Form.Item>
-              <Form.Item label="Customer" name="customer" rules={[{ required: true }]}>
-                <Input placeholder="Customer name" />
-              </Form.Item>
-            </div>
-            <div style={{ flex: 1 }}>
-              <Form.Item label="Total Amount" name="refund_amount" rules={[{ required: true }]}>
-                <InputNumber min={0} style={{ width: "100%" }} disabled />
-              </Form.Item>
-              <Form.Item label="Status" name="status" rules={[{ required: true }]}>
-                <Select style={{ width: "100%" }}>
-                  <Option value="pending">Pending</Option>
-                  <Option value="completed">Completed</Option>
-                  <Option value="cancelled">Cancelled</Option>
-                </Select>
-              </Form.Item>
-            </div>
-          </div>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
-            >
-              Save Changes
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
     </div>
   );
 };

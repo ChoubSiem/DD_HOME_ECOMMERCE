@@ -1,15 +1,4 @@
-/* Active (hover) option in page size dropdown */
-.ant-select-dropdown :where(.ant-select-item-option.ant-select-item-option-active) {
-  background-color: #d9f7be !important; /* light green */
-  color: #237804 !important; /* dark green text */
-}
 
-/* Selected option in page size dropdown */
-.ant-select-dropdown :where(.ant-select-item-option.ant-select-item-option-selected) {
-  background-color: #b7eb8f !important; /* brighter green */
-  color: #135200 !important; /* darker green text */
-  font-weight: 600;
-}
 
 .spinner-container {
   display: flex;
@@ -33,4 +22,12 @@
 }
 .khmer-text {
   font-family: 'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif;
+}
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 8px 12px; /* reduce vertical spacing */
+}
+
+.p-button {
+  padding: 4px 8px;
+  font-size: 12px;
 }

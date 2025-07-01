@@ -78,7 +78,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
-      style={{ height: '40px', fontSize: '15px', padding: 0,paddingLeft:'10px' }}
+      style={{ height: '20px', fontSize: '12px', padding: 0,paddingLeft:'10px' }}
     >
       {rowData.name}
     </motion.span>
@@ -86,7 +86,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
 
   const categoryBodyTemplate = (rowData) => (
     <motion.span
-      style={{ display: 'flex', justifyContent: 'center', fontSize: '15px', padding: 0 }}
+      style={{ display: 'flex', justifyContent: 'center', fontSize: '12px', padding: 0 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -96,7 +96,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
   );
   const codeBodyTemplate = (rowData) => (
     <motion.span
-      style={{ display: 'flex', justifyContent: 'center', fontSize: '15px', padding: 0 }}
+      style={{ display: 'flex', justifyContent: 'center', fontSize: '12px', padding: 0 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -111,7 +111,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
       className="d-flex flex-column justify-content-center align-items-center"
-      style={{display:'flex',flexDirection:'column'}}
+      style={{ display: 'flex', justifyContent: 'center', fontSize: '12px', padding: 0,flexDirection:'column' }}
     >
       <div>Cost: ${rowData.cost}</div>
       <div>{userData.warehouse_id == null ? 'Branch Price' : 'Price'}: ${rowData.price}</div>
@@ -191,7 +191,8 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="action-buttons d-flex justify-content-center gap-1"
+      className="action-buttons d-flex justify-content-center"
+      style={{padding:0,margin:0}}
     >
       <Button 
         icon="pi pi-pencil" 
@@ -254,7 +255,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
     },
     headRow: {
       style: {
-        position: 'sticky',
+        // position: 'sticky',
         top: 0,
         zIndex: 1,
         backgroundColor: 'white'
@@ -262,7 +263,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
     },
     headCells: {
       style: {
-        position: 'sticky',
+        // position: 'sticky',
         top: 0,
         zIndex: 1,
         backgroundColor: 'white',
@@ -290,16 +291,16 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
     >
       <Toast ref={toast} position="top-center" />
       
-      <div className="card" style={{ width: '100%', height: '300px', display: 'flex', flexDirection: 'column' }}>
+      <div className="card" style={{ width: '100%', height: '450px', display: 'flex', flexDirection: 'column' }}>
         <DataTable
           ref={dt}
           value={filteredData}
           dataKey="id"
           scrollable
-          scrollHeight="500px"
+          scrollHeight="400px"
           virtualScrollerOptions={{ 
-            itemSize: 40,
-            scrollHeight: '500px'
+            itemSize: 50,
+            scrollHeight: '450px'
           }}
           paginator={rows !== products.length}
           rows={rows}
@@ -315,7 +316,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
           columnResizeMode="expand"
           reorderableColumns
           scrollDirection="both"
-          frozenWidth="200px"
+          frozenWidth="100px"
           responsiveLayout="scroll"
         >
           <Column 
@@ -382,7 +383,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
             headerClassName="text-center"
             frozen
             alignFrozen="right"
-            style={{ width: '120px', minWidth: '120px' }}
+            style={{ width: '70px', minWidth: '70px' }}
           />
         </DataTable>
       </div>

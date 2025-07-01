@@ -30,6 +30,7 @@ import PosSaleDetail from "../../components/pos/PosDetail";
 import AddPaymentModal from "../../components/pos/payment/AddPayment";
 import ViewPaymentModal from "../../components/pos/payment/ViewPayment";
 import "./PosSale.css";
+import { useNavigate } from "react-router-dom";
 
 const PosSaleList = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,7 +48,10 @@ const PosSaleList = () => {
   useEffect(() => {
     fetchSales();
   }, [token, userData.warehouse_id]);
-
+  const navigate  = useNavigate();
+  const handleAddSaleReturn = (saleId, type) => {
+    navigate(`/sale-return/add/${type}/${saleId}`);
+  }
   useEffect(() => {
     const result = sales.filter((sale) => {
       const reference = sale?.reference || "";
@@ -165,9 +169,9 @@ const PosSaleList = () => {
       },
       {
         key: 'add-sale-return',
-        icon: <RollbackOutlined />, // use a relevant icon from Ant Design
+        icon: <RollbackOutlined />, 
         label: 'Add Sale Return',
-        onClick: () => handleAddSaleReturn(row),
+        onClick: () => handleAddSaleReturn(row.id,'pos'),
       },
 
       {
@@ -258,21 +262,21 @@ const PosSaleList = () => {
           </Dropdown>
         </Space>
       ),
-      width: '120px',
+      width: '100px',
     }
 
   ];
 
   const customStyles = {
-    headRow: {
+    table: {
       style: {
-        backgroundColor: "#f0f0f0",
-        fontWeight: "bold",
+        maxHeight: '500px',
       },
     },
-    rows: {
+    headRow: {
       style: {
-        minHeight: "72px",
+        backgroundColor: '#f3f4f6',
+        fontWeight: 'bold'
       },
     },
   };
@@ -324,11 +328,17 @@ const PosSaleList = () => {
           <DataTable
             columns={columns}
             data={filteredSales}
-            // progressPending={loading}
-            pagination
-            paginationPerPage={10}
-            paginationRowsPerPageOptions={[10, 20, 50, 100]}
-            customStyles={customStyles}
+            pagination={false} 
+            fixedHeader 
+            fixedHeaderScrollHeight="500px" 
+            customStyles={{
+              ...customStyles,
+              table: {
+                style: {
+                  maxHeight: '500px',
+                },
+              },
+            }}
             highlightOnHover
             pointerOnHover
             responsive

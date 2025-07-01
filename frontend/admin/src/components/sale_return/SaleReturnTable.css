@@ -1,0 +1,31 @@
+
+.custom-menu-view {
+  color: #3B82F6;
+  padding: 8px 12px;
+  font-size: 14px;
+  gap: 10px;
+}
+
+.custom-menu-delete {
+  color: #EF4444;
+  padding: 8px 12px;
+  font-size: 14px;
+  gap: 10px;
+  /* background: #000; */
+}
+.custom-return-dialog .p-dialog-content {
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+}
+
+.custom-return-dialog .field label {
+  font-weight: 500;
+  color: #333;
+}
+
+.custom-return-dialog p {
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+

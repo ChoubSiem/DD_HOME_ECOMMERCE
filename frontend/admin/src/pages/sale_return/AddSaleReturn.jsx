@@ -1,15 +1,16 @@
-    import React, { useState, useEffect } from 'react';
+    import React, { useState, useEffect,useRef  } from 'react';
     import { 
       Card, 
       Button, 
       InputText, 
       Calendar, 
       InputNumber, 
-      Message, 
       Divider,
       DataTable,
-      Column
+      Column,
+      Message,
     } from 'primereact';
+    import { Toast } from 'primereact/toast';
     import { useNavigate, useParams } from 'react-router-dom';
     import { useSale } from '../../hooks/UseSale';
     import dayjs from 'dayjs';
@@ -20,9 +21,10 @@
     import "primeicons/primeicons.css";
 
     const AddSaleReturn = () => {
+      const toast = useRef(null);
       const navigate = useNavigate();
-      const { id } = useParams();
-      const { handleAddSaleReturn, handleGetOneInventorySale} = useSale();
+      const { id,type } = useParams();
+      const { handleAddSaleReturn, handleGetOneInventorySale,handleGetOnePosSale} = useSale();
       const token = localStorage.getItem("token");
       const user = JSON.parse(Cookies.get("user"));
 
@@ -56,16 +58,20 @@
 
       const fetchSale = async () => {
         try {
-          const result = await handleGetOneInventorySale(id, token);
+          let result ;
+          if (type == 'inventory') {
+            result = await handleGetOneInventorySale(id, token);
+            
+          }else{
+            result = await handleGetOnePosSale(id, token);
+          }
           if (result.success) {
             setOriginalSale(result.sale);
             
-            // Check localStorage first
             const savedItems = localStorage.getItem(`saleReturnItems_${id}`);
             if (savedItems) {
               setSaleItems(JSON.parse(savedItems));
             } else {
-              // Initialize with default values if no saved items
               const items = result.sale.items.map(item => ({
                 ...item,
                 product_id: item.product_id,
@@ -88,7 +94,6 @@
       const handleRemoveItem = (productId) => {
         const updatedItems = saleItems.filter(item => item.product_id !== productId);
         
-        // Use functional update to ensure we're working with latest state
         setSaleItems(prevItems => {
           const newItems = prevItems.filter(item => item.product_id !== productId);
           return newItems;
@@ -109,7 +114,6 @@
           }
           return item;
         });
-        console.log('New items:', newItems);
         return newItems;
       });
     };
@@ -128,7 +132,12 @@
 
       const handleSubmit = async () => {
         if (saleItems.length === 0) {
-          Message.error('Please add at least one item to return');
+          toast.current.show({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Please add at least one item to return',
+            life: 3000
+          });
           return;
         }
 
@@ -148,7 +157,8 @@
           warehouse_id: user.warehouse_id,
           saleperson: user?.id,
           customer_id: originalSale?.customer?.id,
-          original_reference: originalSale?.reference
+          original_reference: originalSale?.reference,
+          type: type
         };
 
         // console.log(payload);
@@ -157,19 +167,40 @@
         setLoading(true);
         try {
           const result = await handleAddSaleReturn(payload, token);
-          console.log(result);
           
-          if (result.success) {
+          if (result?.success) {
+            // toast.current.show({
+            //   severity: 'success',
+            //   summary: 'Success',
+            //   detail: 'Sale return created successfully',
+            //   life: 3000
+            // });
+
             localStorage.removeItem(`saleReturnItems_${id}`);
-            Message.success('Sale return created successfully');
-            navigate('/sale-return');
+            setTimeout(() => {
+              navigate('/sale-return');
+            }, 1000);
+          } else {
+            toast.current.show({
+              severity: 'error',
+              summary: 'Error',
+              detail: result?.message || 'Failed to create sale return',
+              life: 3000
+            });
           }
         } catch (error) {
-          // Message.error(error.response?.data?.message || 'Failed to create sale return');
+          console.error('Error creating sale return:', error);
+          toast.current.show({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.response?.data?.message || 'Failed to create sale return',
+            life: 3000
+          });
         } finally {
           setLoading(false);
         }
       };
+
 
       const handleClearForm = () => {
         setSaleItems([]);

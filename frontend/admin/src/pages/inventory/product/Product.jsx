@@ -210,7 +210,6 @@ const filteredProducts = products.filter((product) => {
 
   return (
     <Spin spinning={loading}>
-      <div className="product-management">
         <Card className="product-header-card" style={{ body: { padding: "24px" },borderRadius:0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div className="product-header-content" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -245,7 +244,7 @@ const filteredProducts = products.filter((product) => {
           </div>
         </Card>
 
-        <Space direction="vertical" size="middle" style={{ width: "100%", marginBottom: '30px' }}>
+        {/* <Space direction="vertical" size="middle" style={{ width: "100%", marginBottom: '30px' }}> */}
           <ProductToolBar
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -260,16 +259,9 @@ const filteredProducts = products.filter((product) => {
             categories={categories} 
             onSearch={onSearch}
           />
-        </Space>
+        {/* </Space> */}
 
-        <ProductTable
-          products={filteredProducts}
-          onRowClick={handleRowClick}
-          setCurrentProducts={setCurrentProducts}
-          setIsModalVisible={setIsModalVisible}
-          handleDelete={handleDelete}
-          handleEdit={handleEdit}
-        />
+
 
         {selectedProduct && (
           <ProductDetailModal
@@ -287,7 +279,14 @@ const filteredProducts = products.filter((product) => {
           />
         )}
 
-      </div>
+        <ProductTable
+          products={filteredProducts}
+          onRowClick={handleRowClick}
+          setCurrentProducts={setCurrentProducts}
+          setIsModalVisible={setIsModalVisible}
+          handleDelete={handleDelete}
+          handleEdit={handleEdit}
+        />
     </Spin>
   );
 };

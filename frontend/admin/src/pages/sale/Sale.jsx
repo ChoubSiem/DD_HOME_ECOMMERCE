@@ -60,9 +60,10 @@ const StockTransferPage = () => {
     setShowFilter(!showFilter);
   };
 
-  const handleAddSaleReturn =(saleId) =>{
-    navigate(`/sale-return/add/${saleId}`)
-  }
+  const handleAddSaleReturn = (saleId, type) => {
+    navigate(`/sale-return/add/${type}/${saleId}`);
+  };
+
 
   const handleSalesInveontoryData = async() =>{
     setLoading(true);

@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { getPosSales,addPosSale,addOpenShift ,getOneOpenShift,UpdateOpenShift,addCloseShift,getSalesInventory,getSalePaymentOne,getOneInventorySale,updateSaleInventory,deleteSaleInventory, deletePosSale, getOneProcessingShift,getSaleReturn,getOneSaleReturn,addSaleReturn,updateSaleReturn,deleteSaleReturn} from '../services/saleService';
+import { getPosSales,addPosSale,addOpenShift ,getOneOpenShift,UpdateOpenShift,addCloseShift,getSalesInventory,getSalePaymentOne,getOneInventorySale,updateSaleInventory,deleteSaleInventory, deletePosSale, getOneProcessingShift,getSaleReturn,getOneSaleReturn,addSaleReturn,updateSaleReturn,deleteSaleReturn ,getOnePosSale} from '../services/saleService';
 export const useSale = () => {
   const handlePosSales = async (warehouseId,token) => {
     try {
@@ -30,6 +30,19 @@ export const useSale = () => {
   const handleGetOneInventorySale = async (saleId,token) => {
     try {
       const saleData = await getOneInventorySale(saleId,token);            
+      return {
+        success: true,
+        data: saleData,
+        sale: saleData.data            
+      };
+      
+    } catch (error) {
+      
+    }
+  };
+  const handleGetOnePosSale = async (saleId,token) => {
+    try {
+      const saleData = await getOnePosSale(saleId,token);            
       return {
         success: true,
         data: saleData,
@@ -181,7 +194,7 @@ export const useSale = () => {
       return {
         success: true,
         data: saleData,
-        sale: saleData.data, 
+        sale: saleData.list, 
       };
       
     } catch (error) {
@@ -247,7 +260,8 @@ export const useSale = () => {
     handleAddSaleReturn,
     handleGetOneSaleReturn,
     handleDeleteSaleReturn,
-    handleUpdateSaleReturn
+    handleUpdateSaleReturn,
+    handleGetOnePosSale
   
   };
 };
