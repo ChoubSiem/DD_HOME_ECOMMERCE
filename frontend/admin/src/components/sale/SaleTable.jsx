@@ -334,7 +334,7 @@ const SalesTable = ({
       overflow: 'hidden',
       boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)'
     }}>
-      <div style={{ 
+      {/* <div style={{ 
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -363,7 +363,7 @@ const SalesTable = ({
             />
           </Tooltip>
         </Space>
-      </div>
+      </div> */}
       
       {data && data.length > 0 ? (
         <DataTable

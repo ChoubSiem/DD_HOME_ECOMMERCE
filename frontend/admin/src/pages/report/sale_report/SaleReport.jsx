@@ -14,27 +14,21 @@ import {
   message,
   Typography,
 } from 'antd';
-
 import {
   SearchOutlined,
   FilterOutlined,
   FileExcelOutlined,
   FilePdfOutlined,
   FileImageOutlined,
-  CheckCircleOutlined,
-  SyncOutlined,
   ShoppingCartOutlined,
   ClearOutlined,
-  AppstoreOutlined 
 } from '@ant-design/icons';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import Cookies from 'js-cookie';
-import * as XLSX from 'xlsx';
 import generatePDF from 'react-to-pdf';
 import html2canvas from 'html2canvas';
 import debounce from 'lodash.debounce';
-import axios from 'axios';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -64,7 +58,7 @@ const SalesReports = () => {
     customer: 'all',
     reportType: 'all',
     saleType: 'all',
-    groupBy: ['product'] // Default grouping by product
+    groupBy: ['product']
   });
   
   const [pendingFilters, setPendingFilters] = useState({
@@ -82,7 +76,6 @@ const SalesReports = () => {
   const [sales, setSales] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({ first: 0, rows: 10 });
   const tableRef = useRef();
   const { getSaleReportsData } = useReport();
 
@@ -95,7 +88,6 @@ const SalesReports = () => {
     try {
       setIsLoading(true);
       
-      // Prepare filters based on appliedFilters state
       const filters = {
         warehouse_id: userData.warehouse_id,
         sale_type: appliedFilters.saleType,
@@ -108,15 +100,14 @@ const SalesReports = () => {
         report_type: appliedFilters.reportType !== 'all' ? appliedFilters.reportType : undefined
       };
 
-      // Remove undefined values to avoid sending empty filters
       const cleanedFilters = Object.fromEntries(
         Object.entries(filters).filter(([_, value]) => value !== undefined)
       );
 
       const response = await getSaleReportsData(cleanedFilters, token);
-      console.log(response);
       
       if (response.success) {
+        console.log(response);
         setSales(response.sales || []);
         setError(null);
       }
@@ -134,82 +125,305 @@ const SalesReports = () => {
     fetchSalesReportData();
   }, [appliedFilters]);
 
-  // Debounced search for pending filters
+  // Debounced search
   const debouncedSetPendingSearch = useMemo(
     () => debounce((value) => setPendingFilters(prev => ({ ...prev, searchTerm: value })), 500),
     []
   );
 
   useEffect(() => {
-    return () => {
-      debouncedSetPendingSearch.cancel();
-    };
+    return () => debouncedSetPendingSearch.cancel();
   }, [debouncedSetPendingSearch]);
 
-  // Memoized customers list
-  const customers = useMemo(() => {
-    const uniqueCustomers = new Set();
-    sales.forEach(sale => {
-      if (sale.customer_name) {
-        uniqueCustomers.add({
-          id: sale.customer_id,
-          name: sale.customer_name
-        });
+  // Generate dynamic columns based on grouping
+  const columns = useMemo(() => {
+    const hasGrouping = appliedFilters.groupBy?.length > 0;
+    const hasProductGroup = appliedFilters.groupBy?.includes('product');
+    const hasDateGroup = appliedFilters.groupBy?.includes('date');
+    const hasCustomerGroup = appliedFilters.groupBy?.includes('customer');
+    const hasInvoiceGroup = appliedFilters.groupBy?.includes('invoice');
+    const hasSalesPersonGroup = appliedFilters.groupBy?.includes('sales_person');
+    const hasCustomerGroupGroup = appliedFilters.groupBy?.includes('customer_group');
+    const hasCategoryGroup = appliedFilters.groupBy?.includes('category');
+
+    const baseColumns = [];
+
+    // Add grouping columns
+    if (hasProductGroup) {
+      baseColumns.push({
+        field: 'product_name',
+        header: 'Product',
+        sortable: true,
+        style: { minWidth: '200px' },
+        body: (rowData) => (
+          <Text strong style={{ fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif" }}>
+            {rowData.product_name || 'N/A'}
+          </Text>
+        ),
+      });
+    }
+
+    if (hasDateGroup) {
+      baseColumns.push({
+        field: 'date',
+        header: 'Date',
+        sortable: true,
+        style: { minWidth: '120px' },
+        body: (rowData) => (
+          <Text>{rowData.date ? dayjs(rowData.date).format('YYYY-MM-DD') : 'N/A'}</Text>
+        ),
+      });
+    }
+
+    if (hasCustomerGroup) {
+      baseColumns.push({
+        field: 'customer_name',
+        header: 'Customer',
+        sortable: true,
+        style: { minWidth: '180px' },
+        body: (rowData) => <Text>{rowData.customer_name || 'Walk-in'}</Text>,
+      });
+    }
+
+    if (hasInvoiceGroup) {
+      baseColumns.push({
+        field: 'invoice_no',
+        header: 'Invoice',
+        sortable: true,
+        style: { minWidth: '150px' },
+        body: (rowData) => <Text>{rowData.invoice_no || 'N/A'}</Text>,
+      });
+    }
+
+    if (hasSalesPersonGroup) {
+      baseColumns.push({
+        field: 'sales_person',
+        header: 'Sales Person',
+        sortable: true,
+        style: { minWidth: '150px' },
+        body: (rowData) => <Text>{rowData.sales_person || ''}</Text>,
+      });
+    }
+
+    if (hasCustomerGroupGroup) {
+      baseColumns.push({
+        field: 'customer_group_name',
+        header: 'Customer Group',
+        sortable: true,
+        style: { minWidth: '150px' },
+        body: (rowData) => <Text>{rowData.customer_group_name || 'Walk-In Customer'}</Text>,
+      });
+    }
+
+    if (hasCategoryGroup) {
+      baseColumns.push({
+        field: 'product_category',
+        header: 'Category',
+        sortable: true,
+        style: { minWidth: '150px' },
+        body: (rowData) => <Text>{rowData.product_category || 'N/A'}</Text>,
+      });
+    }
+
+    // Add metrics columns
+    if (!hasCustomerGroup) {
+      baseColumns.push({
+        field: 'customer_count',
+        header: 'Customers',
+        sortable: true,
+        style: { minWidth: '100px', textAlign: 'center' },
+        body: (rowData) => <Text>{rowData.customer_count || 0}</Text>,
+      });
+    }
+
+    baseColumns.push(
+      {
+        field: 'quantity',
+        header: 'Qty',
+        sortable: true,
+        style: { minWidth: '80px', textAlign: 'right' },
+        body: (rowData) => <Text>{Number(rowData.quantity || 0).toLocaleString()}</Text>,
+      },
+      {
+        field: 'subtotal',
+        header: 'Subtotal',
+        sortable: true,
+        style: { minWidth: '120px', textAlign: 'right' },
+        body: (rowData) => <Text>${Number(rowData.subtotal || 0).toFixed(2)}</Text>,
+      },
+      {
+        field: 'inv_discount',
+        header: 'Inv Disc',
+        sortable: true,
+        style: { minWidth: '100px', textAlign: 'right' },
+        body: (rowData) => <Text>${Number(rowData.inv_discount || 0).toFixed(2)}</Text>,
+      },
+      {
+        field: 'item_discount',
+        header: 'Item Disc',
+        sortable: true,
+        style: { minWidth: '100px', textAlign: 'right' },
+        body: (rowData) => <Text>${Number(rowData.item_discount || 0).toFixed(2)}</Text>,
+      },
+      {
+        field: 'total_sale',
+        header: 'Total Sale',
+        sortable: true,
+        style: { minWidth: '120px', textAlign: 'right' },
+        body: (rowData) => <Text>${Number(rowData.total_sale || 0).toFixed(2)}</Text>,
+      },
+      {
+        field: 'total_cost',
+        header: 'Cost',
+        sortable: true,
+        style: { minWidth: '120px', textAlign: 'right' },
+        body: (rowData) => <Text>${Number(rowData.total_cost || 0).toFixed(2)}</Text>,
+      },
+      {
+        field: 'profit',
+        header: 'Profit',
+        sortable: true,
+        style: { minWidth: '120px', textAlign: 'right' },
+        body: (rowData) => (
+          <Text style={{ color: (rowData.profit || 0) >= 0 ? '#52c41a' : '#f5222d' }}>
+            ${Number(rowData.profit || 0).toFixed(2)}
+          </Text>
+        ),
       }
-    });
-    return Array.from(uniqueCustomers);
+    );
+
+    return baseColumns;
+  }, [appliedFilters.groupBy, sales]);
+
+  // Calculate totals for footer
+  const calculateTotals = useCallback(() => {
+    return sales.reduce(
+      (acc, sale) => {
+        acc.totalQuantity += Number(sale.quantity) || 0;
+        acc.totalSubtotal += Number(sale.subtotal) || 0;
+        acc.totalInvoiceDiscount += Number(sale.inv_discount) || 0;
+        acc.totalItemDiscount += Number(sale.item_discount) || 0;
+        acc.totalSale += Number(sale.total_sale) || 0;
+        acc.totalCost += Number(sale.total_cost) || 0;
+        acc.totalProfit += Number(sale.profit) || 0;
+        return acc;
+      },
+      {
+        totalQuantity: 0,
+        totalSubtotal: 0,
+        totalInvoiceDiscount: 0,
+        totalItemDiscount: 0,
+        totalSale: 0,
+        totalCost: 0,
+        totalProfit: 0,
+      }
+    );
   }, [sales]);
 
-  // Calculate totals and stats
-  const { totals, stats } = useMemo(() => {
-    const totals = {
-      totalCustomers: 0,
-      totalQuantity: 0,
-      totalSubtotal: 0,
-      totalInvoiceDiscount: 0,
-      totalItemDiscount: 0,
-      totalSale: 0,
-      totalCost: 0,
-      totalProfit: 0,
-    };
+  // Custom footer component
+// const CustomFooter = useMemo(() => {
+//   const totals = calculateTotals();
+//   const hasGrouping = appliedFilters.groupBy?.length > 0;
+  
+//   return (
+//     <div style={{ 
+//       display: 'flex',
+//       width: '100%',
+//       background: '#f8f9fa',
+//       padding: '8px',
+//       borderTop: '1px solid #dee2e6'
+//     }}>
+//       {/* Left-aligned "Total" label */}
+//       <div style={{ 
+//         flex: hasGrouping ? '0 0 200px' : '0 0 150px',
+//         fontWeight: 'bold',
+//         paddingLeft: '8px'
+//       }}>
+//         Total:
+//       </div>
+      
+//       {/* Dynamic columns */}
+//       <div style={{ 
+//         display: 'flex',
+//         flex: 1,
+//         justifyContent: 'flex-end'
+//       }}>
+//         {/* Quantity */}
+//         <div style={{ 
+//           flex: '0 0 80px',
+//           textAlign: 'right',
+//           fontWeight: 'bold',
+//           paddingRight: '8px'
+//         }}>
+//           {totals.totalQuantity.toLocaleString()}
+//         </div>
+        
+//         {/* Subtotal */}
+//         <div style={{ 
+//           flex: '0 0 120px',
+//           textAlign: 'right',
+//           fontWeight: 'bold',
+//           paddingRight: '8px'
+//         }}>
+//           ${totals.totalSubtotal.toFixed(2)}
+//         </div>
+        
+//         {/* Invoice Discount */}
+//         <div style={{ 
+//           flex: '0 0 100px',
+//           textAlign: 'right',
+//           fontWeight: 'bold',
+//           paddingRight: '8px'
+//         }}>
+//           ${totals.totalInvoiceDiscount.toFixed(2)}
+//         </div>
+        
+//         {/* Item Discount */}
+//         <div style={{ 
+//           flex: '0 0 100px',
+//           textAlign: 'right',
+//           fontWeight: 'bold',
+//           paddingRight: '8px'
+//         }}>
+//           ${totals.totalItemDiscount.toFixed(2)}
+//         </div>
+        
+//         {/* Total Sale */}
+//         <div style={{ 
+//           flex: '0 0 120px',
+//           textAlign: 'right',
+//           fontWeight: 'bold',
+//           paddingRight: '8px'
+//         }}>
+//           ${totals.totalSale.toFixed(2)}
+//         </div>
+        
+//         {/* Cost */}
+//         <div style={{ 
+//           flex: '0 0 120px',
+//           textAlign: 'right',
+//           fontWeight: 'bold',
+//           paddingRight: '8px'
+//         }}>
+//           ${totals.totalCost.toFixed(2)}
+//         </div>
+        
+//         {/* Profit */}
+//         <div style={{ 
+//           flex: '0 0 120px',
+//           textAlign: 'right',
+//           fontWeight: 'bold',
+//           paddingRight: '8px',
+//           color: totals.totalProfit >= 0 ? '#52c41a' : '#f5222d'
+//         }}>
+//           ${totals.totalProfit.toFixed(2)}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }, [sales, appliedFilters.groupBy]);
 
-    let totalSales = 0;
-    let totalRevenue = 0;
-    let totalProfit = 0;
-    let completedSales = 0;
-    let pendingSales = 0;
-
-    sales.forEach((sale) => {
-      totals.totalCustomers += sale.customer_count || 0;
-      totals.totalQuantity += Number(sale.quantity) || 0;
-      totals.totalSubtotal += Number(sale.unit_price * sale.quantity) || 0;
-      totals.totalInvoiceDiscount += Number(sale.inv_discount) || 0;
-      totals.totalItemDiscount += Number(sale.item_discount) || 0;
-      totals.totalSale += Number(sale.total_sale) || 0;
-      totals.totalCost += Number(sale.total_cost) || 0;
-      totals.totalProfit += Number(sale.profit) || 0;
-
-      totalSales++;
-      totalRevenue += sale.total_sale || 0;
-      totalProfit += sale.profit || 0;
-      if (sale.status === 'completed') completedSales++;
-      if (sale.status === 'pending') pendingSales++;
-    });
-
-    const completionRate = totalSales > 0 ? Math.round((completedSales / totalSales) * 100) : 0;
-
-    return {
-      totals,
-      stats: { totalSales, totalRevenue, totalProfit, completedSales, pendingSales, completionRate },
-    };
-  }, [sales]);  
-
-  // Row selection handler
-  const handleRowSelected = useCallback((e) => {
-    setSelectedRows(e.value.map((row) => row.id));
-  }, []);
-
-  // Export handlers
+  // Export to Excel with dynamic columns
 const handleExportExcel = useCallback(async () => {
   setExportLoading(true);
   try {
@@ -221,52 +435,58 @@ const handleExportExcel = useCallback(async () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sales Report');
 
-    // Header
-    worksheet.addRow(['DD Home']).font = { size: 16, bold: true };
-    worksheet.addRow(['Address: Nº25, St.5, Dangkor, Phnom Penh, Cambodia']);
-    worksheet.addRow(['Phone: 081 90 50 50']);
-    worksheet.addRow([`View By Outlet: ${userData.warehouse_name || 'Chamroeun Phal'}`]);
-    worksheet.addRow(['View By Location: All']);
-    worksheet.addRow(['View As: Detail']);
-    worksheet.addRow([`Group By: ${appliedFilters.groupBy.join(', ') || 'None'}`]);
+    // Add report headers
+    worksheet.addRow(['DD Home Sales Report']).font = { size: 16, bold: true };
     worksheet.addRow([
-      `From ${appliedFilters.dateRange?.[0] ? dayjs(appliedFilters.dateRange[0]).format('YYYY-MM-DD h:mm A') : 'N/A'}`,
-      `To ${appliedFilters.dateRange?.[1] ? dayjs(appliedFilters.dateRange[1]).format('YYYY-MM-DD h:mm A') : 'N/A'}`,
+      `Date Range: ${
+        appliedFilters.dateRange?.[0]
+          ? dayjs(appliedFilters.dateRange[0]).format('YYYY-MM-DD')
+          : 'All Dates'
+      } to ${
+        appliedFilters.dateRange?.[1]
+          ? dayjs(appliedFilters.dateRange[1]).format('YYYY-MM-DD')
+          : 'All Dates'
+      }`
     ]);
-    worksheet.addRow([]); // spacer 
+    worksheet.addRow([`Grouped By: ${appliedFilters.groupBy.join(', ') || 'None'}`]);
+    worksheet.addRow([`Warehouse: ${userData.warehouse_name || 'All'}`]);
+    worksheet.addRow([]);
 
-    // Determine dynamic columns based on groupBy
+    // Determine which columns to include based on grouping
+    const hasProductGroup = appliedFilters.groupBy.includes('product');
     const hasDateGroup = appliedFilters.groupBy.includes('date');
     const hasCustomerGroup = appliedFilters.groupBy.includes('customer');
-    const onlyCustomerGroup = appliedFilters.groupBy.length === 1 && hasCustomerGroup;
-    const showCustomerCount = !hasCustomerGroup;
+    const hasInvoiceGroup = appliedFilters.groupBy.includes('invoice');
+    const hasSalesPersonGroup = appliedFilters.groupBy.includes('sales_person');
+    const hasCustomerGroupGroup = appliedFilters.groupBy.includes('customer_group');
+    const hasCategoryGroup = appliedFilters.groupBy.includes('category');
 
-    // Table headers
+    // Add column headers
     const headers = [];
-    
-    if (!onlyCustomerGroup) {
-      headers.push('Product Name');
-    }
-    if (hasDateGroup) {
-      headers.push('Date');
-    }
-    if (hasCustomerGroup) {
-      headers.push('Customer Name');
-    }
-    
+
+    if (hasProductGroup) headers.push('Product');
+    if (hasDateGroup) headers.push('Date');
+    if (hasCustomerGroup) headers.push('Customer');
+    if (hasInvoiceGroup) headers.push('Invoice No');
+    if (hasSalesPersonGroup) headers.push('Sales Person');
+    if (hasCustomerGroupGroup) headers.push('Customer Group');
+    if (hasCategoryGroup) headers.push('Category');
+    if (!hasCustomerGroup) headers.push('Customer Count');
+
     headers.push(
-      ...(showCustomerCount ? ['Customers'] : []),
-      'Quantity Sold',
-      'Sub Amount',
+      'Quantity',
+      'Unit Price',
+      'Subtotal',
       'Invoice Discount',
       'Item Discount',
       'Total Sale',
+      'Unit Cost',
       'Total Cost',
-      'Profit'
+      'Profit' // Removed 'Profit Margin (%)'
     );
 
+    // Add header row with styling
     const headerRow = worksheet.addRow(headers);
-
     headerRow.eachCell((cell) => {
       cell.font = { bold: true };
       cell.fill = {
@@ -276,53 +496,70 @@ const handleExportExcel = useCallback(async () => {
       };
       cell.border = {
         top: { style: 'thin' },
-        bottom: { style: 'thin' },
         left: { style: 'thin' },
+        bottom: { style: 'thin' },
         right: { style: 'thin' },
       };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
 
-    // Sales data - preserve original number formatting
+    // Add data rows
     sales.forEach((sale) => {
-      const rowData = [];      
-      if (!onlyCustomerGroup) {
-        rowData.push(sale.product_name || 'N/A');
-      }
-      if (hasDateGroup) {
-        rowData.push(sale.date ? dayjs(sale.date).format('YYYY-MM-DD') : 'N/A');
-      }
-      if (hasCustomerGroup) {
-        rowData.push(sale.customer_name || 'N/A');
-      }
-      
-      // Push numeric values without fixed decimal formatting
+      const rowData = [];
+
+      // Add grouping columns
+      if (hasProductGroup) rowData.push(sale.product_name || 'N/A');
+      if (hasDateGroup) rowData.push(sale.date ? dayjs(sale.date).format('YYYY-MM-DD') : 'N/A');
+      if (hasCustomerGroup) rowData.push(sale.customer_name || 'Walk-in');
+      if (hasInvoiceGroup) rowData.push(sale.invoice_no || 'N/A');
+      if (hasSalesPersonGroup) rowData.push(sale.sales_person || '');
+      if (hasCustomerGroupGroup) rowData.push(sale.customer_group_name || 'Walk-In Customer');
+      if (hasCategoryGroup) rowData.push(sale.product_category || 'N/A');
+      if (!hasCustomerGroup) rowData.push(sale.customer_count || 0);
+
+      // Calculate derived values
+      const unitPrice = sale.quantity ? (sale.subtotal / sale.quantity) : 0;
+      const unitCost = sale.quantity ? (sale.total_cost / sale.quantity) : 0;
+
+      // Add metric columns (removed profit margin calculation)
       rowData.push(
-        ...(showCustomerCount ? [sale.customer_count || 0] : []),
-        Number(sale.quantity) || 0,
-        Number(sale.unit_price * sale.quantity) || 0,
-        Number(sale.inv_discount) || 0,
-        Number(sale.item_discount) || 0,
-        Number(sale.total_sale) || 0,
-        Number(sale.total_cost) || 0,
-        Number(sale.profit) || 0
+        Number(sale.quantity || 0),
+        Number(unitPrice.toFixed(2)),
+        Number(sale.subtotal || 0),
+        Number(sale.inv_discount || 0),
+        Number(sale.item_discount || 0),
+        Number(sale.total_sale || 0),
+        Number(unitCost.toFixed(2)),
+        Number(sale.total_cost || 0),
+        Number(sale.profit || 0) // Profit column remains
       );
 
       const row = worksheet.addRow(rowData);
-      row.eachCell((cell) => {
-        if (typeof cell.value === 'number') {
-          // Use general number format to preserve original decimal places
-          cell.numFmt = 'General';
+      
+      // Format numeric cells
+      row.eachCell((cell, colNumber) => {
+        const firstMetricCol = headers.length - 9 + 1; // Adjusted for removed column
+        
+        if (colNumber >= firstMetricCol) {
+          // Apply number formatting to numeric columns
+          cell.numFmt = colNumber === firstMetricCol ? '0' : '#,##0.00';
+          cell.alignment = { horizontal: 'right' };
+          
+          // Color coding for profit (now the last column)
+          if (colNumber === headers.length) {
+            cell.font = { 
+              color: { argb: cell.value >= 0 ? 'FF52C41A' : 'FFF5222D' } 
+            };
+          }
         }
-        cell.alignment = { horizontal: 'start' };
       });
     });
 
     // Calculate totals
-    const calculatedTotals = sales.reduce((acc, sale) => {
+    const totals = sales.reduce((acc, sale) => {
       acc.totalQuantity += Number(sale.quantity) || 0;
-      acc.totalSubtotal += Number(sale.unit_price * sale.quantity) || 0;
-      acc.totalInvoiceDiscount += Number(sale.inv_discount) || 0;
+      acc.totalSubtotal += Number(sale.subtotal) || 0;
+      acc.totalInvDiscount += Number(sale.inv_discount) || 0;
       acc.totalItemDiscount += Number(sale.item_discount) || 0;
       acc.totalSale += Number(sale.total_sale) || 0;
       acc.totalCost += Number(sale.total_cost) || 0;
@@ -331,63 +568,86 @@ const handleExportExcel = useCallback(async () => {
     }, {
       totalQuantity: 0,
       totalSubtotal: 0,
-      totalInvoiceDiscount: 0,
+      totalInvDiscount: 0,
       totalItemDiscount: 0,
       totalSale: 0,
       totalCost: 0,
       totalProfit: 0
     });
 
-    // Totals row - format with 2 decimal places
+    // Add totals row
     const totalRowData = [];
-    
-    // Add empty cells for any groupBy columns
-    if (!onlyCustomerGroup) totalRowData.push('');
+
+    // Add empty cells for grouping columns
+    if (hasProductGroup) totalRowData.push('TOTAL');
     if (hasDateGroup) totalRowData.push('');
     if (hasCustomerGroup) totalRowData.push('');
-    
+    if (hasInvoiceGroup) totalRowData.push('');
+    if (hasSalesPersonGroup) totalRowData.push('');
+    if (hasCustomerGroupGroup) totalRowData.push('');
+    if (hasCategoryGroup) totalRowData.push('');
+    if (!hasCustomerGroup) totalRowData.push('');
+
+    // Calculate average unit price and cost
+    const avgUnitPrice = totals.totalQuantity ? (totals.totalSubtotal / totals.totalQuantity) : 0;
+    const avgUnitCost = totals.totalQuantity ? (totals.totalCost / totals.totalQuantity) : 0;
+
+    // Add metric totals (removed profit margin)
     totalRowData.push(
-      ...(showCustomerCount ? [''] : []),
-      calculatedTotals.totalQuantity,
-      calculatedTotals.totalSubtotal,
-      calculatedTotals.totalInvoiceDiscount,
-      calculatedTotals.totalItemDiscount,
-      calculatedTotals.totalSale,
-      calculatedTotals.totalCost,
-      calculatedTotals.totalProfit
+      totals.totalQuantity,
+      Number(avgUnitPrice.toFixed(2)),
+      totals.totalSubtotal,
+      totals.totalInvDiscount,
+      totals.totalItemDiscount,
+      totals.totalSale,
+      Number(avgUnitCost.toFixed(2)),
+      totals.totalCost,
+      totals.totalProfit
     );
 
     const totalRow = worksheet.addRow(totalRowData);
     totalRow.eachCell((cell, colNumber) => {
-      const firstDataCol = 1 + 
-        (!onlyCustomerGroup ? 1 : 0) + 
-        (hasDateGroup ? 1 : 0) + 
-        (hasCustomerGroup ? 1 : 0) + 
-        (showCustomerCount ? 1 : 0);
+      const firstMetricCol = headers.length - 9 + 1; // Adjusted for removed column
       
-      if (colNumber >= firstDataCol) {
+      if (colNumber >= firstMetricCol) {
         cell.font = { bold: true };
-        // Format totals with 2 decimal places
-        cell.numFmt = '#,##0.00';
+        cell.numFmt = colNumber === firstMetricCol ? '0' : '#,##0.00';
         cell.alignment = { horizontal: 'right' };
-        cell.border = {
-          top: { style: 'thin' },
-        };
+        cell.border = { top: { style: 'thin' } };
+        
+        // Color coding for profit (now the last column)
+        if (colNumber === headers.length) {
+          cell.font = { 
+            bold: true,
+            color: { argb: cell.value >= 0 ? 'FF52C41A' : 'FFF5222D' } 
+          };
+        }
       }
     });
 
-    // Auto column width
-    worksheet.columns.forEach((col) => {
-      let max = 10;
-      col.eachCell?.((cell) => {
-        const val = cell.value ? cell.value.toString() : '';
-        max = Math.max(max, val.length);
+    // Auto-size columns
+    worksheet.columns.forEach((column) => {
+      let maxLength = 0;
+      column.eachCell({ includeEmpty: true }, (cell) => {
+        const columnLength = cell.value ? cell.value.toString().length : 0;
+        if (columnLength > maxLength) {
+          maxLength = columnLength;
+        }
       });
-      col.width = max + 2;
+      column.width = Math.min(Math.max(maxLength + 2, 10), 30);
     });
 
+    // Freeze header row
+    worksheet.views = [
+      { state: 'frozen', ySplit: 1 }
+    ];
+
+    // Save the file
     const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `sales-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`);
+    saveAs(
+      new Blob([buffer]),
+      `sales-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`
+    );
     message.success('Excel file exported successfully');
   } catch (error) {
     console.error('Export error:', error);
@@ -395,48 +655,11 @@ const handleExportExcel = useCallback(async () => {
   } finally {
     setExportLoading(false);
   }
-}, [sales, userData.warehouse_name, appliedFilters]);
-
-  const handleExportPDF = useCallback(async () => {
-    setExportLoading(true);
-    try {
-      await generatePDF(tableRef, {
-        filename: `sales-report-${dayjs().format('YYYYMMDD')}.pdf`,
-        page: { format: 'A4', margin: { top: 20, bottom: 20, left: 20, right: 20 } },
-      });
-      message.success('PDF file exported successfully');
-    } catch (error) {
-      console.error('Export error:', error);
-      message.error('Failed to export PDF file');
-    } finally {
-      setExportLoading(false);
-    }
-  }, []);
-
-  const handleExportImage = useCallback(async () => {
-    setExportLoading(true);
-    try {
-      if (tableRef.current) {
-        const canvas = await html2canvas(tableRef.current, { scale: 2, useCORS: true, logging: false });
-        const image = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = image;
-        link.download = `sales-report-${dayjs().format('YYYYMMDD')}.png`;
-        link.click();
-        message.success('Image file exported successfully');
-      }
-    } catch (error) {
-      console.error('Export error:', error);
-      message.error('Failed to export image file');
-    } finally {
-      setExportLoading(false);
-    }
-  }, []);
+}, [sales, appliedFilters, userData.warehouse_name]);
 
   // Filter handlers
   const handleApplyFilters = useCallback(() => {
     setAppliedFilters(pendingFilters);
-    // message.info('Filters applied');
   }, [pendingFilters]);
 
   const handleClearFilters = useCallback(() => {
@@ -452,364 +675,8 @@ const handleExportExcel = useCallback(async () => {
     setPendingFilters(clearedFilters);
     setAppliedFilters(clearedFilters);
     setSelectedRows([]);
-    setPagination({ first: 0, rows: 10 });
     message.info('Filters cleared');
   }, []);
-const columns = useMemo(() => {
-  const hasProductName = sales?.some(row => !!row.product_name);
-  const hasDate = sales?.some(row => !!row["DATE(date)"]);
-
-  const baseColumns = [
-    hasProductName && {
-      field: 'product_name',
-      header: 'Product',
-      sortable: true,
-      style: { width: '20%', minWidth: '150px' },
-      body: (rowData) => (
-        <Text strong style={{ 
-          fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif",
-          display: 'block',
-          textAlign: 'left'
-        }}>
-          {rowData.product_name}
-        </Text>
-      ),
-    },
-    hasDate && {
-      field: 'date',
-      header: 'Date',
-      sortable: true,
-      style: { width: '12%', minWidth: '100px', textAlign: 'center' },
-      body: (rowData) => (
-        <Text>
-          {/* Access the date using string key */}
-          {rowData["DATE(date)"] ? new Date(rowData["DATE(date)"]).toLocaleDateString() : ''}
-        </Text>
-      ),
-    },
-    {
-      field: 'total_customers',
-      header: 'Customers',
-      sortable: true,
-      style: { width: '8%', textAlign: 'start', minWidth: '80px' },
-      body: (rowData) => <Text>{rowData.customer_name || rowData.customer_count || 0}</Text>,
-    },
-    {
-      field: 'quantity',
-      header: 'Sold QTY',
-      sortable: true,
-      style: { width: '8%', textAlign: 'center', minWidth: '80px' },
-      body: (rowData) => <Text>{rowData.quantity || 0}</Text>,
-    },
-    {
-      field: 'unit_price',
-      header: 'Sub Amount',
-      sortable: true,
-      style: { width: '10%', textAlign: 'right', minWidth: '100px' },
-      body: (rowData) => <Text>${Number(rowData?.unit_price * rowData.quantity || rowData.subtotal || 0).toFixed(2)}</Text>,
-    },
-    {
-      field: 'inv_discount',
-      header: 'Inv Dis',
-      sortable: true,
-      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-      body: (rowData) => <Text>${parseFloat(rowData.inv_discount || 0).toFixed(2)}</Text>,
-    },
-    {
-      field: 'item_discount',
-      header: 'Item Dis',
-      sortable: true,
-      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-      body: (rowData) => <Text>${parseFloat(rowData.item_discount || 0).toFixed(2)}</Text>,
-    },
-    {
-      field: 'total_sale',
-      header: 'Total Sale',
-      sortable: true,
-      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-      body: (rowData) => <Text>${parseFloat(rowData.total_sale || 0).toFixed(2)}</Text>,
-    },
-    {
-      field: 'total_cost',
-      header: 'Cost',
-      sortable: true,
-      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-      body: (rowData) => <Text>${parseFloat(rowData.total_cost || 0).toFixed(2)}</Text>
-    },
-    {
-      field: 'total_cost',
-      header: 'Total Cost',
-      sortable: true,
-      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-      body: (rowData) => <Text>${parseFloat(rowData.total_cost * rowData.quantity).toFixed(2)}</Text>
-    },
-    {
-      field: 'profit',
-      header: 'Profit',
-      sortable: true,
-      style: { width: '8%', textAlign: 'right', minWidth: '80px' },
-      body: (rowData) => (
-        <Text style={{ color: (rowData.profit || 0) >= 0 ? '#52c41a' : '#f5222d' }}>
-          ${parseFloat(rowData.total_sale - (rowData.total_cost * rowData.quantity)).toFixed(2)}
-        </Text>
-      ),
-    },
-  ];
-
-  return baseColumns.filter(Boolean);
-}, [sales]);
-
-
-const CustomFooter = useMemo(() => {
-  // Calculate totals
-  const calculateTotals = () => {
-    const totals = {
-      totalQuantity: 0,
-      totalSubtotal: 0,
-      totalInvoiceDiscount: 0,
-      totalItemDiscount: 0,
-      totalSale: 0,
-      totalCost: 0,
-      totalProfit: 0,
-      totalItems: 0
-    };
-
-    const isGroupedByCustomer = appliedFilters.groupBy.includes('customer');
-    const isGroupedByDate = appliedFilters.groupBy.includes('date');
-    const isGroupedByProduct = appliedFilters.groupBy.includes('product');
-    const isCustomerOnly = isGroupedByCustomer && appliedFilters.groupBy.length === 1;
-
-    sales.forEach((sale) => {
-      totals.totalQuantity += Number(sale.quantity) || 0;
-      totals.totalSubtotal += Number(sale.unit_price * sale.quantity) || 0;
-      totals.totalInvoiceDiscount += Number(sale.inv_discount) || 0;
-      totals.totalItemDiscount += Number(sale.item_discount) || 0;
-      totals.totalSale += Number(sale.total_sale) || 0;
-      totals.totalCost += Number(sale.total_cost * sale.quantity) || 0;
-      totals.totalProfit += Number(sale.profit) || (sale.total_sale - (sale.total_cost * sale.quantity)) || 0;
-      totals.totalItems += 1;
-    });
-
-    return totals;
-  };
-
-  const footerTotals = calculateTotals();
-  const isGroupedByCustomer = appliedFilters.groupBy.includes('customer');
-  const isGroupedByDate = appliedFilters.groupBy.includes('date');
-  const isGroupedByProduct = appliedFilters.groupBy.includes('product');
-  const isCustomerOnly = isGroupedByCustomer && appliedFilters.groupBy.length === 1;
-  const isProductOnly = isGroupedByProduct && appliedFilters.groupBy.length === 1;
-  const allThreeGroupings = isGroupedByProduct && isGroupedByDate && isGroupedByCustomer;
-
-  // Determine column visibility
-  const showCustomerColumn = isGroupedByCustomer;
-  const showCustomerCount = !isGroupedByCustomer;
-  const showProductColumn = isGroupedByProduct && !isProductOnly;
-  const showDateColumn = isGroupedByDate && !isCustomerOnly;
-
-  // Calculate dynamic widths
-  const productColWidth = allThreeGroupings ? '200px' : '270px';
-  const dateColWidth = allThreeGroupings ? '100px' : '120px';
-  const customerColWidth = isCustomerOnly ? '270px' : '100px';
-  const quantityWidth = allThreeGroupings ? '160px' : '80px';
-  const subAmountWidth = allThreeGroupings ? '100px' : '120px';
-  const discountWidth = allThreeGroupings ? '100px' : '120px';
-  const totalSaleWidth = allThreeGroupings ? '80px' : '120px';
-  const costWidth = '100px';
-  const profitWidth = allThreeGroupings ? '120px' : '100px';
-
-  // Determine column template based on grouping
-  const getGridTemplateColumns = () => {
-    if (isCustomerOnly) {
-      return [
-        '270px', // Customer name
-        '80px',  // Quantity
-        '120px', // Sub Amount
-        '120px', // Invoice Discount
-        '120px', // Item Discount
-        '120px', // Total Sale
-        '100px', // Cost
-        '100px', // Total Cost
-        '100px'  // Profit
-      ].join(' ');
-    }
-    
-    return [
-      isProductOnly ? '270px' : (showProductColumn && productColWidth),
-      showDateColumn && dateColWidth,
-      showCustomerCount && customerColWidth,
-      quantityWidth,
-      subAmountWidth,
-      discountWidth,
-      discountWidth,
-      totalSaleWidth,
-      costWidth,
-      costWidth,
-      profitWidth
-    ].filter(Boolean).join(' ');
-  };
-
-  // Determine column positions
-  const getColumnPosition = (basePosition) => {
-    if (isCustomerOnly) {
-      return basePosition > 1 ? basePosition + 0 : basePosition;
-    }
-    return basePosition;
-  };
-
-  return (
-    <div style={{
-      width: '100%',
-      background: '#f8f9fa',
-    }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: getGridTemplateColumns(),
-        minWidth: '100%',
-        width: 'fit-content'
-      }}>
-        {/* Total label */}
-        <div style={{
-          padding: '0.5rem',
-          fontWeight: 'bold',
-          position: 'sticky',
-          left: 0,
-          background: '#f8f9fa',
-          gridColumn: '1'
-        }}>
-          Total
-        </div>
-
-        {/* Customer column - only shown when grouped by customer */}
-        {showCustomerColumn && isCustomerOnly && (
-          <div style={{
-            padding: '0.5rem',
-            gridColumn: '2'
-          }}></div>
-        )}
-
-        {/* Quantity */}
-        <div style={{
-          padding: '0.5rem',
-          textAlign: 'center',
-          gridColumn: getColumnPosition(isCustomerOnly ? 3 : (
-            showCustomerCount ? 
-              (showDateColumn ? (showProductColumn ? '5' : '4') : 
-              (showProductColumn ? '4' : '3')) : 
-              (showDateColumn ? (showProductColumn ? '4' : '3') : 
-              (showProductColumn ? '3' : '2'))
-          ))
-        }}>
-          {footerTotals.totalQuantity}
-        </div>
-
-        {/* Sub Amount */}
-        <div style={{
-          padding: '0.5rem',
-          textAlign: 'right',
-          gridColumn: getColumnPosition(isCustomerOnly ? 4 : (
-            showCustomerCount ? 
-              (showDateColumn ? (showProductColumn ? '6' : '5') : 
-              (showProductColumn ? '5' : '4')) : 
-              (showDateColumn ? (showProductColumn ? '5' : '4') : 
-              (showProductColumn ? '4' : '3'))
-          ))
-        }}>
-          ${footerTotals.totalSubtotal.toFixed(2)}
-        </div>
-
-        {/* Invoice Discount */}
-        <div style={{
-          padding: '0.5rem',
-          textAlign: 'right',
-          gridColumn: getColumnPosition(isCustomerOnly ? 5 : (
-            showCustomerCount ? 
-              (showDateColumn ? (showProductColumn ? '7' : '6') : 
-              (showProductColumn ? '6' : '5')) : 
-              (showDateColumn ? (showProductColumn ? '6' : '5') : 
-              (showProductColumn ? '5' : '4'))
-          ))
-        }}>
-          ${footerTotals.totalInvoiceDiscount.toFixed(2)}
-        </div>
-
-        {/* Item Discount */}
-        <div style={{
-          padding: '0.5rem',
-          textAlign: 'right',
-          gridColumn: getColumnPosition(isCustomerOnly ? 6 : (
-            showCustomerCount ? 
-              (showDateColumn ? (showProductColumn ? '8' : '7') : 
-              (showProductColumn ? '7' : '6')) : 
-              (showDateColumn ? (showProductColumn ? '7' : '6') : 
-              (showProductColumn ? '6' : '5'))
-          ))
-        }}>
-          ${footerTotals.totalItemDiscount.toFixed(2)}
-        </div>
-
-        {/* Total Sale */}
-        <div style={{
-          padding: '0.5rem',
-          textAlign: 'right',
-          gridColumn: getColumnPosition(isCustomerOnly ? 7 : (
-            showCustomerCount ? 
-              (showDateColumn ? (showProductColumn ? '9' : '8') : 
-              (showProductColumn ? '8' : '7')) : 
-              (showDateColumn ? (showProductColumn ? '8' : '7') : 
-              (showProductColumn ? '7' : '6'))
-          ))
-        }}>
-          ${footerTotals.totalSale.toFixed(2)}
-        </div>
-
-        {/* Empty Cost cell */}
-        <div style={{
-          padding: '0.5rem',
-          textAlign: 'right',
-          gridColumn: getColumnPosition(isCustomerOnly ? 8 : (
-            showCustomerCount ? 
-              (showDateColumn ? (showProductColumn ? '10' : '9') : 
-              (showProductColumn ? '9' : '8')) : 
-              (showDateColumn ? (showProductColumn ? '9' : '8') : 
-              (showProductColumn ? '8' : '7'))
-          ))
-        }}></div>
-
-        {/* Total Cost */}
-        <div style={{
-          padding: '0.5rem',
-          textAlign: 'right',
-          gridColumn: getColumnPosition(isCustomerOnly ? 9 : (
-            showCustomerCount ? 
-              (showDateColumn ? (showProductColumn ? '11' : '10') : 
-              (showProductColumn ? '10' : '9')) : 
-              (showDateColumn ? (showProductColumn ? '10' : '9') : 
-              (showProductColumn ? '9' : '8'))
-          ))
-        }}>
-          ${footerTotals.totalCost.toFixed(2)}
-        </div>
-
-        {/* Profit */}
-        <div style={{
-          padding: '0.5rem',
-          textAlign: 'right',
-          color: footerTotals.totalProfit >= 0 ? '#52c41a' : '#f5222d',
-          gridColumn: getColumnPosition(isCustomerOnly ? 10 : (
-            showCustomerCount ? 
-              (showDateColumn ? (showProductColumn ? '12' : '11') : 
-              (showProductColumn ? '11' : '10')) : 
-              (showDateColumn ? (showProductColumn ? '11' : '10') : 
-              (showProductColumn ? '10' : '9'))
-          ))
-        }}>
-          ${footerTotals.totalProfit.toFixed(2)}
-        </div>
-      </div>
-    </div>
-  );
-}, [sales, appliedFilters.groupBy]);
 
   // Error handling
   if (error) {
@@ -890,26 +757,25 @@ const CustomFooter = useMemo(() => {
               />
             </Col>
             <Col xs={24} sm={12} md={6}>
-            <Select
-              mode="multiple"
-              style={{ width: '100%' }}
-              placeholder="Group by"
-              value={pendingFilters.groupBy}
-              onChange={(value) => setPendingFilters(prev => ({ ...prev, groupBy: value }))}
-              allowClear
-              maxTagCount="responsive"
-              size="large"
-            >
-              <Option value="product">Product</Option>
-              <Option value="date">Date</Option>
-              <Option value="customer">Customer</Option>
-              {/* <Option value="invoice">Invoice</Option> */}
-              {/* <Option value="sales_person">Sales Person</Option> */}
-              {/* <Option value="warehouse">Warehouse</Option> */}
-              {/* <Option value="customer_type">Customer Type</Option> */}
-              {/* <Option value="category">Category</Option> */}
-            </Select>
-          </Col>
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                placeholder="Group by"
+                value={pendingFilters.groupBy}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, groupBy: value }))}
+                allowClear
+                maxTagCount="responsive"
+                size="large"
+              >
+                <Option value="product">Product</Option>
+                <Option value="date">Date</Option>
+                <Option value="customer">Customer</Option>
+                <Option value="invoice">Invoice</Option>
+                <Option value="sales_person">Sales Person</Option>
+                <Option value="customer_group">Customer Group</Option>
+                <Option value="category">Category</Option>
+              </Select>
+            </Col>
           </Row>
           <Row style={{ marginTop: '20px', gap: '10px' }}>
             <Col xs={24} sm={12} md={3}>
@@ -951,38 +817,18 @@ const CustomFooter = useMemo(() => {
                 >
                   Export Excel
                 </Button>
-                <Button
-                  icon={<FilePdfOutlined />}
-                  onClick={handleExportPDF}
-                  disabled={exportLoading}
-                  loading={exportLoading}
-                  style={{ backgroundColor: '#f5222d', borderColor: '#f5222d', color: 'white' }}
-                >
-                  Export PDF
-                </Button>
-                <Button
-                  icon={<FileImageOutlined />}
-                  onClick={handleExportImage}
-                  disabled={exportLoading}
-                  loading={exportLoading}
-                  style={{ backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }}
-                >
-                  Export Image
-                </Button>
               </Space>
             }
             style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
           >
             <DataTable
               value={sales}
-              selection={sales.filter((row) => selectedRows.includes(row.id))}
-              onSelectionChange={handleRowSelected}
               dataKey="id"
               scrollable
               scrollHeight="600px"
               sortMode="multiple"
-              footer={CustomFooter}
-              tableStyle={{ minWidth: '100%', }}
+              // footer={CustomFooter}
+              tableStyle={{ width: '100%' }}
               className="p-datatable-striped p-datatable-gridlines"
               loading={isLoading}
               responsiveLayout="scroll"
