@@ -540,7 +540,7 @@ const ShiftReports = () => {
       {selectedShift?.payments_by_type && selectedShift.payments_by_type.length > 0 ? (
         selectedShift.payments_by_type.map(({ payment_method, total }) => {
           // Decide currency symbol and formatting based on payment method or your logic
-          const isUSD = payment_method.toLowerCase().includes('usd') || payment_method.toLowerCase().includes('cash') || payment_method.toLowerCase().includes('aba'); 
+          const isUSD = payment_method.toLowerCase().includes('usd') || payment_method.toLowerCase().includes('cash') || payment_method.toLowerCase().includes('aba') || payment_method.toLowerCase().includes('ac'); 
           // You can improve this detection based on your data
 
           const amount = parseFloat(total);

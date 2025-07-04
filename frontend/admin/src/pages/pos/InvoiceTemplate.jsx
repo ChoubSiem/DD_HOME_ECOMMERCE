@@ -2,7 +2,7 @@ import React from "react";
 import { ShopOutlined } from '@ant-design/icons';
 // import logo from 'http://127.0.0.1:8000/storage/logo/DD_Home_Logo.jpg';
 
-const InvoiceTemplate = React.forwardRef(({ sale, customer, items }, ref) => {
+const InvoiceTemplate = React.forwardRef(({ sale, customer, items,payment_method }, ref) => {
   return (
     <div ref={ref} className="receipt" style={{ 
       width: '80mm', 
@@ -114,22 +114,40 @@ const InvoiceTemplate = React.forwardRef(({ sale, customer, items }, ref) => {
       </div>
 
       {/* Payment Info */}
-      <div style={{ margin: '5px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Payment Method:</span>
-          <span>{sale?.payment_method || 'Cash'}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Amount Paid:</span>
-          <span>${sale?.amount_paid?.toFixed(2) || sale?.total?.toFixed(2) || '0.00'}</span>
-        </div>
-        {sale?.change_due > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>Change Due:</span>
-            <span>${sale?.change_due?.toFixed(2)}</span>
-          </div>
-        )}
+<div style={{ margin: '5px 0' }}>
+  {payment_method?.map((payment, index) => (
+    <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <span>Payment ({payment.method || 'Unknown'}):</span>
+      <span>
+        {payment.currency || 'USD'} ${Number(payment.amount).toFixed(2)}
+      </span>
+    </div>
+  ))}
+
+  {/* If no payment records exist, fall back to default view */}
+  {!payment_method?.length && (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span>Payment Method:</span>
+        <span>{payment_method || 'Cash'}</span>
       </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span>Amount Paid:</span>
+        <span>
+          ${payment_method?.amount_paid?.toFixed(2) || sale?.total?.toFixed(2) || '0.00'}
+        </span>
+      </div>
+    </>
+  )}
+
+  {sale?.change_due > 0 && (
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <span>Change Due:</span>
+      <span>${Number(sale.change_due).toFixed(2)}</span>
+    </div>
+  )}
+</div>
+
 
       {/* Footer */}
       <div style={{ 

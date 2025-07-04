@@ -49,9 +49,7 @@ function PosAdd() {
     }
   });
   const handleSalespersonChange = (selectedId) => {
-    const selectedPerson = salepersons.find(person => person.id === selectedId);
-    // console.log(selectedPerson);
-    
+    const selectedPerson = salepersons.find(person => person.id === selectedId);    
     setSelectedSalesperson(selectedPerson);
   };
     const [salepersons, setSalePersons] = useState([]);
@@ -393,7 +391,7 @@ const getPriceTypeFromCustomerGroup = (group) => {
       if (shouldFetchProducts) {
         await handleProductsData();
       }
-      await handleCategoriesData();
+      // await handleCategoriesData();
       await handleCustomerData();
     };
     
@@ -462,7 +460,7 @@ const getPriceTypeFromCustomerGroup = (group) => {
     } finally {
       setLoading(false);
     }
-  };
+  }; 
 
   const handleCustomerData = async () => {
     setLoading(true);
@@ -932,8 +930,6 @@ const getPriceTypeFromCustomerGroup = (group) => {
   };
 
   const handleSavePaymentMethods = (payments,change_due ) =>{
-    console.log(change_due);
-    console.log(payments);
     const paidAmount = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
 
     setPaidAmount(paidAmount);
@@ -942,7 +938,6 @@ const getPriceTypeFromCustomerGroup = (group) => {
   }
 
   const handleSaveEdit = (values) => {
-    // console.log(values.originalPrice - values.finalPrice);
     // return;
     
     setCartItems(prev => 
@@ -1152,7 +1147,8 @@ const handleCreatePosSaleData = async () => {
 
     if (response.success) {
       message.success("Sale completed successfully!");
-
+      // console.log(response);
+      
       // Prepare data for printing
       const printData = {
         sale: {
@@ -1163,11 +1159,11 @@ const handleCreatePosSaleData = async () => {
           tax,
           delivery_fee: selectedDelivery?.price || 0,
           total,
-          payment_method: selectedPayment,
           amount_paid: total,
           change_due: 0,
           user: userData
         },
+        payment_method: payments,
         customer: selectedCustomer,
         items: cartItems
       };
@@ -1196,7 +1192,6 @@ const handleCreatePosSaleData = async () => {
     }
   } catch (error) {
     message.error(error.message || 'Failed to complete sale. Please try again.');
-    console.error('Sale error:', error);
   }
 };
 const printInvoice = (printData) => {
@@ -1209,6 +1204,7 @@ const printInvoice = (printData) => {
       sale={printData.sale} 
       customer={printData.customer} 
       items={printData.items} 
+      payment_method={printData.payment_method} 
     />
   );
 
