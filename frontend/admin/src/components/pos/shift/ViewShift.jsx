@@ -149,7 +149,7 @@ const ViewShiftModal = ({ open, onClose, warehouseId, token, onShiftClosed }) =>
       align: 'center',
       render: (date) => (
         <span style={{ color: '#595959' }}>
-          {date ? date : 'N/A'}
+          {date ? new Date(date).toLocaleString() : 'N/A'}
         </span>
       ),
     },
@@ -247,41 +247,7 @@ const ViewShiftModal = ({ open, onClose, warehouseId, token, onShiftClosed }) =>
         onCancel={onClose}
         footer={
           <Row gutter={16} style={{ marginTop: 16 }}>
-            {/* <Col span={6}>
-              <Button block onClick={onClose}>
-                Cancel
-              </Button>
-            </Col>
-            <Col span={6}>
-              <Button
-                block
-                style={{
-                  backgroundColor: '#1890ff',
-                  borderColor: '#1890ff',
-                  color: '#fff',
-                }}
-                onClick={handlePrint}
-              >
-                Print
-              </Button>
-            </Col>
-            <Col span={6}>
-              <Button block icon={<EditOutlined />} onClick={handleEditShift}>
-                Edit Shift
-              </Button>
-            </Col>
-            <Col span={6}>
-              <Button
-                block
-                type="primary"
-                danger
-                onClick={handleCloseShift}
-                loading={closeShiftLoading}
-                disabled={shiftData?.status === 'completed'}
-              >
-                Close Shift
-              </Button>
-            </Col> */}
+            
           </Row>
         }
         width={850}

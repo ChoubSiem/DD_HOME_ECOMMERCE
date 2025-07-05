@@ -28,7 +28,6 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
     };
   }, []);
 
-  // Calculate totals with memoization
   const { subTotal, discount, grandTotal } = useMemo(() => {
     if (!sale?.items) return { subTotal: '0.00', discount: '0.00', grandTotal: '0.00' };
     
@@ -41,10 +40,7 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
       grandTotal: (subTotal - discount).toFixed(2),
     };
   }, [sale]);
-
-  console.log(discount);
   
-  // Enhanced PDF export with better error handling
   const exportToPDF = async () => {
     if (!invoiceRef.current) {
       message.warning('Invoice content not ready for export');
@@ -79,7 +75,6 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
     }
   };
 
-  // Export as image (PNG)
   const exportToImage = async () => {
     if (!invoiceRef.current) {
       message.warning('Invoice content not ready for export');
@@ -111,7 +106,6 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
     }
   };
 
-  // Direct print function with fallback
   const handlePrint = async () => {
     if (!invoiceRef.current) {
       message.warning('Invoice content not ready for printing');
@@ -161,10 +155,7 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
         <div className="empty-state">No invoice data available</div>
       </Modal>
     );
-  }
-
-  console.log(1);
-  
+  }  
 
   return (
     <Modal
@@ -214,6 +205,11 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
         <div className="detail-row">
           <span className="detail-label">Customer:</span>
           <span className="detail-value">{sale.customerName || 'N/A'}</span>
+        </div>
+        <div className="detail-row">
+          <span className="detail-label">Phone:</span>
+          <span className="detail-value">{sale.customerPhone || 'N/A'}</span>
+
         </div>
       </section>
 
@@ -293,12 +289,12 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
                 <div className="signature-label">Customer Signature</div>
               </div>
               <div className="signature-box">
-                <div className="signature-text">{sale.customerName || 'Customer Name'}</div>
-                <div className="signature-label">Customer Name</div>
+                {/* <div className="signature-text">{sale.customerName || 'Customer Name'}</div>
+                <div className="signature-label">Customer Name</div> */}
               </div>
               <div className="signature-box">
-                <div className="signature-text">{formatDate(new Date())}</div>
-                <div className="signature-label">Date</div>
+                {/* <div className="signature-text">{formatDate(new Date())}</div>
+                <div className="signature-label">Date</div> */}
               </div>
             </div>
           </section>

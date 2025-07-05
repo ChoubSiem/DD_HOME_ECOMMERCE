@@ -87,12 +87,13 @@ const PosSaleDetail = ({ open, onCancel, sale }) => {
     setLoading(true);
     
     try {
-      const canvas = await html2canvas(invoiceRef.current, {
-        scale: 2,
-        logging: false,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      });
+const canvas = await html2canvas(invoiceRef.current, {
+  scale: 3, // Increase scale for higher resolution
+  width: invoiceRef.current.scrollWidth * 1, // Optional: force wider output
+  useCORS: true,
+  backgroundColor: '#ffffff',
+  logging: false
+});
       
       const link = document.createElement('a');
       link.download = `DDHome_Invoice_${sale?.reference || new Date().getTime()}.png`;
@@ -215,6 +216,7 @@ const PosSaleDetail = ({ open, onCancel, sale }) => {
                 <th>Item</th>
                 <th>Qty</th>
                 <th>Price</th>
+                <th>Discount</th>
                 <th>Total</th>
               </tr>
             </thead>
@@ -227,6 +229,7 @@ const PosSaleDetail = ({ open, onCancel, sale }) => {
                   </td>
                   <td>{item.quantity} {item.unit || ''}</td>
                   <td>${parseFloat(item.price || 0).toFixed(2)}</td>
+                  <td>${parseFloat(item.discount || 0).toFixed(2)}</td>
                   <td>${parseFloat(item.total || 0).toFixed(2)}</td>
                 </tr>
               ))}

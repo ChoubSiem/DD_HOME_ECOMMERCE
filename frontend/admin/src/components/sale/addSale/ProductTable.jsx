@@ -225,7 +225,7 @@ const ProductsTable = ({
       render: (_, record) => {
         const subtotal = record.price * record.quantity;
         const discount = record.discountAmount || (subtotal * (record.discountPercent || 0)) / 100;
-        return <Text strong>{currencyFormatter(subtotal - discount)}</Text>;
+        return <Text strong>{currencyFormatter((subtotal - discount).toFixed(2))}</Text>;
       },
       align: 'right'
     },

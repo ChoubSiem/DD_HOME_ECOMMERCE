@@ -195,6 +195,9 @@ const PosSaleList = () => {
   };
 
 
+  console.log(sales);
+  
+
 
 
   const columns = [
@@ -235,7 +238,7 @@ const PosSaleList = () => {
       name: "Discount ($)",
       selector: (row) => row.discount,
       sortable: true,
-      cell: (row) => `$${row.discount.toFixed(2)}`,
+      cell: (row) => `$${row.discount}`,
       width: "10%",
     },
         {

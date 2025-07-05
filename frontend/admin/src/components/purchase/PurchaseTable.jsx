@@ -29,7 +29,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
   const [selectedPurchase, setSelectedPurchase] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
 
-  const showPurchaseModal = (purchase) => {
+  const showPurchaseModal = (purchase) => {    
     const transformedPurchase = {
       id: purchase.id,
       reference: purchase.reference || "N/A",
@@ -41,6 +41,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
           ? purchase.purchaser?.name || purchase.purchaser?.username || "N/A"
           : purchase.purchaser || "N/A",
       },
+      supplier_comapny:purchase.supplier.company,
       date: purchase.date || new Date().toISOString(),
       note: purchase.note || "",
       status: purchase.approval || "pending",

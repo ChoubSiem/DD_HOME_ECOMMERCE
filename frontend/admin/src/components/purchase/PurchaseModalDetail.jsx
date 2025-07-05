@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState,useEffect } from 'react';
 import DataTable from 'react-data-table-component';
 import { Modal, Button } from 'antd';
 import { PrinterOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons';
@@ -6,10 +6,23 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import './PurchaseModalDetail.css';
 import logo from '../../assets/logo/DD_Home_Logo 2.jpg';
-
+import { useCompany } from '../../hooks/UseCompnay';
+import Cookies from "js-cookie";
 const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
   const printRef = useRef();
+  const [company,setCompany] = useState();
+  const token = localStorage.getItem('token');
+  const {handleCompany} = useCompany();
+  const handleWarehouse = async() =>{
+    let result = await handleCompany(token);    
+    if (result.success) {
+      setCompany(result.companies);
+    }
+  }  
 
+  useEffect(()=>{
+    handleWarehouse();
+  },[purchase])
   const handlePrint = async () => {
     try {
       const element = printRef.current;
@@ -54,9 +67,7 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
   };
 
   // Calculate totals
-  const subtotal = purchase?.items?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;
-  console.log(subtotal);
-  
+  const subtotal = purchase?.items?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;  
   const taxRate = 0.1; // 10% tax
   const tax = subtotal * taxRate;
   const total = parseFloat(subtotal + tax).toFixed(2);
@@ -117,11 +128,12 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
             <tr style={{width:'100%',display:'flex',justifyContent:'space-between'}}>
               <td className="company-info" style={{display:'flex',justifyContent:'space-between'}}>
                 <img src={logo} alt="Company Logo" className="company-logo" style={{width:'80px',height:'80px'}}/>
-                <div>
-                  <h1>DD HOME SOLUTIONS</h1>
-                  <p>123 Business Street, City, ST 12345</p>
-                  <p>Phone: (123) 456-7890</p>
-                </div>
+              <div>
+                <h1>{company?.[0]?.name}</h1>
+                <p>Address: {company?.[0]?.location}</p>
+                <p>Phone: {company?.[0]?.phone}</p>
+              </div>
+
               </td>
               <td className="document-info">
                 <h2>PURCHASE ORDER</h2>
@@ -137,7 +149,7 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
                     </tr>
                     <tr>
                       <td>Vendor:</td>
-                      <td>{typeof purchase?.supplier === 'object' ? purchase.supplier.name : purchase?.supplier || 'N/A'}</td>
+                      <td>{purchase?.supplier_comapny}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -189,16 +201,16 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
         <table className="totals-section">
           <tbody>
             <tr>
-              <td className="notes">
+              {/* <td className="notes">
                 <h4>NOTES</h4>
                 <p>{purchase?.note || 'No additional notes'}</p>
-              </td>
+              </td> */}
               <td className="amounts">
                 <table>
                   <tbody>
                     <tr className="amount-row total">
                       <td>TOTAL:</td>
-                      <td>{formatCurrency(total)}</td>
+                      <td>{formatCurrency(purchase?.total)}</td>
                     </tr>
                   </tbody>
                 </table>
