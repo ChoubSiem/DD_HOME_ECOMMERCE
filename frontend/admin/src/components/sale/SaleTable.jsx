@@ -326,7 +326,8 @@ const SalesTable = ({
   //     </Text>
   //   </div>
   // );
-
+  console.log(selectedSale);
+  
   return (
     <div style={{ 
       // border: `1px solid ${greenTheme.border}`,

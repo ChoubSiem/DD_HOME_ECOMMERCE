@@ -126,7 +126,7 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
       const shiftData = {
         total_usd: usdTotal,
         total_kh: rielTotal,
-        start_time: new Date().toLocaleString(),
+        start_time: new Date().toLocaleString('en-US', { timeZone: 'Asia/Phnom_Penh' }),
         user_id: userData.id,
         cash_detail,
         warehouse_id: userData.warehouse_id,

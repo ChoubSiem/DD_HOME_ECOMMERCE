@@ -10,7 +10,8 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
   const invoiceRef = useRef();
   const [isExporting, setIsExporting] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  // console.log(sale);
+  
   // Memoized formatted date to prevent unnecessary recalculations
   const formatDate = useMemo(() => {
     return (dateString) => {
@@ -41,6 +42,8 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
     };
   }, [sale]);
 
+  console.log(discount);
+  
   // Enhanced PDF export with better error handling
   const exportToPDF = async () => {
     if (!invoiceRef.current) {
@@ -159,6 +162,9 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
       </Modal>
     );
   }
+
+  console.log(1);
+  
 
   return (
     <Modal

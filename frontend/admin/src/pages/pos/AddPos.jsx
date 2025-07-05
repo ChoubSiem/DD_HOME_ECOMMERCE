@@ -30,6 +30,8 @@ import ReactDOM from "react-dom/client";
 import { DataView } from 'primereact/dataview';
 import { Skeleton } from 'primereact/skeleton';
 import PaymentMethods from './PaymentMethod';
+import dayjs from 'dayjs';
+
 function PosAdd() {
   const [searchProductTerm, setSearchProductTerm] = useState("");
   const [searchCustomerTerm, setSearchCustomerTerm] = useState("");
@@ -1112,7 +1114,7 @@ const handleCreatePosSaleData = async () => {
   try {
     const paymentData = {
       customer_id: selectedCustomer.id,
-      date: new Date().toISOString().split("T")[0],
+      date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
       warehouse_id: userData.warehouse_id,
       shift_id: shiftId,
       items: cartItems.map(item => ({
