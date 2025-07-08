@@ -76,9 +76,7 @@ const StockTransferPage = () => {
   };
 
   const handleEdit = (product) => {
-    setLoading(true);
-    console.log(product);
-    
+    setLoading(true);    
     setTimeout(() => {
       navigate(`/transfer/uom/edit/${product.id}`);
       setLoading(false);

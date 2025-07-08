@@ -117,15 +117,6 @@ const AddSaleReturn = () => {
       message.error("Please add at least one product to return");
       return;
     }
-
-    console.log("Sale Return Details:", {
-      customer: customerSearch,
-      originalSaleId,
-      products: selectedProducts,
-      totalRefund,
-      date: new Date().toISOString(),
-    });
-    
     message.success("Sale return processed successfully");
     setSelectedProducts([]);
     setCustomerSearch("");

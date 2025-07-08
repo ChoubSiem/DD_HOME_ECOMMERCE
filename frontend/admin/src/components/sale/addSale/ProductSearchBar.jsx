@@ -13,9 +13,7 @@ const ProductSearchBar = ({
   const getPriceByCustomerGroup = (product, customer) => {
     if (!userData.warehouse_id) {
       return product.price;
-    }
-    // console.log(userData.warehouse_id);
-    
+    }    
     const groupName = customer?.customer_group?.name?.toLowerCase();    
     switch (groupName) {
       case 'vip':

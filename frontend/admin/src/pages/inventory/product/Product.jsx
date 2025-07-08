@@ -64,8 +64,6 @@ const ProductManagement = () => {
 
   const handleImport = async(importedProducts) => {
     setLoading(true);
-    console.log(importedProducts);
-    // return ;
     let result = await handleProductImport(importedProducts, token);    
     if (result.success) {
       setProducts(importedProducts);
@@ -164,14 +162,6 @@ const ProductManagement = () => {
     }
   };
   const onSearch = () => {
-  // This will run when "Submit" is clicked
-  // console.log("Searching with:");
-  // console.log("Search term:", searchTerm);
-  // console.log("Status:", statusFilter);
-  // console.log("Category:", categoryFilter);
-  // console.log("Type:", typeFilter);
-
-  // You can replace this with a real API call
   fetchProducts({
     name: searchTerm,
     status: statusFilter,
@@ -182,9 +172,7 @@ const ProductManagement = () => {
 
 
 const filteredProducts = products.filter((product) => {
-  const searchTermLower = searchTerm.toLowerCase();
-  // console.log(product);
-  
+  const searchTermLower = searchTerm.toLowerCase();  
   const matchesSearch =
     String(product.name || "").toLowerCase().includes(searchTermLower) ||
     String(product.code || "").toLowerCase().includes(searchTermLower) ||

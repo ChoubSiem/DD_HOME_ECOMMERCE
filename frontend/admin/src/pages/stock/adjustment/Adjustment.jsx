@@ -60,7 +60,6 @@ const Adjustment = () => {
 
   const handleDelete = async (adjustmentId) => {
     setLoading(true);
-    console.log(adjustmentId);
     try {
       let result = await handleDeleteAdjustment(adjustmentId,token);
       if (result.success) {

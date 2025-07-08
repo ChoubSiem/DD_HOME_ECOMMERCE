@@ -24,8 +24,6 @@ export const useReport = () => {
   }
   const getStockReportsData = async(values , token ) =>{
     const response = await getStockReports(values,token);
-          console.log(response);
-
     if (response.success) {
         return {
             success: true,

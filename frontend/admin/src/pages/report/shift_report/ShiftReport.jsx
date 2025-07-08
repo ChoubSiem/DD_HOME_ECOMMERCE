@@ -84,10 +84,7 @@ const ShiftReports = () => {
     }
   };
 
-  let exchange_rate = selectedShift?.close_cashes?.KHR?.[0]?.exchange_rate;
-  console.log(selectedShift);
-  
-
+  let exchange_rate = selectedShift?.close_cashes?.KHR?.[0]?.exchange_rate;  
   useEffect(() => {
     handleShifts();
   }, []);

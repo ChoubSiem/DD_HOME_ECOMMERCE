@@ -48,7 +48,6 @@ export const deleteAdjustment = async (adjustId,token) => {
 
          }
   });  
-  console.log(response);
   return response.data;
 };
 
@@ -131,9 +130,10 @@ export const createStockTransfer = async (values,token) => {
 export const fetchPurchase = async (values,token) => {
   
   const response = await axios.get(`${API_BASE}/purchase/list`, {
+    params: values, 
     headers: { Authorization: `Bearer ${token}`,
-    params:{values}
-     }
+              'Content-Type': 'application/json'
+  }
   });  
   return response.data;
 };

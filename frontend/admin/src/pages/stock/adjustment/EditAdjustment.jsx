@@ -230,10 +230,7 @@ const EditAdjustment = () => {
         adjustment_type: product.adjustmentType || 'subtract',
         unit: product.unit || null
       })),
-    };
-  
-    console.log('adjustmentData:', adjustmentData);
-  
+    };  
     try {
       const result = await handleUpdateAdjustment(id,adjustmentData, token);
       if (result?.success) {

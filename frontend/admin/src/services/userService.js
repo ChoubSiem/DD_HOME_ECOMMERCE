@@ -164,14 +164,7 @@ export const udpateCustomer = async (customId,values,token) => {
     headers: { Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json'
   },
-    // body: JSON.stringify({
-    //   username: values.username,
-    //   phone: values.phone,
-    //   address: values.address,
-    //   customer_group_id: values.customer_group_id
-    // })
   });  
-  // console.log(response);
   
   return response.data;
 };

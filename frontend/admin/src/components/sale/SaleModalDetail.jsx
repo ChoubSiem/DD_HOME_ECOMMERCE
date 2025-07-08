@@ -9,10 +9,7 @@ import "./SaleModalDetail.css";
 const SaleModalDetail = ({ open, onCancel, sale }) => {
   const invoiceRef = useRef();
   const [isExporting, setIsExporting] = useState(false);
-  const [loading, setLoading] = useState(false);
-  // console.log(sale);
-  
-  // Memoized formatted date to prevent unnecessary recalculations
+  const [loading, setLoading] = useState(false);  
   const formatDate = useMemo(() => {
     return (dateString) => {
       if (!dateString) return '';

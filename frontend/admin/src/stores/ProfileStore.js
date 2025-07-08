@@ -32,9 +32,7 @@ export const useProfileStore = create((set) => ({
 
   
     try {
-      const result = await fetchUserProfile(token);                  
-      // console.log(result);
-      
+      const result = await fetchUserProfile(token);                        
       if (result) {
         set({
           isAuthenticated: true,

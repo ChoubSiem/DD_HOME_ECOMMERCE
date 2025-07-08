@@ -40,37 +40,37 @@ function Purchases() {
   const userData = JSON.parse(Cookies.get("user"));
   const [purchases, setPurchases] = useState([]);
 
-const handlePurchases = async () => {
-  try {
-    setTableLoading(true);
-    setLoading(true);
-    let values = {
-      warehouse_id: userData.warehouse_id ?? null,
-      approval: "approved"
-    };
-    const result = await handleGetPurchases(values, token);    
-    if (result.success) {
-      setPurchases(result.purchases.map(purchase => ({
-        ...purchase,
-        id: purchase.id.toString(),
-        date: new Date(purchase.date).toLocaleDateString(),
-        supplier: purchase.supplier?.name || purchase.supplier,
-        paymentMethod: purchase.paymentMethod?.name || purchase.paymentMethod
-      })));
-      setLoading(false);
+  const handlePurchases = async () => {
+    try {
+      setTableLoading(true);
+      setLoading(true);
+      let values = {
+        warehouse_id: userData.warehouse_id ?? null,
+        approval: "approved"
+      };      
+      const result = await handleGetPurchases(values, token);    
+      if (result.success) {
+        setPurchases(result.purchases.map(purchase => ({
+          ...purchase,
+          id: purchase.id.toString(),
+          date: new Date(purchase.date).toLocaleDateString(),
+          supplier: purchase.supplier?.username,
+          paymentMethod: purchase.paymentMethod?.name || purchase.paymentMethod
+        })));
+        setLoading(false);
+      }
+      
+    } catch (error) {
+      message.error("Failed to fetch purchases");
+      console.error(error);
+    } finally {
+      setTableLoading(false);
     }
-  } catch (error) {
-    message.error("Failed to fetch purchases");
-    console.error(error);
-  } finally {
-    setTableLoading(false);
-  }
-};
-
+  };
+  
   useEffect(() => {
     handlePurchases();
   }, []);
-
   const filteredPurchases = purchases.filter(purchase => {
     const matchesSearch = 
       purchase.id.toLowerCase().includes(searchTerm.toLowerCase()) ||

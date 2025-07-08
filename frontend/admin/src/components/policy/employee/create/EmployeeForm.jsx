@@ -96,8 +96,6 @@ const EmployeeForm = ({roles , employees}) => {
       setErrors(validationErrors);
       return;
     }
-
-    console.log('Form submitted:', formData);
     let result = await handleEmployeeCreate(formData , token);
     if (result.success) {
         navigate("/employee");

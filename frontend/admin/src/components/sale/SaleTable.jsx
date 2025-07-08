@@ -306,65 +306,12 @@ const SalesTable = ({
 }
 
   ];
-
-  // const SummaryRow = () => (
-  //   <div style={{ 
-  //     display: 'flex',
-  //     justifyContent: 'space-between',
-  //     padding: '16px',
-  //     backgroundColor: greenTheme.light,
-  //     // borderTop: `1px solid ${greenTheme.primary}`
-  //   }}>
-  //     <Text strong>
-  //       Total Sales: <span style={{ color: greenTheme.dark }}>{formatCurrency(totalSales)}</span>
-  //     </Text>
-  //     <Text strong>
-  //       Average Sale: <span style={{ color: greenTheme.dark }}>{formatCurrency(averageSale)}</span>
-  //     </Text>
-  //     <Text strong>
-  //       Total Records: <span style={{ color: greenTheme.dark }}>{data?.length || 0}</span>
-  //     </Text>
-  //   </div>
-  // );
-  console.log(selectedSale);
   
   return (
     <div style={{ 
-      // border: `1px solid ${greenTheme.border}`,
-      // borderRadius: '8px',
       overflow: 'hidden',
       boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)'
     }}>
-      {/* <div style={{ 
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '16px',
-        backgroundColor: greenTheme.background,
-        // borderBottom: `1px solid ${greenTheme.border}`
-      }}>
-        <Text strong style={{ 
-          fontSize: '16px',
-          color: greenTheme.dark
-        }}>
-        </Text>
-        <Space>
-          <Tooltip title="Export to PDF">
-            <Button 
-              icon={<FilePdfOutlined />} 
-              onClick={onExportPDF}
-              style={{ color: greenTheme.primary }}
-            />
-          </Tooltip>
-          <Tooltip title="Export to Excel">
-            <Button 
-              icon={<FileExcelOutlined />} 
-              onClick={onExportExcel}
-              style={{ color: greenTheme.primary }}
-            />
-          </Tooltip>
-        </Space>
-      </div> */}
       
       {data && data.length > 0 ? (
         <DataTable

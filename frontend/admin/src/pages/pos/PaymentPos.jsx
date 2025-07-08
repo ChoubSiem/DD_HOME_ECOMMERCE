@@ -236,13 +236,9 @@ function PaymentPos({ order, onClose, onPaymentSuccess }) {
         next_payment_date: nextPaymentDateValue,
         next_payment_amount: nextPaymentAmountValue
       };
-      // console.log(paymentData);
-      // return;
-
       const response = await handlePosSaleCreate(paymentData, token);
 
       if (response.success) {
-        // message.success(`Payment of ${formatMoney(paidAmountUSD)} completed successfully!`);
         if (onPaymentSuccess) {
           onPaymentSuccess({
             paidAmount: paidAmountUSD,
@@ -280,7 +276,6 @@ function PaymentPos({ order, onClose, onPaymentSuccess }) {
   const handleResumeOrder = (order) => {
     message.success(`Resuming order ${order.order_id}`);
     setViewSuspendedModalVisible(false);
-    // Add your logic to resume the order here
   };
 
   const suspendedOrderColumns = [

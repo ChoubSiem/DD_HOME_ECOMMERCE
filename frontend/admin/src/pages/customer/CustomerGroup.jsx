@@ -29,9 +29,6 @@ const CustomerGroup = () => {
     group.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     group.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  // console.log(selectedGroup);
-
   const fetchGroupsData = async () => {
     setLoading(true);
     try {

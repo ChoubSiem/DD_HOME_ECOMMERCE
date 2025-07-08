@@ -34,13 +34,9 @@ const WarehouseManagement = () => {
     }
   };
 
-  const handleDelete = async(warehouseId) => {
-    console.log(warehouseId);
-    
+  const handleDelete = async(warehouseId) => {    
     const updated = warehouses.filter((c) => c.id !== warehouseId);
-    const result = await handleWarehouseDelete(warehouseId , token);
-    console.log(token);
-    
+    const result = await handleWarehouseDelete(warehouseId , token);    
     if (result) {
       setWarehouses(updated);
       message.success("Warehouse deleted successfully");

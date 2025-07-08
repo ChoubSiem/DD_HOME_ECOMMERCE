@@ -105,7 +105,6 @@
         const newItems = prevItems.map((item, i) => {
           if (i === index) {
             const newQty = Math.min(value, item.original_qty);
-            console.log('Updating item:', item.product_name, 'from', item.return_qty, 'to', newQty);
             return {
               ...item,
               return_qty: newQty,
@@ -160,22 +159,10 @@
           original_reference: originalSale?.reference,
           type: type
         };
-
-        // console.log(payload);
-        // return;
-        
         setLoading(true);
         try {
           const result = await handleAddSaleReturn(payload, token);
-          
           if (result?.success) {
-            // toast.current.show({
-            //   severity: 'success',
-            //   summary: 'Success',
-            //   detail: 'Sale return created successfully',
-            //   life: 3000
-            // });
-
             localStorage.removeItem(`saleReturnItems_${id}`);
             setTimeout(() => {
               navigate('/sale-return');

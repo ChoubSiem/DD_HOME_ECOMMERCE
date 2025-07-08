@@ -1140,18 +1140,11 @@ const handleCreatePosSaleData = async () => {
       amount: total,
       sale_person: selectedSalesperson?.id?? null
     };
-
-    // console.log(paymentData);
-    // return;
-    
-
     const response = await handlePosSaleCreate(paymentData, token);
 
     if (response.success) {
       message.success("Sale completed successfully!");
-      // console.log(response);
-      
-      // Prepare data for printing
+      setPayments([]);
       const printData = {
         sale: {
           ...response.sale,

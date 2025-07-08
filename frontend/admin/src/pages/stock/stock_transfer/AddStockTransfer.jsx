@@ -80,9 +80,6 @@ const AddAdjustment = () => {
       message.error("Product not found.");
       return;
     }
-
-    console.log(selectedProduct);
-
     if (Number(selectedProduct.stock) <= 0) {
       message.error(`${selectedProduct.name} is out of stock and cannot be added!`);
       return;
@@ -250,9 +247,7 @@ const AddAdjustment = () => {
     
 
     try {
-      const result = await handleCreateStockTransfer(adjustmentData, token);
-      console.log(result);
-      
+      const result = await handleCreateStockTransfer(adjustmentData, token);      
       if (result.success) {
         message.success('Adjustment created successfully!');
         form.resetFields();
@@ -262,9 +257,7 @@ const AddAdjustment = () => {
       } else {
         message.error(result.message);
       }
-    } catch (error) {
-      console.log(error);
-      
+    } catch (error) {      
       message.error(error.response.data.message);
 
     } finally {

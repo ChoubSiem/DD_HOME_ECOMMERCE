@@ -107,7 +107,6 @@ const SalesReports = () => {
       const response = await getSaleReportsData(cleanedFilters, token);
       
       if (response.success) {
-        console.log(response);
         setSales(response.sales || []);
         setError(null);
       }
@@ -120,12 +119,10 @@ const SalesReports = () => {
     }
   };
 
-  // Fetch data when filters change
   useEffect(() => {
     fetchSalesReportData();
   }, [appliedFilters]);
 
-  // Debounced search
   const debouncedSetPendingSearch = useMemo(
     () => debounce((value) => setPendingFilters(prev => ({ ...prev, searchTerm: value })), 500),
     []
@@ -135,7 +132,6 @@ const SalesReports = () => {
     return () => debouncedSetPendingSearch.cancel();
   }, [debouncedSetPendingSearch]);
 
-  // Generate dynamic columns based on grouping
   const columns = useMemo(() => {
     const hasGrouping = appliedFilters.groupBy?.length > 0;
     const hasProductGroup = appliedFilters.groupBy?.includes('product');
@@ -145,10 +141,7 @@ const SalesReports = () => {
     const hasSalesPersonGroup = appliedFilters.groupBy?.includes('sales_person');
     const hasCustomerGroupGroup = appliedFilters.groupBy?.includes('customer_group');
     const hasCategoryGroup = appliedFilters.groupBy?.includes('category');
-
     const baseColumns = [];
-
-    // Add grouping columns
     if (hasProductGroup) {
       baseColumns.push({
         field: 'product_name',

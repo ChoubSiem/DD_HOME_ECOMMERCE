@@ -34,7 +34,6 @@ const ImportCustomer = ({ visible, onCancel, onImport }) => {
       const workbook = XLSX.read(binaryString, { type: 'binary' });
 
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      // console.log(sheet);
       
       const data = XLSX.utils.sheet_to_json(sheet);      
       const formattedData = data.map((item) => {
@@ -47,9 +46,6 @@ const ImportCustomer = ({ visible, onCancel, onImport }) => {
             group: item['Group']?.trim()
           };
       });
-      // console.log(formattedData);
-      // console.log(formattedData);
-      // return;
       onImport(formattedData);
       setLoading(false);
     };

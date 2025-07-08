@@ -70,8 +70,6 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
   };
 
   const handlePaymentAdded = async(newPayment) => {
-    console.log(newPayment);
-    // return;
     const addPayment = await handleAddPurchasePayment(newPayment,token);
     if (addPayment.success) {
       message.success('Payment added successfully');
@@ -151,9 +149,9 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
     },
     {
       name: "Supplier",
-      selector: (row) => (typeof row.supplier === "object" ? row.supplier.name : row.supplier),
+      selector: (row) => (row.supplier),
       sortable: true,
-      cell: (row) => <strong>{getSafe(row, 'purchaser.username')}</strong>,
+      cell: (row) => <strong>{getSafe(row, 'supplier')}</strong>,
       width: "10%",
     },
     {

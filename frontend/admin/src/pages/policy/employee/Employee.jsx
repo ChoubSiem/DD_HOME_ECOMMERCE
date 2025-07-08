@@ -53,7 +53,6 @@ const Employee = () => {
   };
 
   const handleSaveEmployee = (employeeData) => {
-    console.log(employeeData);
     setIsModalVisible(false);
     fetchUsersData();
   };

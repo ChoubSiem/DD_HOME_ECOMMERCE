@@ -68,9 +68,7 @@ const ProductGroupManagement = () => {
           message.error(result?.message || "Failed to update product group");
         }
       } else {
-        result = await handleProductGroupCreate(values, token);
-        console.log(result);
-        
+        result = await handleProductGroupCreate(values, token);        
         if (result?.success) {  
           message.success(result.message || "Product group created successfully");
           setProductGroups((prev) => [...prev, result.group]);

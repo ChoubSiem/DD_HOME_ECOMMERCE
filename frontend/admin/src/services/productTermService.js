@@ -31,7 +31,6 @@ export const deleteCategory = async (id, token) => {
   return response.data;
 };
 
-
 // unit ===================================================================================
 
 export const fetchUnit = async (token) => {
@@ -63,8 +62,6 @@ export const deleteUnit = async (id, token) => {
   return response.data;
 };
 
-
-
 // product ==========================================
 export const fetchProduct = async (token, warehouse_id) => {
   try {
@@ -79,8 +76,6 @@ export const fetchProduct = async (token, warehouse_id) => {
     throw error;
   }
 };
-
-
 export const showProduct = async (proudctId, token) => {
 
   const response = await axios.get(`${API_BASE}/product/edit/${proudctId}`, {
@@ -107,9 +102,6 @@ export const updateProduct = async (id, values, token) => {
   });
   return response.data;
 };
-
-
-
 export const importProduct = async (products, token) => {
 
   const response = await axios.post(`${API_BASE}/product/import`, { products: products }, {
@@ -135,10 +127,6 @@ export const deleteProduct = async (id, token) => {
 
   return response.data;
 };
-
-
-//  brand service 
-
 export const fetchBrand = async (token) => {
   const response = await axios.get(`${API_BASE}/brand/list`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -260,14 +248,6 @@ export const uomTranfersDelete = async (warehouseId, token) => {
   });
   return response.data;
 };
-
-
-
-
-
-
-
-
 export const uomConversions = async (token) => {
   const response = await axios.get(`${API_BASE}/uom-conversion/list`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -309,9 +289,6 @@ export const getProductDetail = async (warehouse_id, product_id, token) => {
       warehouse_id,
       product_id
     }
-  });
-  console.log(response);
-  
-
+  });  
   return response.data;
 };

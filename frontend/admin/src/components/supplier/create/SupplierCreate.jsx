@@ -34,9 +34,6 @@ const CreateSupplier = ({ visible, onCancel, onSave }) => {
   const handleSubmit = async (values) => {
     try {
       const supplierData = { ...values };
-      console.log(values);
-
-      // return ;
       
       const result = await handleSupplierCreate(supplierData, token);
       console.log(result);

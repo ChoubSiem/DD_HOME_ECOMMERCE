@@ -9,8 +9,6 @@ const CustomerForm = ({ onSubmit, loading, customerGroups = [] }) => {
   const [customerCode, setCustomerCode] = useState(''); 
 
   const handleFinish = useCallback((values) => {
-    console.log('Form submitted with values:', values);
-    // return;
     onSubmit(values);
     form.resetFields();
     setCustomerCode(''); 
@@ -66,7 +64,6 @@ const CustomerForm = ({ onSubmit, loading, customerGroups = [] }) => {
             <Button
               type="default"
               onClick={() => {
-                console.log('Generate Code button clicked');
                 generateRandomCode();
               }}
               size="large"

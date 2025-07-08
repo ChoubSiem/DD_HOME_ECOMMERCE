@@ -170,17 +170,12 @@ const AddAdjustment = () => {
         adjustment_type: product.adjustmentType,
         unit: product.unit??null
       }))
-    };
-    console.log(adjustmentData);
-    
-
+    };    
     try {
       const result = await handleCreateAdjustment(adjustmentData, token);
       if (result.success) {
         message.success('Adjustment created successfully!');
-        form.resetFields();
-        console.log(adjustmentData);
-        
+        form.resetFields();        
         setSelectedProducts([]);
         localStorage.removeItem("selectedProducts");
         navigate("/adjustment");

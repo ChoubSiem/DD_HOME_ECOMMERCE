@@ -19,9 +19,7 @@ const WarehouseProductSelection = () => {
 
   const fetchAllProducts = async () => {
     try {
-      let result = await handleProducts(token , null);
-      console.log(result);
-      
+      let result = await handleProducts(token , null);      
       setProducts(result.products || []);
     } catch (error) {
       message.error('Failed to fetch products');
@@ -73,8 +71,7 @@ const WarehouseProductSelection = () => {
         ? prev.filter((id) => id !== productId)
         : [...prev, productId];
       setCheckAll(newSelectedProducts.length === products.length);
-      form.setFieldsValue({ selectedProducts: newSelectedProducts }); // Sync with form
-      console.log('Selected products:', newSelectedProducts); // Debug
+      form.setFieldsValue({ selectedProducts: newSelectedProducts }); 
       return newSelectedProducts;
     });
   };

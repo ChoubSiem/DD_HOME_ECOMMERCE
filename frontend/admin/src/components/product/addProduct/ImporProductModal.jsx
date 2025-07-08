@@ -74,10 +74,7 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
           stock,
           warehouse_id: userData.warehouse_id,
         };
-      });
-
-      // console.log(formattedData);
-      // return;      
+      });    
       
       onImport(formattedData);
     };

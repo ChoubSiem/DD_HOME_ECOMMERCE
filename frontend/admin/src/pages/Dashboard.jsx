@@ -131,7 +131,6 @@ const Dashboard = () => {
       {month: 'Dec',category:'Sales',sales: 3500,expenses: 1500,customers: 330,orders: 180,trends: {sales: 8.1,expenses: -1.5,profit: 9.6,customers: 5.2,orders: 6.3,efficiency: 2.1}}
     ];
 
-  // Filter data based on selections
   const [filteredData, setFilteredData] = useState(chartData);
   useEffect(() => {
     let data = [...chartData];
@@ -140,7 +139,6 @@ const Dashboard = () => {
       data = data.filter(item => item.month === selectedMonth);
     } else if (dateRange && dateRange.length === 2) {
       const months = chartData.map(d => d.month);
-      console.log(months);
       const startIndex = months.indexOf(dateRange[0]);
       const endIndex = months.indexOf(dateRange[1]);
       data = data.slice(startIndex, endIndex + 1);
@@ -149,11 +147,10 @@ const Dashboard = () => {
         case 'day': data = [data[data.length - 1]]; break;
         case 'week': data = data.slice(-2); break;
         case 'year': data = data.slice(0, 12); break;
-        default: break; // month
+        default: break; 
       }
     }
     
-    // Make sure all data fields are preserved
     setFilteredData(data.map(item => ({
       month: item.month,
       sales: item.sales,

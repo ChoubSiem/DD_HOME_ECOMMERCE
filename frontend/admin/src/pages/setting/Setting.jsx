@@ -60,7 +60,6 @@ const SettingsPage = () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      console.log("Saved Settings:", values);
       message.success("Settings saved successfully!");
     } catch (error) {
       console.error("Validation failed:", error);

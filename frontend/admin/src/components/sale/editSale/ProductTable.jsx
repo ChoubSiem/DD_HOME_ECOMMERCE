@@ -78,7 +78,6 @@ const ProductsTable = ({
   // Notify parent of amount changes
   useEffect(() => {
     onAmountChange(totals.subtotal);
-    console.log('amount in comp' + totals.subtotal);
 
   }, [totals.subtotal]);
 

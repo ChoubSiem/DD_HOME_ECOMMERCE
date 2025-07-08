@@ -36,9 +36,7 @@ const EditProductForm = ({ onCancel, onSubmit }) => {
   const [productUnits, setProductUnits] = useState([]);
   const [productGroups, setProductGroups] = useState([]);
   const [units, setUnits] = useState([]);
-  const userData = JSON.parse(Cookies.get('user'));
-  console.log(units);
-  
+  const userData = JSON.parse(Cookies.get('user'));  
   const { 
     handleCategories, 
     handleUnits, 

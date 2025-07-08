@@ -44,8 +44,6 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
         const dealer_price = item['Dealer Price'] ?? null;
         const depot_price = item['Depot Price'] ?? null;
         const vip_price = item['VIP Price'] ?? null;
-
-        console.log(item);
         return {
           code,
           price,

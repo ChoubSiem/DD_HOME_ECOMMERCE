@@ -28,14 +28,9 @@ const ViewPaymentModal = ({ payments, visible, onCancel }) => {
           </Tag>
         );
       default:
-        // return (
-        //   <Tag icon={<CloseCircleOutlined />} color="red">
-        //     {status?.toUpperCase() || 'UNKNOWN'}
-        //   </Tag>
-        // );
     }
   };
-//   console.log(payments);
+
   
 
   const renderPaymentRow = (payment, index) => (

@@ -239,9 +239,6 @@ const EditTransfer = () => {
           destination_unit: transfer.destinationUnit,
         })),
       };
-
-      console.log("Final payload being sent:", payload);
-
       const result = await handleUomTransferUpdate(id, payload, token);
 
       if (result.success) {

@@ -50,9 +50,7 @@ const BrandManagement = () => {
     let result;
   
     try {
-      if (isUpdate) {
-        console.log(currentBrand);
-        
+      if (isUpdate) {        
         result = await handleBrandUpdate( currentBrand.id,values, token);
         
         if (result?.success) {

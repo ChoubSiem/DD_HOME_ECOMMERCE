@@ -18,9 +18,7 @@ const EmployeeEdit = () => {
         if (result.success) {
             setEmployees(result.employees);
         }
-    }
-    // console.log(id);
-    
+    }    
     
     const getRoleDatas = async() =>{
         const result = await handleRoles(token);

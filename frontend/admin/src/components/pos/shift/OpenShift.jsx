@@ -134,8 +134,6 @@ const OpenShiftModal = ({ visible, onClose, onShiftOpen }) => {
       };
       
       const response = await handleOpenShiftCreate(shiftData, token);
-    //   console.log(response);
-    //  return;
       
       if (!response.success) {
         throw new Error('Failed to open shift');

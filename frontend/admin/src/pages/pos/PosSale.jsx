@@ -110,7 +110,6 @@ const PosSaleList = () => {
   };
 
   const handleEdit = (sale) => {
-    console.log("Edit Sale Clicked:", sale);
     setCurrentSale(sale);
     message.info("Edit functionality is a placeholder. Implement API call as needed.");
   };
@@ -131,19 +130,16 @@ const PosSaleList = () => {
   };
 
   const handleAddPayment = (sale) => {
-    console.log("Add Payment Clicked:", sale);
     setCurrentSale(sale);
     setIsPaymentModalVisible(true);
   };
 
   const handleViewPayment = (sale) => {
-    console.log("View Payment Clicked:", sale);
     setCurrentSale(sale);
     setIsViewPaymentModalVisible(true);
   };
 
   const handlePaymentSubmit = (sale) => {
-    console.log("Payment Submitted for Sale:", sale);
     setIsPaymentModalVisible(false);
   };
 
@@ -193,13 +189,6 @@ const PosSaleList = () => {
 
     return { items };
   };
-
-
-  console.log(sales);
-  
-
-
-
   const columns = [
     {
       name: "No",

@@ -169,10 +169,7 @@ const AddTransfer = () => {
           source_unit: transfer.sourceUnit,
           destination_unit: transfer.destinationUnit
         }))
-      };
-  
-      console.log("Final payload being sent:", JSON.stringify(payload, null, 2));
-  
+      };  
       const result = await handleCreateUomTransfer(payload, token);
   
       if (result.success) {

@@ -56,9 +56,7 @@ const CreateCompany = () => {
     fetchRegional();
   }, [token]);
 
-  const handleSubmit = async (values) => {
-    console.log(values);
-    
+  const handleSubmit = async (values) => {    
     const result = await handleRegionalCreate(values, token);
     if (result?.success) {
       message.success("Company created successfully!");

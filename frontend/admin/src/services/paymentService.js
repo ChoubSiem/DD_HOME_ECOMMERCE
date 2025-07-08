@@ -9,9 +9,6 @@ export const createPayment = async (values , token) => {
   
   return response.data;
 };
-
-// purchase payment
-
 export const getPurchasePayment = async (purchaseId, token) => {
   const response = await axios.get(`${API_BASE}/purchase-payment/${purchaseId}`, {
     headers: {

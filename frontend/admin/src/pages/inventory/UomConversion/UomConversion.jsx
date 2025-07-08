@@ -66,9 +66,7 @@ const UomConversionManagement = () => {
       if (currentConversion) {
         result = await handleUomConversionsUpdate(currentConversion.id, values, token);
         
-      } else {
-        console.log(values);
-        
+      } else {        
         result = await handleUomConversionsCreate(values, token);
       }      
       if (result?.success) {

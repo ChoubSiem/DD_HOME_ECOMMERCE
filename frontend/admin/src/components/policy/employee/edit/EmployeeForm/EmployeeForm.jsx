@@ -143,8 +143,6 @@ const EmployeeForm = ({   onRefresh }) => {
       setErrors(validationErrors);
       return;
     }
-
-    // console.log('Form submitted:', formData);
     let result = await handleEmployeeUpdate(id,formData , token);
     if (result.success) {
         navigate("/employee");

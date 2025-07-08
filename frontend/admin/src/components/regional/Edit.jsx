@@ -53,8 +53,6 @@ const EditCompany = () => {
   }, [id, token, form]);
 
   const handleSubmit = async (values) => {
-    // console.log(values);
-    // return;
 
     const result = await handleRegionalUpdate( values, token , id);
     

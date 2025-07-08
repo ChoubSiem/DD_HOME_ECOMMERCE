@@ -8,7 +8,6 @@ const StockModalDetail = ({ open, onCancel, onEdit, stock }) => {
   const handlePrint = () => {
     window.print();
   };
-  console.log(stock);
   
   const columns = [
     {

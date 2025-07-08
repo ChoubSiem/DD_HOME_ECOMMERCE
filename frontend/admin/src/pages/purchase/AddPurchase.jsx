@@ -101,10 +101,7 @@ const AddPurchase = () => {
     if (isAlreadyAdded) {
       message.warning(`${selectedProduct.name} is already added.`);
       return;
-    }
-    console.log(selectedProduct);
-    
-
+    }    
     const newProduct = {
       key: Date.now(),
       productId: selectedProduct.id,
@@ -319,11 +316,6 @@ const AddPurchase = () => {
         unit_code: product.unit_code || null
       }))
     };    
-
-    // console.log(purchaseData);
-    // return ;
-    
-
     try {
       const result = await handleCreatePurchase(purchaseData, token);
       if (result.success) {

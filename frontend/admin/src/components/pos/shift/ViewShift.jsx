@@ -37,9 +37,7 @@ const ViewShiftModal = ({ open, onClose, warehouseId, token, onShiftClosed }) =>
     setLoading(true);
     setError(null);
     try {
-      const result = await handleGetOneOpenShift(shiftId, userData.warehouse_id, token);      
-      console.log(result);
-      
+      const result = await handleGetOneOpenShift(shiftId, userData.warehouse_id, token);            
       setLoading(true);
       if (result.success && result.shift) {
         setShiftData(result.shift); 
@@ -215,7 +213,7 @@ const ViewShiftModal = ({ open, onClose, warehouseId, token, onShiftClosed }) =>
   const productData = shiftData?.data?.posSales || [];
   const totalInvoices = productData.length;
   const totalSalesAmount = shiftData?.data?.total_sales_amount || 0;
-
+  
   return (
     <Spin spinning={loading}>
       <Modal

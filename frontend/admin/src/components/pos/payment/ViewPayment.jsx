@@ -76,10 +76,6 @@ useEffect(() => {
       width: "35%",
     },
   ];
-
-  // Mock payments for testing (replace with API data)
-  // const payments = sale?.payments || [];
-  console.log(payments);
   
   return (
     <Modal

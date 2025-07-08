@@ -40,14 +40,11 @@ const AddPaymentModal = ({ open, onCancel, sale, onSubmit }) => {
         note: values.note || ''
       };
 
-      // console.log(paymentData);
-      // return;
       const response = await handlePaymentCreate(paymentData, token);
       if (response.success) {
         message.success('Payment created successfully!');
         form.resetFields();
         onSubmit(response.data); 
-        // location.reload();
         onCancel();
       } else {
         throw new Error(response.message || 'Failed to create payment');
@@ -60,7 +57,6 @@ const AddPaymentModal = ({ open, onCancel, sale, onSubmit }) => {
     }
   };
 
-  // const payments = sale?.payments || [];
   const oldestPayment = payments.length > 0
     ? payments.reduce((oldest, current) => {
         const oldestDate = oldest.date ? moment(oldest.date) : moment(0);
@@ -69,7 +65,6 @@ const AddPaymentModal = ({ open, onCancel, sale, onSubmit }) => {
       })
     : null;
 
-  // Table columns for payment history
   const columns = [
     {
       title: "Payment Date",

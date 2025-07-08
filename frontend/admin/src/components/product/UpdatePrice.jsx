@@ -70,10 +70,7 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
           depot_price,
           vip_price
         };
-      });
-
-      // console.log(formattedData);
-      // return;      
+      });    
       
       onImport(formattedData);
     };

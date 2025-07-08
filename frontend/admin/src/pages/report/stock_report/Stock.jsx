@@ -89,8 +89,6 @@ const StockReport = React.memo(() => {
           setIsLoading(true);
           setError(null);
           const response = await getStockReportsData(params, token);
-          console.log('Raw backend response:', response);
-
           if (response.success) {
             const keySet = new Set();
             const productsWithUniqueKeys = (response.stocks || []).map((product) => {

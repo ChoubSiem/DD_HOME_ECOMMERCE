@@ -19,9 +19,7 @@ const SalesReturnsTable = ({ data, onEdit, onDelete, onDetail, loading }) => {
   const [detailDialogVisible, setDetailDialogVisible] = useState(false);
   const toast = useRef(null);
   const dt = useRef(null);
-  const actionMenuRef = useRef(null);
-    console.log(data);
-    
+  const actionMenuRef = useRef(null);    
   const statusBodyTemplate = (rowData) => {
     const statusConfig = {
       pending: { severity: 'warning', text: 'Pending' },

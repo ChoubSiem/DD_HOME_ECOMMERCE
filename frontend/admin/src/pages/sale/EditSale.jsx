@@ -142,10 +142,6 @@ const { handleProducts } = useProductTerm();
         
         const formattedProducts = result.sale.items.map(item => {
           const matchedProduct = products.find(p => p.id == item.product_id);
-          console.log(item);
-          
-          
-                ;
           return {
             key: item.id,
             productId: item.product_id,
@@ -338,11 +334,6 @@ const { handleProducts } = useProductTerm();
         discount: product.discountAmount || 0,
       }))
     };
-
-    console.log(updateData);
-    // return;
-    
-
     try {
       const result = await handleUpdateSaleInventory(id,updateData, token);      
       if (result.success) {
@@ -384,8 +375,6 @@ const { handleProducts } = useProductTerm();
     
     setFilteredProducts(results);
   }, [searchTerm, products]);
-
-console.log('amountInEdit' + amount);
 
 return (
     <Spin spinning={loading}>

@@ -176,7 +176,6 @@ export const useCompany = () => {
   const handleWarehouseCreate = async (values,token) => {
     try {
       const warehouseData = await createWarehouse(values,token);          
-      console.log(warehouseData);              
       return {
         success: true,
           warehouse: warehouseData.warehouse,     
@@ -206,9 +205,7 @@ export const useCompany = () => {
 
   const handleWarehouseUpdate = async (values, token , id) => {
     try {
-      const response = await updateWarehouse(id, values, token);
-      console.log(response);
-      
+      const response = await updateWarehouse(id, values, token);      
       return {
         success: true,
         data: response.warehouse, 

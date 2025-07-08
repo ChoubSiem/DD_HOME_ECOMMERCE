@@ -14,8 +14,6 @@ import "./EditPurchase.css";
 const AddPurchase = () => {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Sample product data with units
   const products = [
     { id: "1", name: "Laptop Pro X", price: 1200, unit: "pcs" },
     { id: "2", name: "Smartphone Z10", price: 800, unit: "pcs" },
@@ -24,12 +22,10 @@ const AddPurchase = () => {
     { id: "5", name: "Keyboard Mechanical", price: 100, unit: "pcs" },
   ];
 
-  // Handle search input change
   const handleSearchChange = (value) => {
     setSearchTerm(value);
   };
 
-  // Handle product selection from the dropdown
   const handleProductSelect = (value) => {
     const selectedProduct = products.find((product) => product.name === value);
 
@@ -37,8 +33,6 @@ const AddPurchase = () => {
       message.error("Product not found.");
       return;
     }
-
-    // Check if the product is already in the selected list
     const isAlreadyAdded = selectedProducts.some(
       (p) => p.productId === selectedProduct.id
     );
@@ -54,45 +48,31 @@ const AddPurchase = () => {
       productName: selectedProduct.name,
       quantity: 1,
       price: selectedProduct.price,
-      unit: selectedProduct.unit, // Add unit here
+      unit: selectedProduct.unit, 
       total: selectedProduct.price * 1,
     };
 
     setSelectedProducts([...selectedProducts, newProduct]);
     message.success(`${selectedProduct.name} has been added to the purchase list.`);
-    setSearchTerm(""); // Clear the search input
+    setSearchTerm(""); 
   };
-
-  // Handle quantity change
   const handleQuantityChange = (key, value) => {
     const updatedProducts = selectedProducts.map((product) =>
       product.key === key ? { ...product, quantity: value, total: value * product.price } : product
     );
     setSelectedProducts(updatedProducts);
   };
-
-  // Remove a product
   const handleRemoveProduct = (key) => {
     const updatedProducts = selectedProducts.filter((p) => p.key !== key);
     setSelectedProducts(updatedProducts);
   };
-
-  // Calculate total amount
   const totalAmount = selectedProducts.reduce(
     (sum, product) => sum + product.quantity * product.price,
     0
   );
-
-  // Handle form submission
   const handleSave = () => {
-    console.log("Purchase Details:", {
-      products: selectedProducts,
-      totalAmount,
-    });
     setSelectedProducts([]);
   };
-
-  // Table columns
   const columns = [
     {
       title: "Product Name",

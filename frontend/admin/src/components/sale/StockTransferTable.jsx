@@ -13,9 +13,7 @@ const AdjustmentTable = ({ data, onEdit, onDelete, loading }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStock, setSelectedStock] = useState(null);
 
-  const showModal = (stock) => {
-    console.log(stock);
-    
+  const showModal = (stock) => {    
     setSelectedStock(stock);
     setIsModalOpen(true);
   };
