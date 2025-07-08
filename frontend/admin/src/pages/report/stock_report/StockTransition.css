@@ -1,0 +1,75 @@
+.stock-transition-container {
+  padding: 20px;
+}
+
+.header-card .report-title {
+  margin-bottom: 5px;
+}
+
+.filter-card {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.transition-type-tag {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.transfer-tag {
+  background-color: #1890ff;
+  color: white;
+}
+
+.receipt-tag {
+  background-color: #52c41a;
+  color: white;
+}
+
+.issue-tag {
+  background-color: #faad14;
+  color: white;
+}
+
+.status-tag {
+  text-transform: uppercase;
+}
+
+.completed-tag {
+  background-color: #52c41a;
+  color: white;
+}
+
+.pending-tag {
+  background-color: #1890ff;
+  color: white;
+}
+
+.cancelled-tag {
+  background-color: #f5222d;
+  color: white;
+}
+
+.table-footer {
+  padding: 16px;
+  background-color: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-top: none;
+}
+
+.ant-table-row.out-of-stock {
+  background-color: #fff1f0;
+}
+
+.ant-table-row.low-stock {
+  background-color: #fffbe6;
+}
+
+.ant-table-row.normal-stock {
+  background-color: #f6ffed;
+}
+
+.header-icon {
+  font-size: 40px;
+  color: #1890ff;
+}

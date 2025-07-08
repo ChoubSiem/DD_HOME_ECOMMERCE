@@ -90,7 +90,7 @@ const StockReports = () => {
     {
       title: 'Stock History',
       icon: <HistoryOutlined />,
-      path: '/reports/stock/history',
+      path: '/reports/stock/transition',
       color: colors.black,
       type: 'record'
     },

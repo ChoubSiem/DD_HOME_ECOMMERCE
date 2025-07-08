@@ -98,22 +98,14 @@ const StockReport = React.memo(() => {
               return { ...product, key: uniqueKey };
             });
 
-            // Log duplicates
             const keyCounts = (response.stocks || []).reduce((acc, p) => {
               const key = p.id || 'missing';
               acc[key] = (acc[key] || 0) + 1;
               return acc;
             }, {});
-            // const duplicates = Object.entries(keyCounts).filter(([_, count]) => count > 1);
-            // if (duplicates.length) {
-            //   console.warn('Duplicate IDs detected:', duplicates);
-            //   console.warn('Duplicated products:', response.stocks.filter((p) => duplicates.some(([key]) => p.id === key)));
-            // }
-
             setProducts(productsWithUniqueKeys);
             setMeta(response.meta || null);
             setError(null);
-            // toast.current.show({ severity: 'success', summary: 'Success', detail: 'Data loaded successfully', life: 3000 });
           } else {
             throw new Error(response.message || 'Failed to fetch stock data');
           }

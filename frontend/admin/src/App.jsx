@@ -80,6 +80,7 @@ import EmployeeCreate from "./components/policy/employee/create/EmployeeCreate";
 import EmployeeEdit from "./components/policy/employee/edit/EmployeeForm/EmployeeForm";
 import UomConversion from "./pages/inventory/UomConversion/UomConversion";
 import BrandManagement from "./pages/brand/Brand";
+import StockTransition from "./pages/report/stock_report/StockTransition";
 // import AddSaleReturn from "./pages/sale_return/AddSaleReturn";
 // import { useNavigate } from 'react-router-dom';
 
@@ -171,6 +172,7 @@ const App = () => {
           <Route path="/reports/product" element={<ProductReport />} />
           <Route path="/reports/stock" element={<Stock />} />
           <Route path="/stock" element={<StockListReport />} />
+          <Route path="/reports/stock/transition" element={<StockTransition />} />
           <Route path="/reports/low-best-reports" element={<LowBestSellerReport />} />
           <Route path="/reports/sale" element={<SaleReportList />} />
           <Route path="/reports/purchase/list" element={<PurchaseListReport />} />
