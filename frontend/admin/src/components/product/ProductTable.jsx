@@ -299,7 +299,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
           scrollable
           scrollHeight="400px"
           virtualScrollerOptions={{ 
-            itemSize: 50,
+            itemSize: 20,
             scrollHeight: '450px'
           }}
           paginator={rows !== products.length}
@@ -326,7 +326,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
             body={nameBodyTemplate}
             className="text-center"
             headerClassName="text-center"
-            style={{ width: '200px', minWidth: '200px' }}
+            style={{ width: '200px', minWidth: '200px' ,fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif" }}
           />
           <Column 
             field="product_code" 
@@ -351,7 +351,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
             body={priceBodyTemplate}
             className="text-center"
             headerClassName="text-center"
-            style={{ width: '180px', minWidth: '180px',padding:'10px' }}
+            style={{ width: '180px', minWidth: '180px' }}
           />
           <Column 
             header="Stock" 

@@ -41,14 +41,14 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
           ? purchase.purchaser?.name || purchase.purchaser?.username || "N/A"
           : purchase.purchaser || "N/A",
       },
-      supplier_comapny:purchase.supplier.company,
+      supplier_comapny:purchase.supplier?.company ,
       date: purchase.date || new Date().toISOString(),
       note: purchase.note || "",
       status: purchase.approval || "pending",
       items: purchase.purchase_items || [],
       payments: purchase.payments || [], 
       total: parseFloat(purchase.total || 0),
-    };
+    };    
     setSelectedPurchase(transformedPurchase);
     setPurchaseModalVisible(true);
   };

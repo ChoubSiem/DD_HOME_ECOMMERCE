@@ -1547,7 +1547,7 @@ const printInvoice = (printData) => {
                         </div>
                         <div className="product-details">
                           <div className="product-info">
-                            <h3 className="product-name">{product.name}</h3>
+                            <h3 className="product-name" style={{ fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif" }}>{product.name}</h3>
                             <div style={{display:"flex",justifyContent:'space-between'}}>
                             <p className="product-code">{product.code}</p>
                               <span className="retail-price">

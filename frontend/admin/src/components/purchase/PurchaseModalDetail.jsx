@@ -80,7 +80,13 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
       center: true
     },
     {
-      name: 'DESCRIPTION',
+      name: 'Code',
+      selector: (row) => row.product?.code || 'N/A',
+      grow: 1,
+      cell: (row) => <div className="product-cell">{row.product?.code || 'N/A'}</div>
+    },
+    {
+      name: 'Name',
       selector: (row) => row.product?.name || 'N/A',
       grow: 2,
       cell: (row) => <div className="product-cell">{row.product?.name || 'N/A'}</div>
@@ -159,7 +165,7 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
         </table>
 
         {/* Items Table */}
-        <div className="items-section">
+        {/* <div className="items-section"> */}
           <DataTable
             columns={columns}
             data={purchase?.items || []}
@@ -195,7 +201,7 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
             }}
             noDataComponent={<div className="no-items">No items in this purchase order</div>}
           />
-        </div>
+        {/* </div> */}
 
         {/* Totals Section */}
         <table className="totals-section">

@@ -78,12 +78,9 @@ const SalesReports = () => {
   const [error, setError] = useState(null);
   const tableRef = useRef();
   const { getSaleReportsData } = useReport();
-
-  // User data and auth
   const userData = useMemo(() => JSON.parse(Cookies.get('user') || '{}'), []);
   const token = localStorage.getItem('token');
 
-  // Fetch data with proper filters
   const fetchSalesReportData = async () => {
     try {
       setIsLoading(true);
@@ -105,6 +102,7 @@ const SalesReports = () => {
       );
 
       const response = await getSaleReportsData(cleanedFilters, token);
+      console.log(response);
       
       if (response.success) {
         setSales(response.sales || []);
@@ -143,6 +141,17 @@ const SalesReports = () => {
     const hasCategoryGroup = appliedFilters.groupBy?.includes('category');
     const baseColumns = [];
     if (hasProductGroup) {
+      baseColumns.push({
+        field: 'code',
+        header: 'Code',
+        sortable: true,
+        style: { minWidth: '100px' },
+        body: (rowData) => (
+          <Text strong style={{ fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif" }}>
+            {rowData.product_code || 'N/A'}
+          </Text>
+        ),
+      });
       baseColumns.push({
         field: 'product_name',
         header: 'Product',
@@ -313,7 +322,6 @@ const SalesReports = () => {
     );
   }, [sales]);
 
-  // Custom footer component
 // const CustomFooter = useMemo(() => {
 //   const totals = calculateTotals();
 //   const hasGrouping = appliedFilters.groupBy?.length > 0;
@@ -415,8 +423,6 @@ const SalesReports = () => {
 //     </div>
 //   );
 // }, [sales, appliedFilters.groupBy]);
-
-  // Export to Excel with dynamic columns
 const handleExportExcel = useCallback(async () => {
   setExportLoading(true);
   try {
@@ -427,8 +433,6 @@ const handleExportExcel = useCallback(async () => {
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sales Report');
-
-    // Add report headers
     worksheet.addRow(['DD Home Sales Report']).font = { size: 16, bold: true };
     worksheet.addRow([
       `Date Range: ${
@@ -445,7 +449,6 @@ const handleExportExcel = useCallback(async () => {
     worksheet.addRow([`Warehouse: ${userData.warehouse_name || 'All'}`]);
     worksheet.addRow([]);
 
-    // Determine which columns to include based on grouping
     const hasProductGroup = appliedFilters.groupBy.includes('product');
     const hasDateGroup = appliedFilters.groupBy.includes('date');
     const hasCustomerGroup = appliedFilters.groupBy.includes('customer');
@@ -453,11 +456,12 @@ const handleExportExcel = useCallback(async () => {
     const hasSalesPersonGroup = appliedFilters.groupBy.includes('sales_person');
     const hasCustomerGroupGroup = appliedFilters.groupBy.includes('customer_group');
     const hasCategoryGroup = appliedFilters.groupBy.includes('category');
-
-    // Add column headers
     const headers = [];
 
-    if (hasProductGroup) headers.push('Product');
+    if (hasProductGroup) {
+      headers.push('Product Code');  
+      headers.push('Product');
+    }
     if (hasDateGroup) headers.push('Date');
     if (hasCustomerGroup) headers.push('Customer');
     if (hasInvoiceGroup) headers.push('Invoice No');
@@ -475,10 +479,9 @@ const handleExportExcel = useCallback(async () => {
       'Total Sale',
       'Unit Cost',
       'Total Cost',
-      'Profit' // Removed 'Profit Margin (%)'
+      'Profit'
     );
 
-    // Add header row with styling
     const headerRow = worksheet.addRow(headers);
     headerRow.eachCell((cell) => {
       cell.font = { bold: true };
@@ -496,12 +499,13 @@ const handleExportExcel = useCallback(async () => {
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
 
-    // Add data rows
     sales.forEach((sale) => {
       const rowData = [];
 
-      // Add grouping columns
-      if (hasProductGroup) rowData.push(sale.product_name || 'N/A');
+      if (hasProductGroup) {
+        rowData.push(sale.product_code || 'N/A');
+        rowData.push(sale.product_name || 'N/A');  
+      }
       if (hasDateGroup) rowData.push(sale.date ? dayjs(sale.date).format('YYYY-MM-DD') : 'N/A');
       if (hasCustomerGroup) rowData.push(sale.customer_name || 'Walk-in');
       if (hasInvoiceGroup) rowData.push(sale.invoice_no || 'N/A');
@@ -510,11 +514,9 @@ const handleExportExcel = useCallback(async () => {
       if (hasCategoryGroup) rowData.push(sale.product_category || 'N/A');
       if (!hasCustomerGroup) rowData.push(sale.customer_count || 0);
 
-      // Calculate derived values
       const unitPrice = sale.quantity ? (sale.subtotal / sale.quantity) : 0;
       const unitCost = sale.quantity ? (sale.total_cost / sale.quantity) : 0;
 
-      // Add metric columns (removed profit margin calculation)
       rowData.push(
         Number(sale.quantity || 0),
         Number(unitPrice.toFixed(2)),
@@ -524,21 +526,18 @@ const handleExportExcel = useCallback(async () => {
         Number(sale.total_sale || 0),
         Number(unitCost.toFixed(2)),
         Number(sale.total_cost || 0),
-        Number(sale.profit || 0) // Profit column remains
+        Number(sale.profit || 0)
       );
 
       const row = worksheet.addRow(rowData);
       
-      // Format numeric cells
       row.eachCell((cell, colNumber) => {
-        const firstMetricCol = headers.length - 9 + 1; // Adjusted for removed column
+        const firstMetricCol = headers.length - 9 + 1; 
         
         if (colNumber >= firstMetricCol) {
-          // Apply number formatting to numeric columns
           cell.numFmt = colNumber === firstMetricCol ? '0' : '#,##0.00';
           cell.alignment = { horizontal: 'right' };
           
-          // Color coding for profit (now the last column)
           if (colNumber === headers.length) {
             cell.font = { 
               color: { argb: cell.value >= 0 ? 'FF52C41A' : 'FFF5222D' } 
@@ -548,7 +547,6 @@ const handleExportExcel = useCallback(async () => {
       });
     });
 
-    // Calculate totals
     const totals = sales.reduce((acc, sale) => {
       acc.totalQuantity += Number(sale.quantity) || 0;
       acc.totalSubtotal += Number(sale.subtotal) || 0;
@@ -568,11 +566,12 @@ const handleExportExcel = useCallback(async () => {
       totalProfit: 0
     });
 
-    // Add totals row
     const totalRowData = [];
 
-    // Add empty cells for grouping columns
-    if (hasProductGroup) totalRowData.push('TOTAL');
+    if (hasProductGroup) {
+      totalRowData.push('');
+      totalRowData.push('TOTAL'); 
+    }
     if (hasDateGroup) totalRowData.push('');
     if (hasCustomerGroup) totalRowData.push('');
     if (hasInvoiceGroup) totalRowData.push('');
@@ -581,11 +580,9 @@ const handleExportExcel = useCallback(async () => {
     if (hasCategoryGroup) totalRowData.push('');
     if (!hasCustomerGroup) totalRowData.push('');
 
-    // Calculate average unit price and cost
     const avgUnitPrice = totals.totalQuantity ? (totals.totalSubtotal / totals.totalQuantity) : 0;
     const avgUnitCost = totals.totalQuantity ? (totals.totalCost / totals.totalQuantity) : 0;
 
-    // Add metric totals (removed profit margin)
     totalRowData.push(
       totals.totalQuantity,
       Number(avgUnitPrice.toFixed(2)),
@@ -600,7 +597,7 @@ const handleExportExcel = useCallback(async () => {
 
     const totalRow = worksheet.addRow(totalRowData);
     totalRow.eachCell((cell, colNumber) => {
-      const firstMetricCol = headers.length - 9 + 1; // Adjusted for removed column
+      const firstMetricCol = headers.length - 9 + 1; 
       
       if (colNumber >= firstMetricCol) {
         cell.font = { bold: true };
@@ -608,7 +605,6 @@ const handleExportExcel = useCallback(async () => {
         cell.alignment = { horizontal: 'right' };
         cell.border = { top: { style: 'thin' } };
         
-        // Color coding for profit (now the last column)
         if (colNumber === headers.length) {
           cell.font = { 
             bold: true,
@@ -618,7 +614,6 @@ const handleExportExcel = useCallback(async () => {
       }
     });
 
-    // Auto-size columns
     worksheet.columns.forEach((column) => {
       let maxLength = 0;
       column.eachCell({ includeEmpty: true }, (cell) => {
@@ -630,12 +625,10 @@ const handleExportExcel = useCallback(async () => {
       column.width = Math.min(Math.max(maxLength + 2, 10), 30);
     });
 
-    // Freeze header row
     worksheet.views = [
       { state: 'frozen', ySplit: 1 }
     ];
 
-    // Save the file
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(
       new Blob([buffer]),
@@ -650,7 +643,6 @@ const handleExportExcel = useCallback(async () => {
   }
 }, [sales, appliedFilters, userData.warehouse_name]);
 
-  // Filter handlers
   const handleApplyFilters = useCallback(() => {
     setAppliedFilters(pendingFilters);
   }, [pendingFilters]);
@@ -671,7 +663,6 @@ const handleExportExcel = useCallback(async () => {
     message.info('Filters cleared');
   }, []);
 
-  // Error handling
   if (error) {
     return (
       <div style={{ padding: '24px', maxWidth: 800, margin: '0 auto' }}>
