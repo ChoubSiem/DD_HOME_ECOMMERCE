@@ -24,6 +24,7 @@ const { Option } = Select;
 import { useNavigate, useParams } from "react-router-dom";
 const { Title } = Typography;
 import Cookies from 'js-cookie';
+
 const EditProductForm = ({ onCancel, onSubmit }) => {
   const [form] = Form.useForm();
   const { id } = useParams();
@@ -47,54 +48,46 @@ const EditProductForm = ({ onCancel, onSubmit }) => {
   } = useProductTerm();  
   const token = localStorage.getItem("token");
 
-  // Fetch all dropdown data
-// In your fetchDropdownData function, ensure you handle errors:
-const fetchDropdownData = async () => {
-  try {
-    // Initialize with null to show loading states
-    setCategories(null);
-    setBrands(null);
-    setProductGroups(null);
-    setUnits(null);
+  const fetchDropdownData = async () => {
+    try {
+      setCategories([]);
+      setBrands([]);
+      setProductGroups([]);
+      setUnits([]);
 
-    // Fetch all data
-    const [categoriesRes, brandsRes, groupsRes, unitsRes] = await Promise.all([
-      handleCategories(token),
-      handleBrands(token),
-      handleProductGroups(token),
-      handleUnits(token)
-    ]);
+      const [categoriesRes, brandsRes, groupsRes, unitsRes] = await Promise.all([
+        handleCategories(token),
+        handleBrands(token),
+        handleProductGroups(token),
+        handleUnits(token)
+      ]);
 
-    // Update state only if responses are successful
-    if (categoriesRes?.success) setCategories(categoriesRes.categories || []);
-    if (brandsRes?.success) setBrands(brandsRes.brands || []);
-    if (groupsRes?.success) setProductGroups(groupsRes.groups || []);
-    if (unitsRes?.success) setUnits(unitsRes.units || []);
+      if (categoriesRes?.success) setCategories(categoriesRes.categories || []);
+      if (brandsRes?.success) setBrands(brandsRes.brands || []);
+      if (groupsRes?.success) setProductGroups(groupsRes.groups || []);
+      if (unitsRes?.success) setUnits(unitsRes.units || []);
 
-  } catch (error) {
-    message.error("Failed to load dropdown data");
-    // Set empty arrays if there's an error
-    setCategories([]);
-    setBrands([]);
-    setProductGroups([]);
-    setUnits([]);
-  }
-};
+    } catch (error) {
+      console.error("Error loading dropdown data:", error);
+      message.error("Failed to load dropdown data");
+      setCategories([]);
+      setBrands([]);
+      setProductGroups([]);
+      setUnits([]);
+    }
+  };  
 
-  // Fetch product data
   const fetchProductData = async () => {
     try {
       setLoading(true);
       const productRes = await handleProductEdit(id, token);       
+      
       if (productRes?.success && productRes.product) {
         const product = productRes.product;
         
-        // Set product units if they exist
-        // if (product.product_units.units && product.product_units.units) {
-          setProductUnits(product.product_units.units.id);
-        // }
-        
-        // Prepare form values
+        if (product.product_units ) {
+          setProductUnits(product.product_units.unit_id);
+        }        
         const formValues = {
           name: product.name,
           code: product.code,
@@ -112,15 +105,8 @@ const fetchDropdownData = async () => {
           description: product.description || "",
         };
   
-        // Determine unit value - prioritize product_units if available
-        if (product.product_units?.length > 0) {
-          formValues.unit = product.product_units.units.id;
-        } else {
-          formValues.unit = product.product_units.units.id;
-        }
+          formValues.unit = product.product_units?.unit_id??null;
         form.setFieldsValue(formValues);
-  
-        // Format images
         if (Array.isArray(product.product_images)) {
           const formattedImages = product.product_images.map((img, index) => ({
             uid: img.id || index,
@@ -144,7 +130,6 @@ const fetchDropdownData = async () => {
   useEffect(() => {
     fetchDropdownData();
     fetchProductData();
-    Upload.isImageUrl = () => true;
   }, [id, token]);
 
   const normFile = (e) => (Array.isArray(e) ? e : e?.fileList);
@@ -160,6 +145,7 @@ const fetchDropdownData = async () => {
     }
     return isImage && isLt2M;
   };
+
   const handleImageChange = ({ fileList }) => setImageList(fileList);
   const handleDocumentChange = ({ fileList }) => setDocumentList(fileList);
 
@@ -168,28 +154,32 @@ const fetchDropdownData = async () => {
       setLoading(true);
       const formData = new FormData();
 
-      Object.entries(values).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          formData.append(key, value);
+      // Append all form values
+      for (const key in values) {
+        if (values[key] !== null && values[key] !== undefined) {
+          formData.append(key, values[key]);
         }
-      });
+      }
 
+      // Handle images
       imageList.forEach((file) => {
         if (file.originFileObj) {
           formData.append("images[]", file.originFileObj);
         } else if (file.url) {
-          formData.append("existing_images[]", file.url);
+          formData.append("existing_images[]", file.name || file.url);
         }
       });
 
+      // Handle documents
       documentList.forEach((file) => {
         if (file.originFileObj) {
           formData.append("documents[]", file.originFileObj);
         }
       });
 
+      // Add warehouse_id if available
       if (userData.warehouse_id) {
-        formData.append('warehouse_id',userData.warehouse_id);
+        formData.append('warehouse_id', userData.warehouse_id);
       }
 
       const result = await handleProductUpdate(id, formData, token);
@@ -201,13 +191,17 @@ const fetchDropdownData = async () => {
         message.error(result?.message || "Failed to update product");
       }
     } catch (error) {
-      message.error(error?.message || "An error occurred");
+      console.error("Error updating product:", error);
+      message.error(error?.message || "An error occurred while updating product");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCancel = () => navigate("/product");
+  const handleCancel = () => {
+    onCancel?.();
+    navigate("/product");
+  };
 
   return (
     <Spin spinning={loading}>
@@ -257,12 +251,14 @@ const fetchDropdownData = async () => {
                   <Form.Item 
                     label="Category" 
                     name="category_id"
+                    rules={[{ required: true, message: 'Please select category' }]}
                   >
                     <Select 
                       placeholder="Select category" 
                       size="large" 
+                      loading={!categories.length}
                     >
-                      {categories?.map((category) => ( 
+                      {categories.map((category) => ( 
                         <Option key={category.id} value={category.id}>
                           {category.name}
                         </Option>
@@ -274,12 +270,17 @@ const fetchDropdownData = async () => {
 
               <Row gutter={16}>
                 <Col xs={24} md={12} lg={8}>
-                  <Form.Item label="Product Group" name="product_group_id">
+                  <Form.Item 
+                    label="Product Group" 
+                    name="product_group_id"
+                    rules={[{ required: true, message: 'Please select product group' }]}
+                  >
                     <Select 
                       placeholder="Select product group" 
-                      size="large" 
+                      size="large"
+                      loading={!productGroups.length}
                     >
-                      {productGroups?.map((group) => (
+                      {productGroups.map((group) => (
                         <Option key={group.id} value={group.id}>
                           {group.name}
                         </Option>
@@ -290,16 +291,17 @@ const fetchDropdownData = async () => {
                 <Col xs={24} md={12} lg={8}>
                   <Form.Item
                     label="Unit"
-                    name="unit" // This must match the field in your initialValues
+                    name="unit"
                     rules={[{ required: true, message: 'Please select a unit' }]}
                   >
-                    <Select 
+                    <Select
                       size="large"
                       optionFilterProp="children"
                       showSearch
                       placeholder="Select unit"
+                      loading={!units.length}
                     >
-                      {units?.map(unit => (
+                      {units.map(unit => (
                         <Select.Option key={unit.id} value={unit.id}>
                           {unit.name} ({unit.short_name || unit.code || unit.id})
                         </Select.Option>
@@ -308,12 +310,17 @@ const fetchDropdownData = async () => {
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12} lg={8}>
-                  <Form.Item label="Brand" name="brand_id">
+                  <Form.Item 
+                    label="Brand" 
+                    name="brand_id"
+                    rules={[{ required: true, message: 'Please select brand' }]}
+                  >
                     <Select 
                       placeholder="Select brand" 
-                      size="large" 
+                      size="large"
+                      loading={!brands.length}
                     >
-                      {brands?.map((brand) => (
+                      {brands.map((brand) => (
                         <Option key={brand.id} value={brand.id}>
                           {brand.name}
                         </Option>
@@ -337,6 +344,7 @@ const fetchDropdownData = async () => {
                       min={0}
                       style={{ width: "100%" }}
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
                 </Col>
@@ -352,6 +360,7 @@ const fetchDropdownData = async () => {
                       min={0}
                       style={{ width: "100%" }}
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
                 </Col>
@@ -364,6 +373,7 @@ const fetchDropdownData = async () => {
                       min={0}
                       style={{ width: "100%" }}
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
                 </Col>
@@ -376,6 +386,7 @@ const fetchDropdownData = async () => {
                       min={0}
                       style={{ width: "100%" }}
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
                 </Col>
@@ -388,6 +399,7 @@ const fetchDropdownData = async () => {
                       min={0}
                       style={{ width: "100%" }}
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
                 </Col>
@@ -400,6 +412,7 @@ const fetchDropdownData = async () => {
                       min={0}
                       style={{ width: "100%" }}
                       formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={value => value.replace(/\$\s?|(,*)/g, '')}
                     />
                   </Form.Item>
                 </Col>
