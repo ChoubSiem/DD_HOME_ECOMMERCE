@@ -273,12 +273,11 @@ const EditProductForm = ({ onCancel, onSubmit }) => {
                   <Form.Item 
                     label="Product Group" 
                     name="product_group_id"
-                    rules={[{ required: true, message: 'Please select product group' }]}
                   >
                     <Select 
                       placeholder="Select product group" 
                       size="large"
-                      loading={!productGroups.length}
+                      // loading={!productGroups.length}
                     >
                       {productGroups.map((group) => (
                         <Option key={group.id} value={group.id}>
@@ -313,12 +312,12 @@ const EditProductForm = ({ onCancel, onSubmit }) => {
                   <Form.Item 
                     label="Brand" 
                     name="brand_id"
-                    rules={[{ required: true, message: 'Please select brand' }]}
+                    // rules={[{ required: true, message: 'Please select brand' }]}
                   >
                     <Select 
                       placeholder="Select brand" 
                       size="large"
-                      loading={!brands.length}
+                      // loading={!brands.length}
                     >
                       {brands.map((brand) => (
                         <Option key={brand.id} value={brand.id}>
