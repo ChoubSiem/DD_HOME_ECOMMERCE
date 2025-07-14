@@ -5,15 +5,13 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
   const [discountType, setDiscountType] = useState();
   const [originalPrice, setOriginalPrice] = useState(0);
-  const [finalPrice, setFinalPrice] = useState(0);
-  
+  const [finalPrice, setFinalPrice] = useState(0);  
   useEffect(() => {
     if (visible && initialValues) {
       const price = initialValues.price || 0;
       setOriginalPrice(price);
       setFinalPrice(price);
       
-      // Set discount type based on what's passed in initialValues
       const initialDiscountType = initialValues.discountType || "percentage";
       setDiscountType(initialDiscountType);
 

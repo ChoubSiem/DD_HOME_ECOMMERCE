@@ -95,6 +95,7 @@ const itemMenuLeftTmp = [
 
   getItem("Inventories", "inventory", <BoxPlotOutlined />, [
     getItem("Products", "/product", <AppstoreOutlined />),
+    getItem("Product Issues", "product-issues", <ShoppingOutlined />),
     getItem("Categories", "/category", <TagsOutlined />),
     getItem("Units", "/unit", <UnorderedListOutlined />),
     getItem("UOM Conversion", "/uom-conversion", <SyncOutlined  />),
@@ -112,6 +113,9 @@ const itemMenuLeftTmp = [
   getItem("Purchases", "purchase", <ShoppingOutlined />, [
     getItem("Purchase", "/purchase", <ShoppingOutlined />),
     getItem("Add Purchase", "/purchase/add", <AppstoreOutlined />),
+  ]),
+  getItem("Product Issues", "product-issues", <ShoppingOutlined />, [
+    getItem("", "/purchase", <ShoppingOutlined />),
   ]),
 
   // getItem("Sale Returns", "sale-returns", <ShoppingCartOutlined />, [

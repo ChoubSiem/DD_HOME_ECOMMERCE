@@ -180,7 +180,7 @@ const PaymentMethods = ({
           onClick={handleAddPayment}
           icon={<PlusOutlined />}
           style={{ width: '100%' }}
-          disabled={!paymentAmount || paymentAmount <= 0}
+          disabled={!paymentAmount || paymentAmount < 0}
         >
           Add Payment
         </Button>

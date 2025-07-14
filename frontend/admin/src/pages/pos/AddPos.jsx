@@ -243,16 +243,15 @@ const handleAddPayment = () => {
 
 }, [userData?.warehouse_id, token]);
 
-  const [cartDiscountType, setCartDiscountType] = useState(() => {
-    try {
-      const saved = localStorage.getItem('posCartDiscountType');
-      const parsed = saved ? JSON.parse(saved) : 'amount';
-      return ['amount', 'percent'].includes(parsed) ? parsed : 'amount';
-    } catch (err) {
-      return 'amount';
-    }
-  });
-
+const [cartDiscountType, setCartDiscountType] = useState(() => {
+  try {
+    const saved = localStorage.getItem('posCartDiscountType');
+    const parsed = saved ? JSON.parse(saved) : 'amount';
+    return ['amount', 'percent'].includes(parsed) ? parsed : 'amount';
+  } catch (err) {
+    return 'amount';
+  }
+});
   const [shouldFetchProducts, setShouldFetchProducts] = useState(!localStorage.getItem('posProducts'));
   
   const [nextPaymentDate, setNextPaymentDate] = useState(() => {
@@ -262,8 +261,7 @@ const handleAddPayment = () => {
     } catch (error) {
       return null;
     }
-  });
-
+  });  
   const [nextPaymentAmount, setNextPaymentAmount] = useState(() => {
     const savedAmount = localStorage.getItem('posNextPaymentAmount');
     try {
@@ -355,7 +353,7 @@ const getPriceTypeFromCustomerGroup = (group) => {
   }, [isShiftOpen, shiftId]);
 
   useEffect(() => {
-    localStorage.setItem('posCartItems', JSON.stringify(cartItems));
+    localStorage.setItem('posCartItems', JSON.stringify(cartItems));    
     if (cartItems.length === 0) {
       setCartDiscount(0);
       setCartDiscountType('amount');
@@ -672,7 +670,6 @@ const getPriceTypeFromCustomerGroup = (group) => {
     }
   };  
 
-  // Shift functions
   const handleOpenShift = (amount, newShiftId) => {
     if (!amount) {
       message.warning('Please enter starting amount');
@@ -687,46 +684,13 @@ const getPriceTypeFromCustomerGroup = (group) => {
   const handleCloseShift = async () => {
 
     setIsCloseShiftModal(true);
-    // try {
-    //   if (!shiftId) {
-    //     message.error('No active shift to close');
-    //     return;
-    //   }
-
-    //   const response = await handleCloseShiftCreate();
-
-    //   if (response.data.success) {
-    //     ['is_openshift', 'shift_amount', 'shift_id'].forEach(name => Cookies.remove(name, { path: '/' }));
-        
-    //     localStorage.removeItem('posProducts');
-    //     localStorage.removeItem('posCartItems');
-    //     localStorage.removeItem('posCartDiscount');
-    //     localStorage.removeItem('posCartDiscountType');
-    //     localStorage.removeItem('posSelectedCustomer');
-    //     localStorage.removeItem('posNextPaymentDate');
-    //     localStorage.removeItem('posNextPaymentAmount');
-        
-    //     setShiftId(null);
-    //     setShiftOpen(false);
-    //     setShiftAmount('');
-    //     setShiftData(null);
-        
-    //     message.success(response.data.message || 'Shift closed successfully');
-    //   } else {
-    //     throw new Error(response.data.message || 'Failed to close shift');
-    //   }
-    // } catch (error) {
-    //   message.error(error.message || 'Failed to close shift');
-    // }
   };
 
   const handleRefreshStock = async () => {
     setShouldFetchProducts(true);
     await handleProductsData();
-    // message.success("Stock refreshed successfully");
   };
 
-  // Order functions
   const suspendOrder = async () => {
     if (!isShiftOpen) {
       message.warning("Please open a shift to suspend an order");
@@ -886,11 +850,15 @@ const getPriceTypeFromCustomerGroup = (group) => {
     if (cartItems.length === 0) {
       message.warning("Please add items to cart first");
       return;
-    }
-    if (paidAmount <= 0) {
-      message.warning("Please add payment!");
-      return;
-    }
+    }    
+  if (total > 0 && paidAmount <= 0) {
+    message.warning("Please add payment!");
+    return;
+  }
+    // if (paidAmount <= 0 || total !== 0) {
+    //   message.warning("Please add payment!");
+    //   return;
+    // }
     handleRefreshStock();
     handleCreatePosSaleData();
     
@@ -960,12 +928,12 @@ const getPriceTypeFromCustomerGroup = (group) => {
     message.success("Item updated successfully");
   };
 
-  const handleApplyDiscount = (discount, type) => {
-    setCartDiscount(discount);
-    setCartDiscountType(type);
-    setIsDiscountModalVisible(false);
-    message.success(`Cart discount applied: ${type === 'percentage' ? `${discount}%` : `$${discount}`}`);
-  };
+const handleApplyDiscount = (discount, type) => {
+  setCartDiscount(discount);
+  setCartDiscountType(type);  // Make sure this is being set
+  setIsDiscountModalVisible(false);
+  message.success(`Cart discount applied: ${type === 'percent' ? `${discount}%` : `$${discount}`}`);
+};
 
   const showDrawer = () => {
     setVisible(true);
@@ -1140,6 +1108,10 @@ const handleCreatePosSaleData = async () => {
       amount: total,
       sale_person: selectedSalesperson?.id?? null
     };
+
+    // console.log(paymentData);
+    // return;
+    
     const response = await handlePosSaleCreate(paymentData, token);
 
     if (response.success) {
@@ -1162,8 +1134,6 @@ const handleCreatePosSaleData = async () => {
         customer: selectedCustomer,
         items: cartItems
       };
-
-      // Clear state
       setCartItems([]);
       setSelectedCustomer(null);
       setPriceType('retail_price');
@@ -2019,18 +1989,41 @@ function AddDiscountModal({ subtotal, initialDiscount, initialDiscountType, onSu
   const [discountType, setDiscountType] = useState(initialDiscountType);
   const [error, setError] = useState('');
 
+  // Reset discount value when type changes to prevent invalid combinations
+  useEffect(() => {
+    setDiscount(0); // Reset discount when type changes
+  }, [discountType]);
+
   const handleSubmit = () => {
+    // Validate based on type
     const maxDiscount = discountType === 'percent' ? 100 : subtotal;
+    
     if (discount < 0) {
       setError('Discount cannot be negative');
       return;
     }
+    
     if (discount > maxDiscount) {
       setError(`Discount cannot exceed ${discountType === 'percent' ? '100%' : `$${subtotal.toFixed(2)}`}`);
       return;
     }
+
+    // Additional validation for percentage
+    if (discountType === 'percent' && discount > 100) {
+      setError('Percentage discount cannot exceed 100%');
+      return;
+    }
+
     setError('');
     onSubmit(discount, discountType);
+  };
+
+  // Format displayed value based on type
+  const formatDisplayValue = (value) => {
+    if (discountType === 'percent') {
+      return `${value}%`;
+    }
+    return `$${value.toFixed(2)}`;
   };
 
   return (
@@ -2039,32 +2032,58 @@ function AddDiscountModal({ subtotal, initialDiscount, initialDiscountType, onSu
         <label>Discount Type</label>
         <Select
           value={discountType}
-          onChange={setDiscountType}
+          onChange={(value) => {
+            setDiscountType(value);
+            setDiscount(0); // Reset discount when type changes
+          }}
           style={{ width: '100%', marginTop: '8px' }}
         >
           <Select.Option value="amount">Amount ($)</Select.Option>
           <Select.Option value="percent">Percentage (%)</Select.Option>
         </Select>
       </div>
+      
       <div style={{ marginBottom: '16px' }}>
         <label>Discount Value</label>
         <Input
           type="number"
           value={discount}
-          onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-          placeholder={discountType === 'percent' ? 'Enter percentage' : 'Enter amount'}
+          onChange={(e) => {
+            const value = parseFloat(e.target.value) || 0;
+            setDiscount(value);
+          }}
+          placeholder={discountType === 'percent' ? '0-100%' : `0-${subtotal.toFixed(2)}`}
           style={{ marginTop: '8px' }}
+          addonAfter={discountType === 'percent' ? '%' : '$'}
+          min={0}
+          max={discountType === 'percent' ? 100 : subtotal}
         />
-        {error && <Alert message={error} type="error" showIcon style={{ marginTop: '8px' }} />}
+        {error && (
+          <Alert 
+            message={error} 
+            type="error" 
+            showIcon 
+            style={{ marginTop: '8px' }}
+          />
+        )}
+        {!error && discount > 0 && (
+          <div style={{ marginTop: '8px', color: '#52c41a' }}>
+            Applying {formatDisplayValue(discount)} discount
+          </div>
+        )}
       </div>
+      
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
         <Button onClick={onCancel}>Cancel</Button>
-        <Button type="primary" onClick={handleSubmit}>Apply</Button>
+        <Button 
+          type="primary" 
+          onClick={handleSubmit}
+          disabled={discount <= 0} // Disable if no discount
+        >
+          Apply
+        </Button>
       </div>
     </div>
-
-
   );
 }
-
 export default PosAdd;

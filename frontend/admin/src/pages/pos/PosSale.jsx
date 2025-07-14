@@ -227,7 +227,7 @@ const PosSaleList = () => {
       name: "Discount ($)",
       selector: (row) => row.discount,
       sortable: true,
-      cell: (row) => `$${row.discount}`,
+      cell: (row) => `$${row.discount} `,
       width: "10%",
     },
         {

@@ -32,13 +32,11 @@ const PosSaleDetail = ({ open, onCancel, sale }) => {
     if (!sale?.items) return { subTotal: '0.00', discount: '0.00', grandTotal: '0.00' };
     
     const subTotal = sale.items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
-    const discount = sale.items.reduce((sum, item) => sum + (parseFloat(item.discount * item.quantity) || 0), 0);
-    console.log(discount);
-    console.log(sale.items);
+    const discount = sale.items.reduce((sum, item) => sum + (item.discount_type !== 'percent' ? parseFloat(item.discount * item.quantity) : item.discount == 100 ? (item.total) : (item.price * item.quantity * item.discount) / 100), 0);   
     
     return {
       subTotal: subTotal.toFixed(2),
-      discount: discount.toFixed(2),
+      discount: parseFloat(discount).toFixed(2),
       grandTotal: (subTotal - discount).toFixed(2),
     };
   }, [sale]);
