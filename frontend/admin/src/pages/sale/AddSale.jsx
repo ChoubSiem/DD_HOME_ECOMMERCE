@@ -301,8 +301,6 @@ const AddSale = () => {
         discount: product.discountAmount ?? 0,
       }))
     };
-    console.log(saleData);
-    // return;
     
     try {
       const result = await handlePosSaleCreate(saleData, token);

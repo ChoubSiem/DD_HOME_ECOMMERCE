@@ -6,6 +6,7 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [discountType, setDiscountType] = useState();
   const [originalPrice, setOriginalPrice] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);  
+
   useEffect(() => {
     if (visible && initialValues) {
       const price = initialValues.price || 0;
@@ -21,20 +22,19 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
         finalPrice: price,
         discountType: initialDiscountType,
         discount: initialValues.discount || 0,
-        discountAmount: initialValues.discount || 0
+        discountAmount: initialValues.discountAmount || 0
       });
     }
   }, [visible, initialValues]);
 
-
-  
   const calculateDiscountAmount = (value, type) => {
-    if (!value || originalPrice <= 0) return 0;
-    return type === "percentage" ? (originalPrice * value) / 100 : value;
+    value = value || 0;
+    if (originalPrice <= 0) return 0;
+    return type === "percentage" ? (originalPrice * value) / 100 : Math.min(value, originalPrice);
   };
 
   const handleDiscountChange = (value, type) => {
-    if (!value) value = 0;
+    value = value || 0;
     
     if (type === "percentage") {
       const discountAmount = calculateDiscountAmount(value, "percentage");
@@ -65,6 +65,17 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
     handleDiscountChange(currentValue, newType);
   };
 
+  const handlePriceChange = (value) => {
+    value = value || 0;
+    setOriginalPrice(value);
+    setFinalPrice(value);
+    form.setFieldsValue({ finalPrice: value });
+    
+    // Recalculate discount based on new price
+    const discountValue = form.getFieldValue(discountType === "percentage" ? "discount" : "discountAmount") || 0;
+    handleDiscountChange(discountValue, discountType);
+  };
+
   return (
     <Modal
       title="Edit Item"
@@ -77,13 +88,14 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
         form.validateFields().then((values) => {
           const discountValue = discountType === "percentage" ? values.discount : values.discountAmount;
           const discountAmount = calculateDiscountAmount(discountValue, discountType);
+          const finalPriceValue = originalPrice - discountAmount;
           
           onSubmit({
             ...values,
             discountType,
-            discount: values.discount,
-            discountAmount,
-            finalPrice: originalPrice - discountAmount,
+            discount: discountType === "percentage" ? values.discount : undefined,
+            discountAmount: discountType === "amount" ? values.discountAmount : undefined,
+            finalPrice: isNaN(finalPriceValue) ? originalPrice : finalPriceValue,
             originalPrice,
           });
           form.resetFields();
@@ -99,8 +111,9 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
         <Form.Item label="Original Price" name="price">
           <InputNumber
             formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
             style={{ width: "100%", height: "50px" }}
-            readOnly
+            onChange={handlePriceChange}
           />
         </Form.Item>
 
@@ -146,6 +159,5 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
     </Modal>
   );
 };
-
 
 export default EditItemModal;

@@ -32,7 +32,8 @@ import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { Text } = Typography;
-
+import Cookies from "js-cookie";
+import { useUser } from "../../../hooks/UserUser";
 const paymentOptions = [
   { name: "Cash", icon: <DollarOutlined /> },
   { name: "ABA", icon: <BankOutlined /> },
@@ -54,7 +55,7 @@ const PurchaseDetailsCard = ({
   const now = dayjs();
   const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
-  
+  const {handleSupplierCreate} = useUser();
   // Payment state
   const [payments, setPayments] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("Cash");
@@ -62,7 +63,7 @@ const PurchaseDetailsCard = ({
   const [paymentNote, setPaymentNote] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const [exchangeRate, setExchangeRate] = useState(4100);
-  
+  const token = localStorage.getItem('token');
   const safePurchase = {
     name: purchase?.name || '',
     id: purchase?.id || null
@@ -167,6 +168,42 @@ const PurchaseDetailsCard = ({
     }
   };
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [newSupplier, setNewSupplier] = useState({
+    username: '',
+    contactNumber: '',
+    company: '',
+    address: ''
+  });
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+const handleOk = async() => {
+  let response = await handleSupplierCreate(newSupplier , token);
+  if (response.success) {
+    setIsModalVisible(false);
+    location.reload();
+    setNewSupplier({
+      username: '',
+      contactNumber: '',
+      company: '',
+      address: ''
+    });
+    
+  }  
+};
+
+const handleCancel = () => {
+  setIsModalVisible(false);
+};
+
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  setNewSupplier(prev => ({ ...prev, [name]: value }));
+};
+
   return (
     <>
       <Card title="Purchase Details" style={{ marginBottom: 20, borderRadius: 0 }}>
@@ -195,20 +232,63 @@ const PurchaseDetailsCard = ({
 
             <Col xs={24} sm={6} md={6} lg={6}>
               <Form.Item label="Suppliers" style={{ marginBottom: 0 }}>
-                <Select 
-                  placeholder="Select supplier"
-                  style={{ width: '100%' }}
-                  onChange={handleSupplierChange}
-                  value={selectedSupplier}
-                >
-                  {suppliers?.map((supplier) => (
-                    <Option key={supplier.id} value={supplier.id}>
-                      {supplier.username}
-                    </Option>
-                  ))}
-                </Select>
+                <div style={{ display: 'flex' }}>
+                  <Select 
+                    placeholder="Select supplier"
+                    style={{ width: '100%', marginRight: 8 }}
+                    onChange={handleSupplierChange}
+                    value={selectedSupplier}
+                  >
+                    {suppliers?.map((supplier) => (
+                      <Option key={supplier.id} value={supplier.id}>
+                        {supplier.username}
+                      </Option>
+                    ))}
+                  </Select>
+                  <Button type="primary" onClick={showModal}>
+                    Add
+                  </Button>
+                </div>
               </Form.Item>
             </Col>
+
+            <Modal 
+              title="Add New Supplier" 
+              visible={isModalVisible} 
+              onOk={handleOk} 
+              onCancel={handleCancel}
+            >
+              <Form layout="vertical">
+                <Form.Item label="Username">
+                  <Input 
+                    name="username"
+                    value={newSupplier.username}
+                    onChange={handleInputChange}
+                  />
+                </Form.Item>
+                <Form.Item label="Contact Number">
+                  <Input 
+                    name="contactNumber"
+                    value={newSupplier.contactNumber}
+                    onChange={handleInputChange}
+                  />
+                </Form.Item>
+                <Form.Item label="Company">
+                  <Input 
+                    name="company"
+                    value={newSupplier.company}
+                    onChange={handleInputChange}
+                  />
+                </Form.Item>
+                <Form.Item label="Address">
+                  <Input.TextArea 
+                    name="address"
+                    value={newSupplier.address}
+                    onChange={handleInputChange}
+                  />
+                </Form.Item>
+              </Form>
+            </Modal>
 
             <Col xs={24} sm={6} md={6} lg={6}>
               <Form.Item label="Purchaser" style={{ marginBottom: 0 }}>
