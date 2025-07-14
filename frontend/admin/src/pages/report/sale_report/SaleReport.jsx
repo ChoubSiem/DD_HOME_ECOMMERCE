@@ -89,8 +89,8 @@ const SalesReports = () => {
         warehouse_id: userData.warehouse_id,
         sale_type: appliedFilters.saleType,
         group_by: appliedFilters.groupBy,
-        start_date: appliedFilters.dateRange?.[0]?.format('YYYY-MM-DD'),
-        end_date: appliedFilters.dateRange?.[1]?.format('YYYY-MM-DD'),
+        start_date: appliedFilters.dateRange?.[0]?.format('YYYY-MM-DD HH:mm:ss'),
+        end_date: appliedFilters.dateRange?.[1]?.format('YYYY-MM-DD HH:mm:ss'),
         status: appliedFilters.status !== 'all' ? appliedFilters.status : undefined,
         customer: appliedFilters.customer !== 'all' ? appliedFilters.customer : undefined,
         search_term: appliedFilters.searchTerm || undefined,
@@ -101,9 +101,7 @@ const SalesReports = () => {
         Object.entries(filters).filter(([_, value]) => value !== undefined)
       );
 
-      const response = await getSaleReportsData(cleanedFilters, token);
-      console.log(response);
-      
+      const response = await getSaleReportsData(cleanedFilters, token);      
       if (response.success) {
         setSales(response.sales || []);
         setError(null);
