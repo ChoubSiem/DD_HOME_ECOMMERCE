@@ -114,9 +114,9 @@ const itemMenuLeftTmp = [
     getItem("Purchase", "/purchase", <ShoppingOutlined />),
     getItem("Add Purchase", "/purchase/add", <AppstoreOutlined />),
   ]),
-  getItem("Product Issues", "product-issues", <ShoppingOutlined />, [
-    getItem("", "/purchase", <ShoppingOutlined />),
-  ]),
+  // getItem("Product Issues", "product-issues", <ShoppingOutlined />, [
+  //   getItem("", "/purchase", <ShoppingOutlined />),
+  // ]),
 
   // getItem("Sale Returns", "sale-returns", <ShoppingCartOutlined />, [
   //   getItem("Add Sale Return", "/sale-return/add", <AppstoreOutlined />),

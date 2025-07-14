@@ -32,8 +32,7 @@ const PosSaleDetail = ({ open, onCancel, sale }) => {
     if (!sale?.items) return { subTotal: '0.00', discount: '0.00', grandTotal: '0.00' };
     
     const subTotal = sale.items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
-    const discount = sale.items.reduce((sum, item) => sum + (item.discount_type !== 'percent' ? parseFloat(item.discount * item.quantity) : item.discount == 100 ? (item.total) : (item.price * item.quantity * item.discount) / 100), 0);   
-    
+    const discount = sale.items.reduce((sum, item) => sum + (item.discount || 0), 0);    
     return {
       subTotal: subTotal.toFixed(2),
       discount: parseFloat(discount).toFixed(2),
@@ -186,7 +185,7 @@ const canvas = await html2canvas(invoiceRef.current, {
       closable={!loading}
     >
       <Spin spinning={loading} tip={isExporting ? "Exporting..." : "Preparing..."}>
-        <div ref={invoiceRef} className="pos-container" style={{ maxWidth: '80mm', margin: '0 auto' }}>
+        <div ref={invoiceRef} className="pos-container" style={{ maxWidth: '100mm', margin: '0 auto' }}>
           {/* Header */}
           <header className="header">
             <img style={{width:'50px'}} src={logo} alt="DD Home Logo" className="logo" />

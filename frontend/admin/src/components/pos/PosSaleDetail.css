@@ -6,8 +6,9 @@
   padding: 10px;
   font-family: Arial, sans-serif;
   font-size: 12px;
-  max-width: 80mm;
+  max-width: 100mm;
   margin: 0 auto;
+  /* background: #000; */
 }
 
 .header {
@@ -54,6 +55,9 @@
   display: flex;
   justify-content: space-between;
   margin-top: 5px;
+  /* background: #000; */
+  max-width: 100mm; 
+   width: 100%;
 }
 
 .grand-total {
@@ -70,7 +74,7 @@
 
 @media print {
   .pos-container {
-    width: 80mm !important;
+    width: 100mm !important;
     padding: 5px !important;
   }
   
