@@ -229,7 +229,7 @@ const canvas = await html2canvas(invoiceRef.current, {
                   <td>{item.quantity} {item.unit || ''}</td>
                   <td>${parseFloat(item.price || 0).toFixed(2)}</td>
                   <td>${parseFloat(item.discount || 0).toFixed(2)}</td>
-                  <td>${parseFloat(item.total || 0).toFixed(2)}</td>
+                  <td>${parseFloat(item.total - item.discount|| 0).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

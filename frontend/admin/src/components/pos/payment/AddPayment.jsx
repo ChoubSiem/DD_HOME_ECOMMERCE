@@ -39,6 +39,8 @@ const AddPaymentModal = ({ open, onCancel, sale, onSubmit }) => {
         payment_method: values.paymentMethod,
         note: values.note || ''
       };
+      console.log(paymentData);
+      
 
       const response = await handlePaymentCreate(paymentData, token);
       if (response.success) {

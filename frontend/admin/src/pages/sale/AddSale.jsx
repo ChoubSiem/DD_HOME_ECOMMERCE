@@ -284,10 +284,10 @@ const AddSale = () => {
       payments: paymentMethods,
       discount: invoiceDiscount.value ?? 0,
       discount_type: invoiceDiscount.type ?? 'amount',
-      credit_amount: creditAmount,
+      credit_amount: amount - creditAmount,
       sale_type: 'sale_inventory',
       amount: rawTotal,
-      paid: amount,
+      paid: creditAmount,
       total: amount ?? 0,
       amount_paid: amount,
       customer_id: customer_id,
@@ -301,6 +301,8 @@ const AddSale = () => {
         discount: product.discountAmount ?? 0,
       }))
     };
+    // console.log(saleData);
+    // return ;    
     
     try {
       const result = await handlePosSaleCreate(saleData, token);

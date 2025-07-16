@@ -6,7 +6,7 @@ import jsPDF from 'jspdf';
 import logo from '../../assets/logo/DD_Home_Logo 2.jpg';
 import "./SaleModalDetail.css";
 
-const SaleModalDetail = ({ open, onCancel, sale }) => {
+const SaleModalDetail = ({ open, onCancel, sale }) => {    
   const invoiceRef = useRef();
   const [isExporting, setIsExporting] = useState(false);
   const [loading, setLoading] = useState(false);  
@@ -30,7 +30,10 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
     
     const subTotal = sale.items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
     const discount = sale.items.reduce((sum, item) => sum + (parseFloat(item.discount) || 0), 0);
-    
+    // const payment = (sale.payments || []).reduce((total, payment) => {
+    //   const amount = Number(payment.paid) || 0;
+    //   return total + amount;
+    // }, 0);
     return {
       subTotal: subTotal.toFixed(2),
       discount: discount.toFixed(2),
@@ -264,11 +267,13 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
             </div>
             <div className="total-row">
               <span className="total-label">Payment:</span>
-              <span className="total-value">${grandTotal}</span>
+              <span className="total-value">${sale.payment}</span>
             </div>
             <div className="total-row">
               <span className="total-label">Balance:</span>
-              <span className="total-value">$0.00</span>
+              <span className="total-value">
+                {(grandTotal - (Number(sale.payment) || 0)).toFixed(2)}
+              </span>
             </div>
           </section>
 
