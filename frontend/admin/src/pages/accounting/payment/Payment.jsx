@@ -1,618 +1,607 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Card } from 'primereact/card';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Dropdown } from 'primereact/dropdown';
-import { Calendar } from 'primereact/calendar';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Tag } from 'primereact/tag';
-import { Toast } from 'primereact/toast';
-import { Tooltip } from 'primereact/tooltip';
-import { motion } from 'framer-motion';
-import { useReport } from '../../../hooks/UseReport';
-import dayjs from 'dayjs';
-import * as XLSX from 'xlsx';
+import {
+  Card,
+  Input,
+  Button,
+  Select,
+  Space,
+  DatePicker,
+  Row,
+  Col,
+  Statistic,
+  Progress,
+  Spin,
+  message,
+  Typography,
+  Table,
+} from 'antd';
+import {
+  SearchOutlined,
+  FilterOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
+  FileImageOutlined,
+  DollarOutlined,
+  ClearOutlined,
+} from '@ant-design/icons';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import Cookies from 'js-cookie';
-import debounce from 'lodash.debounce';
 import generatePDF from 'react-to-pdf';
 import html2canvas from 'html2canvas';
+import debounce from 'lodash.debounce';
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { useReport } from '../../../hooks/UseReport';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import './Payment.css';
 
-const PaymentReport = React.memo(() => {
-  const [filters, setFilters] = useState({
-    warehouse_id: null,
-    payment_method: 'all',
-    status: 'all',
-    customer_id: null,
-    date_range: null,
-    search_term: '',
+dayjs.extend(isBetween);
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+const { Search } = Input;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
+const { Text, Title } = Typography;
+
+const PaymentReports = () => {
+  const [appliedFilters, setAppliedFilters] = useState({
+    searchTerm: '',
+    paymentMethod: 'all',
+    dateRange: null,
+    customer: 'all',
+    paymentStatus: 'all',
+    groupBy: ['date']
   });
+  
+  const [pendingFilters, setPendingFilters] = useState({
+    searchTerm: '',
+    paymentMethod: 'all',
+    dateRange: null,
+    customer: 'all',
+    paymentStatus: 'all',
+    groupBy: ['date']
+  });
+
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [exportLoading, setExportLoading] = useState(false);
   const [payments, setPayments] = useState([]);
-  const [meta, setMeta] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [pagination, setPagination] = useState({ page: 1, per_page: 10 });
-  const [warehouses, setWarehouses] = useState([]);
-  const [customers, setCustomers] = useState([]);
-  const [exportLoading, setExportLoading] = useState({ excel: false, pdf: false, image: false });
-  const toast = useRef(null);
-  const dt = useRef(null);
-  const tableRef = useRef(null);
-  const token = localStorage.getItem('token');
+  const tableRef = useRef();
+  const { getPaymentReportsData } = useReport();
   const userData = useMemo(() => JSON.parse(Cookies.get('user') || '{}'), []);
-  const { getPaymentReportsData, getWarehouses, getCustomers } = useReport();
+  const token = localStorage.getItem('token');
+  
+  const [summaryStats, setSummaryStats] = useState({
+    totalPayments: 0,
+    totalAmount: 0,
+    cashAmount: 0,
+    cardAmount: 0,
+    bankTransferAmount: 0,
+    otherAmount: 0
+  });
 
-  // Memoized options
-  const paymentMethods = useMemo(() => [
-    { value: 'all', label: 'All Methods' },
-    { value: 'cash', label: 'Cash' },
-    { value: 'card', label: 'Card' },
-    { value: 'transfer', label: 'Bank Transfer' },
-    { value: 'cheque', label: 'Cheque' },
-  ], []);
-
-  const statusOptions = useMemo(() => [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'paid', label: 'Paid' },
-    { value: 'partial', label: 'Partial' },
-    { value: 'due', label: 'Due' },
-  ], []);
-
-  // Fetch warehouses and customers
-  const fetchOptions = useCallback(async () => {
+  const fetchPaymentReportData = async () => {
     try {
-      const [warehouseRes, customerRes] = await Promise.all([
-        getWarehouses(token),
-        getCustomers(token),
-      ]);
-      setWarehouses(warehouseRes.data.map(w => ({ value: w.id, label: w.name })));
-      setCustomers(customerRes.data.map(c => ({ value: c.id, label: c.name })));
-    } catch (err) {
-      toast.current.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to load options',
-        life: 3000,
-      });
-    }
-  }, [token, getWarehouses, getCustomers]);
-
-  // Fetch payment report
-  const fetchPaymentReport = useCallback(async (params = {}, retryCount = 0) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const cleanParams = {
-        ...params,
-        payment_method: params.payment_method === 'all' ? undefined : params.payment_method,
-        status: params.status === 'all' ? undefined : params.status,
-        warehouse_id: params.warehouse_id || undefined,
-        customer_id: params.customer_id || undefined,
-        search_term: params.search_term || undefined,
-        start_date: params.date_range?.[0]?.format('YYYY-MM-DD'),
-        end_date: params.date_range?.[1]?.format('YYYY-MM-DD'),
-        page: params.page || 1,
-        per_page: params.per_page || 10,
+      setIsLoading(true);
+      
+      const filters = {
+        warehouse_id: userData.warehouse_id,
+        payment_method: appliedFilters.paymentMethod !== 'all' ? appliedFilters.paymentMethod : undefined,
+        group_by: appliedFilters.groupBy,
+        start_date: appliedFilters.dateRange?.[0]?.format('YYYY-MM-DD HH:mm:ss'),
+        end_date: appliedFilters.dateRange?.[1]?.format('YYYY-MM-DD HH:mm:ss'),
+        payment_status: appliedFilters.paymentStatus !== 'all' ? appliedFilters.paymentStatus : undefined,
+        customer: appliedFilters.customer !== 'all' ? appliedFilters.customer : undefined,
+        search_term: appliedFilters.searchTerm || undefined
       };
 
-      Object.keys(cleanParams).forEach(key => 
-        cleanParams[key] === undefined && delete cleanParams[key]
+      const cleanedFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, value]) => value !== undefined)
       );
 
-      const response = await getPaymentReportsData(cleanParams, token);
-      
-      setPayments(response.data || []);
-      setMeta(response.meta || {
-        total: response.data?.length || 0,
-        total_amount: response.data?.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0) || 0,
-        per_page: cleanParams.per_page || 10,
-        current_page: cleanParams.page || 1,
-      });
-      
-      toast.current.show({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Payment data loaded',
-        life: 3000,
-      });
-    } catch (error) {
-      console.error('Error fetching payment reports:', error);
-      if (retryCount < 2) {
-        setTimeout(() => fetchPaymentReport(params, retryCount + 1), 1000);
-        return;
+      const response = await getPaymentReportsData(cleanedFilters, token);      
+      if (response.success) {
+        setPayments(response.payments || []);
+        
+        const stats = {
+          totalPayments: response.payments?.length || 0,
+          totalAmount: 0,
+          cashAmount: 0,
+          cardAmount: 0,
+          bankTransferAmount: 0,
+          otherAmount: 0
+        };
+
+        response.payments?.forEach(payment => {
+          stats.totalAmount += Number(payment.paid) || 0;
+          
+          switch(payment.payment_method) {
+            case 'cash':
+              stats.cashAmount += Number(payment.paid) || 0;
+              break;
+            case 'card':
+              stats.cardAmount += Number(payment.paid) || 0;
+              break;
+            case 'bank_transfer':
+              stats.bankTransferAmount += Number(payment.paid) || 0;
+              break;
+            default:
+              stats.otherAmount += Number(payment.paid) || 0;
+          }
+        });
+
+        setSummaryStats(stats);
+        setError(null);
       }
-      setError(error.message || 'Failed to fetch payment reports');
-      toast.current.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: error.message || 'Failed to fetch payment reports',
-        life: 3000,
-      });
+    } catch (err) {
+      console.error('Error fetching payment data:', err);
+      message.error('Failed to load payment data');
+      setError(err);
     } finally {
       setIsLoading(false);
     }
-  }, [token, getPaymentReportsData]);
+  };
 
-  // Debounced search
-  const debouncedSearch = useMemo(
-    () => debounce((params) => fetchPaymentReport(params), 500),
-    [fetchPaymentReport]
+  useEffect(() => {
+    fetchPaymentReportData();
+  }, [appliedFilters]);
+
+  const debouncedSetPendingSearch = useMemo(
+    () => debounce((value) => setPendingFilters(prev => ({ ...prev, searchTerm: value })), 500),
+    []
   );
 
-  // Handlers
-  const handleFilterChange = useCallback((key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+  useEffect(() => {
+    return () => debouncedSetPendingSearch.cancel();
+  }, [debouncedSetPendingSearch]);
+
+  const columns = useMemo(() => {
+    return [
+      {
+        field: 'date',
+        header: 'Date',
+        sortable: true,
+        style: { minWidth: '150px' },
+        body: (rowData) => (
+          <Text>{rowData.date ? dayjs(rowData.date).format('YYYY-MM-DD HH:mm') : 'N/A'}</Text>
+        ),
+      },
+      {
+        field: 'customer_name',
+        header: 'Customer',
+        sortable: true,
+        style: { minWidth: '180px' },
+        body: (rowData) => <Text>{rowData.customer_name || 'N/A'}</Text>,
+      },
+      // {
+      //   field: 'payment_status',
+      //   header: 'Status',
+      //   sortable: true,
+      //   style: { minWidth: '120px' },
+      //   body: (rowData) => (
+      //     <Text style={{ 
+      //       color: rowData.payment_status === 'completed' ? '#52c41a' : 
+      //             rowData.payment_status === 'pending' ? '#faad14' : '#f5222d'
+      //     }}>
+      //       {rowData.payment_status?.toUpperCase() || 'N/A'}
+      //     </Text>
+      //   ),
+      // },
+      {
+        field: 'sale_reference',
+        header: 'Sale Reference',
+        sortable: true,
+        style: { minWidth: '150px' },
+        body: (rowData) => <Text>{rowData.sale_reference || 'N/A'}</Text>,
+      },
+      // {
+      //   field: 'reference_no',
+      //   header: 'Reference',
+      //   sortable: true,
+      //   style: { minWidth: '150px' },
+      //   body: (rowData) => <Text>{rowData.reference_no || 'N/A'}</Text>,
+      // },
+      {
+        field: 'payment_method',
+        header: 'Method',
+        sortable: true,
+        style: { minWidth: '120px' },
+        body: (rowData) => (
+          <Text>
+            {rowData.payment_method === 'cash' ? 'Cash' : 
+             rowData.payment_method === 'card' ? 'Card' :
+             rowData.payment_method === 'bank_transfer' ? 'Bank Transfer' : 
+             rowData.payment_method || 'Other'}
+          </Text>
+        ),
+      },
+      {
+        field: 'paid',
+        header: 'Amount',
+        sortable: true,
+        style: { minWidth: '120px', textAlign: 'right' },
+        body: (rowData) => <Text>${Number(rowData.paid || 0).toFixed(2)}</Text>,
+      },
+    ];
   }, []);
-
-  const handleDateChange = useCallback((value) => {
-    setFilters(prev => ({
-      ...prev,
-      date_range: value ? [dayjs(value[0]), dayjs(value[1])] : null,
-    }));
-  }, []);
-
-  const handleSearch = useCallback(() => {
-    debouncedSearch.cancel();
-    fetchPaymentReport({ ...filters, ...pagination });
-  }, [filters, pagination, debouncedSearch, fetchPaymentReport]);
-
-  const handleReset = useCallback(() => {
-    setFilters({
-      warehouse_id: null,
-      payment_method: 'all',
-      status: 'all',
-      customer_id: null,
-      date_range: null,
-      search_term: '',
-    });
-    setGlobalFilter('');
-    setPagination({ page: 1, per_page: 10 });
-    fetchPaymentReport({});
-  }, [fetchPaymentReport]);
-
   const handleExportExcel = useCallback(async () => {
-    setExportLoading(prev => ({ ...prev, excel: true }));
+    setExportLoading(true);
     try {
       if (!payments.length) {
-        toast.current.show({
-          severity: 'warn',
-          summary: 'Warning',
-          detail: 'No data to export',
-          life: 3000,
-        });
+        message.warning('No data available to export');
         return;
       }
 
-      const exportData = [
-        ['Payment Report'],
-        [`Generated: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`],
-        [`Warehouse: ${userData.warehouse_name || 'All'}`],
-        [],
-        ['Date', 'Reference', 'Customer', 'Amount', 'Method', 'Status', 'Warehouse'],
-        ...payments.map(payment => [
-          dayjs(payment.payment_date).format('DD/MM/YYYY'),
-          payment.reference_no,
-          payment.customer?.name || 'N/A',
-          parseFloat(payment.amount || 0).toFixed(2),
-          payment.payment_method.toUpperCase(),
-          payment.amount === 0 ? 'DUE' : payment.amount < payment.sale?.total ? 'PARTIAL' : 'PAID',
-          payment.warehouse?.name || 'N/A',
-        ]),
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Payment Report');
+      
+      worksheet.addRow(['DD Home Payment Report']).font = { size: 16, bold: true };
+      worksheet.addRow([
+        `Date Range: ${
+          appliedFilters.dateRange?.[0]
+            ? dayjs(appliedFilters.dateRange[0]).format('YYYY-MM-DD')
+            : 'All Dates'
+        } to ${
+          appliedFilters.dateRange?.[1]
+            ? dayjs(appliedFilters.dateRange[1]).format('YYYY-MM-DD')
+            : 'All Dates'
+        }`
+      ]);
+      worksheet.addRow([`Warehouse: ${payments[0]?.warehouse_name || 'All'}`]);
+      worksheet.addRow([]);
+
+      // Add summary statistics
+      worksheet.addRow(['SUMMARY STATISTICS']).font = { bold: true };
+      worksheet.addRow(['Total Payments', summaryStats.totalPayments]);
+      worksheet.addRow(['Total Amount', `$${summaryStats.totalAmount.toFixed(2)}`]);
+      worksheet.addRow(['Cash Payments', `$${summaryStats.cashAmount.toFixed(2)}`]);
+      worksheet.addRow(['Card Payments', `$${summaryStats.cardAmount.toFixed(2)}`]);
+      worksheet.addRow(['Bank Transfers', `$${summaryStats.bankTransferAmount.toFixed(2)}`]);
+      worksheet.addRow(['Other Payments', `$${summaryStats.otherAmount.toFixed(2)}`]);
+      worksheet.addRow([]);
+
+      // Define custom headers without status and reference
+      const headers = [
+        'Date',
+        'Customer',
+        'Amount',
+        'Payment Method'
       ];
 
-      const worksheet = XLSX.utils.aoa_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Payments');
-      worksheet['!cols'] = [{ wch: 15 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 }];
-      XLSX.writeFile(workbook, `payment_report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
-      toast.current.show({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Excel exported successfully',
-        life: 3000,
+      const headerRow = worksheet.addRow(headers);
+      
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFD3D3D3' },
+        };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
       });
-    } catch (error) {
-      toast.current.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to export Excel',
-        life: 3000,
-      });
-    } finally {
-      setExportLoading(prev => ({ ...prev, excel: false }));
-    }
-  }, [payments, userData]);
 
-  const handleExportPDF = useCallback(async () => {
-    setExportLoading(prev => ({ ...prev, pdf: true }));
-    try {
-      if (!payments.length) {
-        toast.current.show({
-          severity: 'warn',
-          summary: 'Warning',
-          detail: 'No data to export',
-          life: 3000,
+      // Add payment data with only the selected columns
+      payments.forEach((payment) => {
+        const rowData = [
+          payment.date ? dayjs(payment.date).format('YYYY-MM-DD HH:mm') : 'N/A',
+          payment.customer_name || 'N/A',
+          Number(payment.paid || 0),
+          payment.payment_method === 'cash' ? 'Cash' : 
+            payment.payment_method === 'card' ? 'Card' :
+            payment.payment_method === 'bank_transfer' ? 'Bank Transfer' : 
+            payment.payment_method || 'Other'
+        ];
+
+        const row = worksheet.addRow(rowData);
+        
+        // Format numeric columns
+        row.eachCell((cell, colNumber) => {
+          if (colNumber === 3) { 
+            cell.numFmt = '#,##0.00';
+            cell.alignment = { horizontal: 'right' };
+          }
         });
-        return;
-      }
-      await generatePDF(tableRef, {
-        filename: `payment_report_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
-        page: { format: 'A4', margin: { top: 20, bottom: 20, left: 20, right: 20 } },
       });
-      toast.current.show({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'PDF exported successfully',
-        life: 3000,
-      });
-    } catch (error) {
-      toast.current.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to export PDF',
-        life: 3000,
-      });
-    } finally {
-      setExportLoading(prev => ({ ...prev, pdf: false }));
-    }
-  }, [payments]);
 
-  const handleExportImage = useCallback(async () => {
-    setExportLoading(prev => ({ ...prev, image: true }));
-    try {
-      if (!payments.length) {
-        toast.current.show({
-          severity: 'warn',
-          summary: 'Warning',
-          detail: 'No data to export',
-          life: 3000,
+      // Add totals row
+      const totalRow = worksheet.addRow([
+        ...Array(headers.length - 2).fill(''),
+        'TOTAL:',
+        summaryStats.totalAmount
+      ]);
+      
+      totalRow.eachCell((cell, colNumber) => {
+        if (colNumber === 3) {
+          cell.font = { bold: true };
+          cell.numFmt = '#,##0.00';
+          cell.alignment = { horizontal: 'right' };
+          cell.border = { top: { style: 'thin' } };
+        } else if (colNumber === 2) {
+          cell.font = { bold: true };
+        }
+      });
+
+      // Auto-size columns
+      worksheet.columns.forEach((column) => {
+        let maxLength = 0;
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          const columnLength = cell.value ? cell.value.toString().length : 0;
+          if (columnLength > maxLength) {
+            maxLength = columnLength;
+          }
         });
-        return;
-      }
-      if (tableRef.current) {
-        const canvas = await html2canvas(tableRef.current, { scale: 2 });
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = `payment_report_${dayjs().format('YYYYMMDD_HHmmss')}.png`;
-        link.click();
-        toast.current.show({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Image exported successfully',
-          life: 3000,
-        });
-      }
-    } catch (error) {
-      toast.current.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to export image',
-        life: 3000,
+        column.width = Math.min(Math.max(maxLength + 2, 10), 30);
       });
+
+      // Freeze header row
+      worksheet.views = [
+        { state: 'frozen', ySplit: 1 }
+      ];
+
+      // Save the file
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(
+        new Blob([buffer]),
+        `payment-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`
+      );
+      message.success('Excel file exported successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      message.error('Failed to export Excel file');
     } finally {
-      setExportLoading(prev => ({ ...prev, image: false }));
+      setExportLoading(false);
     }
-  }, [payments]);
+  }, [payments, appliedFilters, summaryStats]);
 
-  // Template functions
-  const amountBodyTemplate = useCallback((rowData) => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      ${parseFloat(rowData.amount || 0).toFixed(2)}
-    </motion.div>
-  ), []);
+  const handleApplyFilters = useCallback(() => {
+    setAppliedFilters(pendingFilters);
+  }, [pendingFilters]);
 
-  const dateBodyTemplate = useCallback((rowData) => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      {dayjs(rowData.payment_date).format('DD MMM YYYY')}
-    </motion.div>
-  ), []);
+  const handleClearFilters = useCallback(() => {
+    const clearedFilters = {
+      searchTerm: '',
+      paymentMethod: 'all',
+      dateRange: null,
+      customer: 'all',
+      paymentStatus: 'all',
+      groupBy: ['date']
+    };
+    setPendingFilters(clearedFilters);
+    setAppliedFilters(clearedFilters);
+    setSelectedRows([]);
+    message.info('Filters cleared');
+  }, []);
 
-  const methodBodyTemplate = useCallback((rowData) => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Tag
-        value={rowData.payment_method.toUpperCase()}
-        severity={getPaymentMethodSeverity(rowData.payment_method)}
-      />
-    </motion.div>
-  ), []);
-
-  const statusBodyTemplate = useCallback((rowData) => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Tag
-        value={getStatusLabel(rowData)}
-        severity={getStatusSeverity(rowData)}
-      />
-    </motion.div>
-  ), []);
-
-  // Header
-  const header = (
-    <div className="flex flex-wrap gap-2 justify-content-between align-items-center">
-      <h4 className="m-0">Payment Report</h4>
-      <div className="flex gap-2">
-        <Tooltip target=".export-excel" content="Export to Excel" />
-        <Button
-          icon="pi pi-file-excel"
-          onClick={handleExportExcel}
-          disabled={isLoading || exportLoading.excel || !payments.length}
-          className="p-button-success export-excel"
-          loading={exportLoading.excel}
-        />
-        <Tooltip target=".export-pdf" content="Export to PDF" />
-        <Button
-          icon="pi pi-file-pdf"
-          onClick={handleExportPDF}
-          disabled={isLoading || exportLoading.pdf || !payments.length}
-          className="p-button-danger export-pdf"
-          loading={exportLoading.pdf}
-        />
-        <Tooltip target=".export-image" content="Export to Image" />
-        <Button
-          icon="pi pi-image"
-          onClick={handleExportImage}
-          disabled={isLoading || exportLoading.image || !payments.length}
-          className="p-button-info export-image"
-          loading={exportLoading.image}
-        />
-      </div>
-    </div>
-  );
-
-  // Filter header
-  const filterHeader = (
-    <div className="flex justify-content-between align-items-center">
-      <span className="p-input-icon-left">
-        <i className="pi pi-search" />
-        <InputText
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Global Search"
-          className="p-inputtext-sm"
-        />
-      </span>
-    </div>
-  );
-
-  // Initial fetch
-  useEffect(() => {
-    fetchOptions();
-    fetchPaymentReport({});
-    return () => debouncedSearch.cancel();
-  }, [fetchOptions, fetchPaymentReport, debouncedSearch]);
-
-  // Error UI
   if (error) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="payment-report-container"
-      >
-        <Card className="error-card">
-          <div className="error-message">
-            <i className="pi pi-exclamation-triangle" style={{ fontSize: '2rem', color: '#dc3545' }} />
-            <h5>Error</h5>
-            <p>{error}</p>
-            <Button
-              label="Retry"
-              icon="pi pi-refresh"
-              onClick={() => fetchPaymentReport({ ...filters, ...pagination })}
-              className="p-button-primary"
-            />
-          </div>
+      <div style={{ padding: '24px', maxWidth: 800, margin: '0 auto' }}>
+        <Card>
+          <Text type="danger">Error: {error.message || 'Failed to load payment data'}</Text>
+          <Button
+            type="primary"
+            onClick={fetchPaymentReportData}
+            style={{ marginLeft: 16 }}
+          >
+            Retry
+          </Button>
         </Card>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="payment-report-container"
-    >
-      <Toast ref={toast} position="top-center" />
-      <Card className="main-card">
-        <div className="report-header">
-          <h3>Payment Report</h3>
-          <p className="text-secondary">Overview of payment transactions</p>
-        </div>
+    <Spin spinning={isLoading || exportLoading} tip={exportLoading ? 'Exporting...' : 'Loading payment data...'} size="large">
+      <div>
+        {/* Header Section */}
+        <Card style={{ marginBottom: 24, background: '#f0f5ff' }} hoverable>
+          <Row align="middle" justify="space-between">
+            <Col>
+              <Title level={3} style={{ margin: 0, color: 'green' }}>
+                Payment Reports
+              </Title>
+              <Text type="secondary">Track and analyze payment transactions</Text>
+              <div style={{ marginTop: 8 }}>
+                <Text strong>Warehouse: </Text>
+                <Text>{payments[0]?.warehouse_name || 'N/A'}</Text>
+              </div>
+            </Col>
+            <Col>
+              <DollarOutlined style={{ fontSize: 48, color: '#adc6ff', opacity: 0.8 }} />
+            </Col>
+          </Row>
+        </Card>
 
-        <div className="report-filters">
-          <div className="p-grid p-fluid">
-            <div className="p-col-12 p-md-3">
-              <Tooltip target=".warehouse-filter" content="Filter by warehouse" />
-              <Dropdown
-                options={warehouses}
-                optionLabel="label"
-                optionValue="value"
-                value={filters.warehouse_id}
-                onChange={(e) => handleFilterChange('warehouse_id', e.value)}
-                placeholder="Select Warehouse"
-                className="warehouse-filter"
-                showClear
+        {/* Summary Statistics */}
+        <Row gutter={16} style={{ marginBottom: 24 }}>
+          <Col span={6}>
+            <Card hoverable>
+              <Statistic
+                title="Total Payments"
+                value={summaryStats.totalPayments}
+                precision={0}
+                valueStyle={{ color: 'green' }}
+                prefix={<DollarOutlined />}
               />
-            </div>
-            <div className="p-col-12 p-md-3">
-              <Tooltip target=".method-filter" content="Filter by payment method" />
-              <Dropdown
-                options={paymentMethods}
-                optionLabel="label"
-                optionValue="value"
-                value={filters.payment_method}
-                onChange={(e) => handleFilterChange('payment_method', e.value)}
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card hoverable>
+              <Statistic
+                title="Total Amount"
+                value={summaryStats.totalAmount}
+                precision={2}
+                prefix="$"
+                valueStyle={{ color: '#389e0d' }}
+              />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card hoverable>
+              <Statistic
+                title="Cash Payments"
+                value={summaryStats.cashAmount}
+                precision={2}
+                prefix="$"
+                valueStyle={{ color: '#08979c' }}
+              />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card hoverable>
+              <Statistic
+                title="Card Payments"
+                value={summaryStats.cardAmount}
+                precision={2}
+                prefix="$"
+                valueStyle={{ color: '#d46b08' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Filter Section */}
+        <Card style={{ marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }} hoverable>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} sm={12} md={6}>
+              <Search
+                placeholder="Search reference or customer"
+                prefix={<SearchOutlined style={{ color: '#1d39c4' }} />}
+                onChange={(e) => debouncedSetPendingSearch(e.target.value)}
+                value={pendingFilters.searchTerm}
+                allowClear
+                size="large"
+              />
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                style={{ width: '100%' }}
                 placeholder="Payment Method"
-                className="method-filter"
-                showClear
+                value={pendingFilters.paymentMethod}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, paymentMethod: value }))}
+                allowClear
+                size="large"
+              >
+                <Option value="all">All Methods</Option>
+                <Option value="cash">Cash</Option>
+                <Option value="card">Credit Card</Option>
+                <Option value="bank_transfer">Bank Transfer</Option>
+                <Option value="other">Other</Option>
+              </Select>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <RangePicker
+                style={{ width: '100%' }}
+                placeholder={['Start Date', 'End Date']}
+                value={pendingFilters.dateRange}
+                onChange={(dates) => setPendingFilters(prev => ({ ...prev, dateRange: dates }))}
+                size="large"
+                showTime={{ format: 'HH:mm' }}
+                format="YYYY-MM-DD HH:mm"
               />
-            </div>
-            <div className="p-col-12 p-md-3">
-              <Tooltip target=".status-filter" content="Filter by payment status" />
-              <Dropdown
-                options={statusOptions}
-                optionLabel="label"
-                optionValue="value"
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.value)}
-                placeholder="Payment Status"
-                className="status-filter"
-                showClear
-              />
-            </div>
-            <div className="p-col-12 p-md-3">
-              <Tooltip target=".customer-filter" content="Filter by customer" />
-              <Dropdown
-                options={customers}
-                optionLabel="label"
-                optionValue="value"
-                value={filters.customer_id}
-                onChange={(e) => handleFilterChange('customer_id', e.value)}
-                placeholder="Select Customer"
-                className="customer-filter"
-                showClear
-                filter
-              />
-            </div>
-            <div className="p-col-12 p-md-3">
-              <Tooltip target=".date-filter" content="Filter by date range" />
-              <Calendar
-                value={filters.date_range}
-                onChange={(e) => handleDateChange(e.value)}
-                selectionMode="range"
-                readOnlyInput
-                placeholder="Date Range"
-                className="date-filter"
-                maxDate={new Date()}
-                showIcon
-              />
-            </div>
-            <div className="p-col-12 p-md-3">
-              <Tooltip target=".search-filter" content="Search by reference or customer" />
-              <span className="p-input-icon-left w-full">
-                <i className="pi pi-search" />
-                <InputText
-                  placeholder="Search reference or customer"
-                  value={filters.search_term}
-                  onChange={(e) => {
-                    handleFilterChange('search_term', e.target.value);
-                    debouncedSearch({ ...filters, search_term: e.target.value, ...pagination });
-                  }}
-                  className="search-filter w-full"
-                />
-              </span>
-            </div>
-          </div>
-          <div className="filter-buttons">
-            <Button
-              label="Apply Filters"
-              icon="pi pi-filter"
-              onClick={handleSearch}
-              loading={isLoading}
-              className="p-button-primary"
-            />
-            <Button
-              label="Reset"
-              icon="pi pi-refresh"
-              onClick={handleReset}
-              disabled={isLoading}
-              className="p-button-secondary"
-            />
-          </div>
-        </div>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                placeholder="Group by"
+                value={pendingFilters.groupBy}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, groupBy: value }))}
+                allowClear
+                maxTagCount="responsive"
+                size="large"
+              >
+                <Option value="date">Date</Option>
+                <Option value="customer">Customer</Option>
+                <Option value="invoice">Invoice</Option>
+                <Option value="payment_method">Payment Method</Option>
+                <Option value="payment_status">Payment Status</Option>
+              </Select>
+            </Col>
+          </Row>
+          <Row style={{ marginTop: '20px', gap: '10px' }}>
+            <Col xs={24} sm={12} md={3}>
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={handleApplyFilters}
+                size="large"
+                style={{ width: '100%', backgroundColor: 'green', borderColor: 'green' }}
+              >
+                Apply Filters
+              </Button>
+            </Col>
+            <Col xs={24} sm={12} md={3}>
+              <Button
+                type="default"
+                icon={<ClearOutlined />}
+                onClick={handleClearFilters}
+                size="large"
+                style={{ width: '100%' }}
+              >
+                Clear
+              </Button>
+            </Col>
+          </Row>
+        </Card>
 
-        <div className="report-summary">
-          <div className="p-grid">
-            <div className="p-col-12 p-md-3">
-              <Card className="summary-card">
-                <div className="summary-title">Total Payments</div>
-                <div className="summary-value">
-                  ${meta?.total_amount?.toFixed(2) || '0.00'}
-                </div>
-              </Card>
-            </div>
-            <div className="p-col-12 p-md-3">
-              <Card className="summary-card">
-                <div className="summary-title">Total Records</div>
-                <div className="summary-value">
-                  {meta?.total || 0}
-                </div>
-              </Card>
-            </div>
-            <div className="p-col-12 p-md-3">
-              <Card className="summary-card">
-                <div className="summary-title">Paid Payments</div>
-                <div className="summary-value">
-                  {meta?.filters_applied?.status === 'paid' ? meta.total : payments.filter(p => p.amount >= p.sale?.total).length}
-                </div>
-              </Card>
-            </div>
-            <div className="p-col-12 p-md-3">
-              <Card className="summary-card">
-                <div className="summary-title">Due Payments</div>
-                <div className="summary-value">
-                  {meta?.filters_applied?.status === 'due' ? meta.total : payments.filter(p => p.amount === 0).length}
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
-
-        <div className="report-table" ref={tableRef}>
-          <DataTable
-            ref={dt}
-            value={payments}
-            paginator
-            rows={pagination.per_page}
-            totalRecords={meta?.total || 0}
-            rowsPerPageOptions={[10, 20, 50, 100]}
-            loading={isLoading}
-            dataKey="id"
-            header={header}
-            globalFilter={globalFilter}
-            emptyMessage="No payments found."
-            responsiveLayout="scroll"
-            className="p-datatable-sm"
-            onPage={(e) => {
-              const newPagination = { page: e.page + 1, per_page: e.rows };
-              setPagination(newPagination);
-              fetchPaymentReport({ ...filters, ...newPagination });
-            }}
+        {/* DataTable Section */}
+        <div ref={tableRef}>
+          <Card
+            title={<Text strong style={{ fontSize: 18 }}>Payment Details</Text>}
+            extra={
+              <Space>
+                <Button
+                  icon={<FileExcelOutlined />}
+                  onClick={handleExportExcel}
+                  loading={exportLoading}
+                  style={{ backgroundColor: 'green', borderColor: 'green', color: 'white' }}
+                >
+                  Export Excel
+                </Button>
+              </Space>
+            }
+            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
           >
-            <Column field="payment_date" header="Date" body={dateBodyTemplate} sortable style={{ width: '15%' }} />
-            <Column field="reference_no" header="Reference" sortable style={{ width: '15%' }} />
-            <Column field="customer.name" header="Customer" sortable style={{ width: '20%' }} />
-            <Column field="amount" header="Amount" body={amountBodyTemplate} sortable style={{ width: '15%' }} />
-            <Column field="payment_method" header="Method" body={methodBodyTemplate} sortable style={{ width: '15%' }} />
-            <Column header="Status" body={statusBodyTemplate} sortable style={{ width: '10%' }} />
-            <Column field="warehouse.name" header="Warehouse" sortable style={{ width: '15%' }} />
-          </DataTable>
+            <DataTable
+              value={payments}
+              dataKey="id"
+              scrollable
+              scrollHeight="600px"
+              sortMode="multiple"
+              tableStyle={{ width: '100%' }}
+              className="p-datatable-striped p-datatable-gridlines"
+              loading={isLoading}
+              responsiveLayout="scroll"
+            >
+              {columns.map((col, index) => (
+                <Column
+                  key={`${col.field}-${index}`}
+                  field={col.field}
+                  header={col.header}
+                  sortable={col.sortable}
+                  body={col.body}
+                  style={col.style}
+                />
+              ))}
+            </DataTable>
+          </Card>
         </div>
-      </Card>
-    </motion.div>
+      </div>
+    </Spin>
   );
-});
+};
 
-export default PaymentReport;
+export default PaymentReports;

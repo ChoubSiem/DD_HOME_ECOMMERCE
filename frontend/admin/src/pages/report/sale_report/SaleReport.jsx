@@ -101,7 +101,8 @@ const SalesReports = () => {
         Object.entries(filters).filter(([_, value]) => value !== undefined)
       );
 
-      const response = await getSaleReportsData(cleanedFilters, token);      
+      const response = await getSaleReportsData(cleanedFilters, token);
+      
       if (response.success) {
         setSales(response.sales || []);
         setError(null);
@@ -785,7 +786,6 @@ const handleExportExcel = useCallback(async () => {
           </Row>
         </Card>
 
-        {/* DataTable Section */}
         <div ref={tableRef}>
           <Card
             title={<Text strong style={{ fontSize: 18 }}>Sales Report Details</Text>}

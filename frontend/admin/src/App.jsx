@@ -81,6 +81,7 @@ import EmployeeEdit from "./components/policy/employee/edit/EmployeeForm/Employe
 import UomConversion from "./pages/inventory/UomConversion/UomConversion";
 import BrandManagement from "./pages/brand/Brand";
 import StockTransition from "./pages/report/stock_report/StockTransition";
+import CreditInvoice from "./pages/report/sale_report/CreditSaleInvoice";
 // import AddSaleReturn from "./pages/sale_return/AddSaleReturn";
 // import { useNavigate } from 'react-router-dom';
 
@@ -192,6 +193,7 @@ const App = () => {
           <Route path="/sale" element={<Sale />} />
           <Route path="/sale/add" element={<AddSale />} />
           <Route path="/sale/edit/:id" element={<EditSale />} />
+          <Route path="/reports/credit-sale" element={<CreditInvoice />} />
         </Route>
           <Route path="/pos/add" element={<AddPos/>} />
         

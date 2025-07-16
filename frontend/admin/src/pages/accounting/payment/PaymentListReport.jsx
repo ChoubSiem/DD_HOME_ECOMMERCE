@@ -30,7 +30,7 @@ const PaymentReports = () => {
   const reports = [
     // Green reports (Successful payments)
     {
-      title: 'Completed Payments',
+      title: 'Payment Reports',
       icon: <CheckCircleOutlined />,
       path: '/reports/payments',
       color: colors.green,

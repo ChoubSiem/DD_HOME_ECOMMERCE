@@ -63,3 +63,13 @@ export const getShiftReports = async (warehouse_id,token) => {
    
     return response.data;
   };
+  export const getCreditSales = async (values,token) => {
+    
+    const response = await axios.get(`${API_BASE}/report/credit-sale`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: values
+    });  
+    // console.log(response.data);
+   
+    return response.data;
+  };

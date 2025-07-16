@@ -18,21 +18,19 @@ const { Meta } = Card;
 const ReportCards = () => {
   const navigate = useNavigate();
 
-  // Color definitions
   const colors = {
-    green: '#52c41a',  // Positive/growth
-    red: '#f5222d',    // Negative/attention
-    black: '#262626',  // Neutral
-    white: '#ffffff',  // Background
-    border: '#d9d9d9'  // Borders
+    green: '#52c41a', 
+    red: '#f5222d',  
+    black: '#262626',  
+    white: '#ffffff', 
+    border: '#d9d9d9'  
   };
 
   const reports = [
-    // Green Reports (Positive performance)
     { 
-      title: 'Product Sale Report', 
+      title: 'Credit Sale Invoice Report', 
       icon: <ShoppingOutlined />,
-      path: '/reports/product-sale',
+      path: '/reports/credit-sale',
       color: colors.green,
       type: 'sales'
     },
@@ -51,7 +49,6 @@ const ReportCards = () => {
       type: 'growth'
     },
 
-    // Red Reports (Need attention)
     { 
       title: 'Product Discount Report', 
       icon: <PercentageOutlined />,
@@ -67,7 +64,6 @@ const ReportCards = () => {
       type: 'giveaways'
     },
 
-    // Black Reports (Neutral)
     { 
       title: 'Product Promotion Report', 
       icon: <TagOutlined />,
