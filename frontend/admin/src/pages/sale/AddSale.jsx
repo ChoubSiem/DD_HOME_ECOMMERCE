@@ -289,7 +289,7 @@ const AddSale = () => {
       amount: rawTotal,
       paid: creditAmount,
       total: amount ?? 0,
-      amount_paid: amount,
+      amount_paid: creditAmount,
       customer_id: customer_id,
       next_payment_date: firstNextDate != null ? dayjs(firstNextDate).format('YYYY-MM-DD') : null,
       items: selectedProducts.map(product => ({

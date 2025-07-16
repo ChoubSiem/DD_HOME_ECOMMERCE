@@ -56,8 +56,8 @@ useEffect(() => {
   render: (method) => {
     const methodMap = {
       cash: "Cash",
-      credit: "Credit Card",       // map 'credit' to 'Credit Card'
-      credit_card: "Credit Card",  // keep for possible other values
+      credit: "Credit",       // map 'credit' to 'Credit Card'
+      credit_card: "Credit",  // keep for possible other values
       bank_transfer: "Bank Transfer",
       check: "Check",
     };
@@ -108,8 +108,8 @@ useEffect(() => {
             <Descriptions.Item label="Amount Paid">
               ${parseFloat(sale.paid || 0).toFixed(2)}
             </Descriptions.Item>
-            <Descriptions.Item label="Balance Due">
-              ${parseFloat(sale.balance || 0).toFixed(2)}
+            <Descriptions.Item label="Balance">
+              ${parseFloat(sale.totalPrice - sale.paid || 0).toFixed(2)}
             </Descriptions.Item>
           </Descriptions>
 
