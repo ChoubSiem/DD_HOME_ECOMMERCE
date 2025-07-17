@@ -272,7 +272,7 @@ const AddSale = () => {
     const firstNextDate = paymentMethods?.[0]?.nextPaymentDate;
     const creditMethod = paymentMethods.find(pm => pm.method === 'credit');
     const creditAmount = creditMethod ? creditMethod.amount : null;
-
+    const amount_paid = paymentMethods.map(payment => payment.amount).reduce((sum, amount) => sum + amount, 0);
     const saleData = {
       date: values.date || dayjs().format("YYYY-MM-DD HH:mm:ss"),
       reference: reference,
@@ -284,12 +284,12 @@ const AddSale = () => {
       payments: paymentMethods,
       discount: invoiceDiscount.value ?? 0,
       discount_type: invoiceDiscount.type ?? 'amount',
-      credit_amount: amount - creditAmount,
+      credit_amount: creditAmount != null ?(amount - creditAmount):null,
       sale_type: 'sale_inventory',
       amount: rawTotal,
       paid: creditAmount,
       total: amount ?? 0,
-      amount_paid: creditAmount,
+      amount_paid: creditAmount??amount_paid,
       customer_id: customer_id,
       next_payment_date: firstNextDate != null ? dayjs(firstNextDate).format('YYYY-MM-DD') : null,
       items: selectedProducts.map(product => ({
@@ -302,7 +302,7 @@ const AddSale = () => {
       }))
     };
     // console.log(saleData);
-    // return ;    
+    // return    ;
     
     try {
       const result = await handlePosSaleCreate(saleData, token);
