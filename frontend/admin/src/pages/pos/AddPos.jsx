@@ -1986,106 +1986,121 @@
     );
   }
 
-  function AddDiscountModal({ subtotal, initialDiscount, initialDiscountType, onSubmit, onCancel }) {
+function AddDiscountModal({ subtotal, initialDiscount, initialDiscountType, onSubmit, onCancel }) {
     const [discount, setDiscount] = useState(initialDiscount);
     const [discountType, setDiscountType] = useState(initialDiscountType);
     const [error, setError] = useState('');
+    const [inputValue, setInputValue] = useState(''); // New state to track raw input
 
-    // Reset discount value when type changes to prevent invalid combinations
+    // Initialize input value
     useEffect(() => {
-      setDiscount(0); // Reset discount when type changes
+        setInputValue(initialDiscount.toString());
+    }, []);
+
+    // Reset discount value when type changes
+    useEffect(() => {
+        setDiscount(0);
+        setInputValue('0');
     }, [discountType]);
 
     const handleSubmit = () => {
-      // Validate based on type
-      const maxDiscount = discountType === 'percent' ? 100 : subtotal;
-      
-      if (discount < 0) {
-        setError('Discount cannot be negative');
-        return;
-      }
-      
-      if (discount > maxDiscount) {
-        setError(`Discount cannot exceed ${discountType === 'percent' ? '100%' : `$${subtotal.toFixed(2)}`}`);
-        return;
-      }
+        const numericValue = parseFloat(inputValue);
+        const roundedDiscount = parseFloat(numericValue.toFixed(2));
+        
+        // Validate based on type
+        const maxDiscount = discountType === 'percent' ? 100 : subtotal;
+        
+        if (roundedDiscount < 0) {
+            setError('Discount cannot be negative');
+            return;
+        }
+        
+        if (roundedDiscount > maxDiscount) {
+            setError(`Discount cannot exceed ${discountType === 'percent' ? '100%' : `$${subtotal.toFixed(2)}`}`);
+            return;
+        }
 
-      // Additional validation for percentage
-      if (discountType === 'percent' && discount > 100) {
-        setError('Percentage discount cannot exceed 100%');
-        return;
-      }
-
-      setError('');
-      onSubmit(discount, discountType);
+        setError('');
+        onSubmit(roundedDiscount, discountType);
     };
 
-    // Format displayed value based on type
     const formatDisplayValue = (value) => {
-      if (discountType === 'percent') {
-        return `${value}%`;
-      }
-      return `$${value.toFixed(2)}`;
+        if (discountType === 'percent') {
+            return `${value}%`;
+        }
+        return `$${value.toFixed(2)}`;
+    };
+
+    const handleDiscountChange = (e) => {
+        const value = e.target.value;
+        setInputValue(value); // Store raw string value
+        
+        // Only update numeric discount when we have a valid number
+        if (value === '') {
+            setDiscount(0);
+        } else if (/^\d*\.?\d*$/.test(value)) { // Check if valid number format
+            const numericValue = parseFloat(value);
+            if (!isNaN(numericValue)) {
+                setDiscount(numericValue);
+            }
+        }
     };
 
     return (
-      <div style={{ padding: '16px' }}>
-        <div style={{ marginBottom: '16px' }}>
-          <label>Discount Type</label>
-          <Select
-            value={discountType}
-            onChange={(value) => {
-              setDiscountType(value);
-              setDiscount(0); // Reset discount when type changes
-            }}
-            style={{ width: '100%', marginTop: '8px' }}
-          >
-            <Select.Option value="amount">Amount ($)</Select.Option>
-            <Select.Option value="percent">Percentage (%)</Select.Option>
-          </Select>
-        </div>
-        
-        <div style={{ marginBottom: '16px' }}>
-          <label>Discount Value</label>
-          <Input
-            type="number"
-            value={discount}
-            onChange={(e) => {
-              const value = parseFloat(e.target.value) || 0;
-              setDiscount(value);
-            }}
-            placeholder={discountType === 'percent' ? '0-100%' : `0-${subtotal.toFixed(2)}`}
-            style={{ marginTop: '8px' }}
-            addonAfter={discountType === 'percent' ? '%' : '$'}
-            min={0}
-            max={discountType === 'percent' ? 100 : subtotal}
-          />
-          {error && (
-            <Alert 
-              message={error} 
-              type="error" 
-              showIcon 
-              style={{ marginTop: '8px' }}
-            />
-          )}
-          {!error && discount > 0 && (
-            <div style={{ marginTop: '8px', color: '#52c41a' }}>
-              Applying {formatDisplayValue(discount)} discount
+        <div style={{ padding: '16px' }}>
+            <div style={{ marginBottom: '16px' }}>
+                <label>Discount Type</label>
+                <Select
+                    value={discountType}
+                    onChange={(value) => {
+                        setDiscountType(value);
+                        setDiscount(0);
+                        setInputValue('0');
+                    }}
+                    style={{ width: '100%', marginTop: '8px' }}
+                >
+                    <Select.Option value="amount">Amount ($)</Select.Option>
+                    <Select.Option value="percent">Percentage (%)</Select.Option>
+                </Select>
             </div>
-          )}
+            
+            <div style={{ marginBottom: '16px' }}>
+                <label>Discount Value</label>
+                <Input
+                    type="text" // Changed to text to have more control
+                    value={inputValue}
+                    onChange={handleDiscountChange}
+                    placeholder={discountType === 'percent' ? '0-100%' : `0-${subtotal.toFixed(2)}`}
+                    style={{ marginTop: '8px' }}
+                    addonAfter={discountType === 'percent' ? '%' : '$'}
+                    step="0.01"
+                />
+                {error && (
+                    <Alert 
+                        message={error} 
+                        type="error" 
+                        showIcon 
+                        style={{ marginTop: '8px' }}
+                    />
+                )}
+                {!error && discount > 0 && (
+                    <div style={{ marginTop: '8px', color: '#52c41a' }}>
+                        Applying {formatDisplayValue(discount)} discount
+                    </div>
+                )}
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <Button onClick={onCancel}>Cancel</Button>
+                <Button 
+                    type="primary" 
+                    onClick={handleSubmit}
+                    // disabled={discount <= 0}
+                >
+                    Apply
+                </Button>
+            </div>
         </div>
-        
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button 
-            type="primary" 
-            onClick={handleSubmit}
-            disabled={discount <= 0} // Disable if no discount
-          >
-            Apply
-          </Button>
-        </div>
-      </div>
     );
-  }
+}
   export default PosAdd;
