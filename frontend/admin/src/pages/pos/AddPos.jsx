@@ -1076,6 +1076,10 @@
       message.warning("Please add items to cart first");
       return;
     }  
+    if ((payments.length === 0 && total > 0)) {
+      message.warning("Please add payment method before processing");
+      return;
+    }
   //  if (!selectedSalesperson) {  
   //     message.warning("Please select a salesperson");
   //     return;
