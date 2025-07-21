@@ -280,7 +280,7 @@ const PosSaleList = () => {
         <Card className="header-card">
           <div className="header-content">
             <div>
-              <h1 style={{ color: "#52c41a" }}>POS Sale Management</h1>
+              <h1 style={{ color: "#52c41a" }}>POS Sale</h1>
               <p>Manage your point of sale transactions</p>
             </div>
             <Button

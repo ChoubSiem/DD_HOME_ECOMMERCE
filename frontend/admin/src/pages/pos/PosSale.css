@@ -1,65 +1,62 @@
-.pos-sale-management {
-  padding: 24px;
-  background: #f0f2f5;
-}
-
-.header-card {
+.pos-sale-management .header-card {
   margin-bottom: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.header-content {
+.pos-sale-management .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
 }
 
-.header-content h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.header-content p {
-  margin: 4px 0 0;
-  color: #595959;
-}
-
-.filter-card {
+.pos-sale-management .filter-card {
   margin-bottom: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.filter-content {
+.pos-sale-management .filter-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  gap: 16px;
 }
 
-.filter-controls {
+.pos-sale-management .filter-controls {
   display: flex;
-  gap: 8px;
+  gap: 16px;
 }
 
-.table-card {
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+.pos-sale-management .advanced-filter {
+  display: none;
+  margin-top: 16px;
 }
 
-.table-card .ant-table {
-  border-radius: 8px;
-  overflow: hidden;
+.pos-sale-management .advanced-filter.show {
+  display: block;
 }
 
-.table-card .ant-table-thead > tr > th {
-  background: #fafafa;
-  font-weight: 600;
+.pos-sale-management .rdt_TableRow {
+  /* min-height: 25px !important; */
+  line-height: 14px !important;
+  padding: 0 4px !important;
 }
 
-.table-card .ant-table-tbody > tr:hover > td {
-  background: #e6f7ff;
+.pos-sale-management .rdt_TableCell {
+  padding: 0 4px !important;
+  font-size: 12px !important;
+  line-height: 14px !important;
+}
+
+.pos-sale-management .rdt_TableHeadRow {
+  min-height: 25px !important;
+  padding: 0 4px !important;
+  font-size: 12px !important;
+  line-height: 14px !important;
+}
+
+.pos-sale-management .ant-dropdown-menu {
+  font-size: 12px !important;
+  padding: 4px 0 !important;
+}
+
+.pos-sale-management .ant-dropdown-menu-item {
+  padding: 2px 8px !important;
+  line-height: 16px !important;
 }

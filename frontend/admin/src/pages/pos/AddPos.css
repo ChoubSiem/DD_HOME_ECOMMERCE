@@ -11,7 +11,7 @@
   --dark: #212529;
   --gray: #6c757d;
   --light-gray: #e9ecef;
-  --border-radius: 12px;
+  /* --border-radius: 12px; */
   --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   --transition: all 0.1s ease;
 }
@@ -273,16 +273,16 @@ body {
   color: white;
 }
 
-.products-grid {
-  /* display: grid; */
-  /* grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); */
-  gap: 1.5rem;
+.products-container {
+  max-height: 100%;
+  min-height: 80%;
+  align-items: center;
   /* background: #000; */
   width: 100%;
 }
 .layout-card .p-grid {
   display: grid !important;
-  grid-template-columns: repeat(4, 1fr); /* shows 3 cards per row */
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   width: 100%;
 }
@@ -402,7 +402,7 @@ body {
   position: absolute;
   top: 85%;
   right: 10px;  
-  background: #52c41a;
+  /* background: #52c41a; */
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
@@ -1006,42 +1006,12 @@ textarea:focus{
   border-radius: 0 !important;
 }
 
-/* Optional: remove radius from the header, body, and pagination */
 .no-radius-table .ant-table-content,
 .no-radius-table .ant-table-thead,
 .no-radius-table .ant-table-tbody,
 .no-radius-table .ant-table-footer {
   border-radius: 0 !important;
 }
-/* .pagination-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.pagination-controls button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  background-color: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.pagination-controls button:hover:not(:disabled) {
-  background-color: #e0e0e0;
-}
-
-.pagination-controls button:disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
-} */
 
 .customer-name {
   font-weight: 500;
@@ -1049,7 +1019,7 @@ textarea:focus{
 }
 
 .group-name {
-  color: #ffa500; /* orange highlight */
+  color: #ffa500; 
   font-weight: bold;
   font-size: 14px;
 }
@@ -1091,4 +1061,218 @@ textarea:focus{
   /* background: #000; */
   height: 47px;
   /* padding: 5px; */
+}
+/* Complete border radius removal for Ant Design Table */
+.no-radius-table .ant-table-container,
+.no-radius-table .ant-table-content,
+.no-radius-table .ant-table-thead > tr > th:first-child,
+.no-radius-table .ant-table-thead > tr > th:last-child,
+.no-radius-table .ant-table-thead > tr > th,
+.no-radius-table .ant-table-tbody > tr > td:first-child,
+.no-radius-table .ant-table-tbody > tr > td:last-child,
+.no-radius-table .ant-table-tbody > tr > td,
+.no-radius-table .ant-table-cell,
+.no-radius-table .ant-table-cell-fix-left,
+.no-radius-table .ant-table-cell-fix-right,
+.no-radius-table .ant-table-header,
+.no-radius-table .ant-table-placeholder,
+.no-radius-table .ant-table-footer {
+  border-radius: 0 !important;
+}
+
+/* Header specific styling */
+.no-radius-table .ant-table-thead > tr > th {
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  font-weight: 600;
+  border-radius: 0 !important;
+}
+
+/* Remove rounded corners from the table container */
+.no-radius-table .ant-table-container {
+  border-start-start-radius: 0 !important;
+  border-start-end-radius: 0 !important;
+}
+
+/* Cell styling */
+.no-radius-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Hover effects */
+.no-radius-table .ant-table-tbody > tr:hover > td {
+  background: #fafafa !important;
+}
+
+/* Button styling */
+.no-radius-table .ant-btn {
+  border-radius: 0 !important;
+}
+/* Payment Method Display */
+.payment-method-display {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.payment-method-label {
+  font-weight: bold;
+}
+
+.payment-method-value {
+  color: #1890ff;
+}
+
+/* Summary Details */
+.summary-details {
+  margin-bottom: 15px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+/* Cart Actions */
+.cart-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.discount-button {
+  background: #52c41a;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.checkout-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.suspend-button {
+  flex: 1;
+  background: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.checkout-button {
+  flex: 2;
+  background: #1890ff;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.suspend-button:disabled,
+.checkout-button:disabled {
+  background: #d9d9d9;
+  cursor: not-allowed;
+}
+
+/* Payment Method Modal */
+.payment-method-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.payment-method-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.payment-method-option:hover {
+  border-color: #1890ff;
+}
+
+.payment-method-option.selected {
+  border-color: #1890ff;
+  background-color: #e6f7ff;
+}
+
+.payment-method-option svg {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+.tall-no-radius-select .ant-select-selector {
+  border-radius: 0 !important;
+  height: 60px !important; 
+  padding: 12px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.tall-no-radius-select .ant-select-item {
+  border-radius: 0 !important;
+  padding: 16px 12px !important; 
+  min-height: 48px !important; 
+  display: flex !important;
+  align-items: center !important;
+}
+
+.tall-no-radius-select .ant-select-arrow {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+.tall-no-radius-select .ant-select-selection-item {
+  line-height: normal !important;
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+}
+
+.tall-no-radius-select .ant-select-dropdown {
+  border-radius: 0 !important;
+}
+
+.tall-no-radius-select .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-radius: 0 !important;
+}
+.currency-display {
+  margin-bottom: 16px;
+  padding: 12px 0;
+    min-height: 150px; 
+  display: flex;
+  flex-direction: column;
+    border-bottom: 1px solid #e8e8e8;
+
+}
+
+.currency-input-row {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.currency-input-row input {
+  flex: 1; 
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  font-size: 16px;
 }

@@ -3,7 +3,7 @@ import { Modal, Button, Form, message,Upload,Card,Divider  } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
 import Cookies from 'js-cookie';
-const ImportProduct = ({ visible, onCancel, onImport }) => {
+const ImportNewStock = ({ visible, onCancel, OnImportNewStock }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const handleFileChange = (info) => {
@@ -39,46 +39,20 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
       const data = XLSX.utils.sheet_to_json(sheet);
   
       const formattedData = data.map((item, index) => {        
-        const name = item['Product Name'];
         const code = item['Product Code'];
-        const category_name = item['Category'] ?? null;
-        const cost = item['Cost'] ;
-        const price = item['Price'];
-        const retail_price = item['Retail Price'] ;
-        const dealer_price = item['Dealer Price'] ;
-        const depot_price = item['Depot Price'];
-        const vip_price = item['VIP Price'];
-        const alert_qty = item['Alert Quantity'];
-        const unit_name = item['Unit'] ;
         const stock = item['Stock'] ;
-        const barcode =  "";
-  
-        const isOnlyNameAndCode = !category_name && !cost && !price && !alert_qty && !unit_code;
-        const is_draft = isOnlyNameAndCode;
 
         
         return {
-          name,
           code,
-          category_name,
-          cost,
-          price,
-          alert_qty,
-          unit_name,
-          is_draft,
-          barcode,
-          retail_price,
-          dealer_price,
-          depot_price,
-          vip_price,
           stock,
           warehouse_id: userData.warehouse_id,
         };
       });    
-      // console.log(formattedData);
+      console.log(formattedData);
       
       
-      onImport(formattedData);
+      OnImportNewStock(formattedData);
     };
     setLoading(false);
     reader.readAsBinaryString(file);
@@ -93,7 +67,7 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
 
   return (
     <Modal
-        title="📦 Import Products"
+        title=" Import New Stock"
         open={visible}
         onCancel={onCancel}
         footer={null}
@@ -125,7 +99,7 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
           loading={loading}
           onClick={handleSubmit}
         >
-          Import Products
+          Import New Stock
         </Button>
       </Form.Item>
     </Form>
@@ -134,4 +108,4 @@ const ImportProduct = ({ visible, onCancel, onImport }) => {
   );
 };
 
-export default ImportProduct;
+export default ImportNewStock;

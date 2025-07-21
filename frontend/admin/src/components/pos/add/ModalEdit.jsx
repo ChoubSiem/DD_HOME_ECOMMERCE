@@ -105,7 +105,7 @@ const EditItemModal = ({ visible, onCancel, onSubmit, initialValues }) => {
       }}
       okText="Save"
       cancelText="Cancel"
-      destroyOnClose
+      // destroyOnClose
     >
       <Form form={form} layout="vertical">
         <Form.Item label="Original Price" name="price">

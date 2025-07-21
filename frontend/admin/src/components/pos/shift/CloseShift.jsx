@@ -292,7 +292,7 @@ const CloseShiftModal = ({ visible, onClose, onShiftClose }) => {
       onCancel={onClose}
       footer={null}
       width="80%"
-      destroyOnClose
+      // destroyOnClose
     >
       <Row gutter={24}>
         <Col span={12}>

@@ -12,13 +12,15 @@ import ImportProductModal from '../../../components/product/addProduct/ImporProd
 import ProductDetailModal from '../../../components/product/ProductDetailModal';
 import ProductUpdatePrice from "../../../components/product/importUpdateProductPrice";
 import { useCompany } from "../../../hooks/UseCompnay";
+import ImportNewStock from "../../../components/product/addProduct/importSetNewStockModal";
 const ProductManagement = () => {
   const token = localStorage.getItem('token');
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalSetNewStock, setModalSetNewStock] = useState(false);
   const [modalUpdatePriceVisible, setModalUpdatePriceVisible] = useState(false);
 
   const [products, setProducts] = useState([]);
-  const { handleCategories, handleProductImport, handleProducts, handleProductDelete ,handleUpdateProductPrice,handleProductDetail} = useProductTerm();
+  const { handleCategories, handleProductImport,handleSetNewStock, handleProducts, handleProductDelete ,handleUpdateProductPrice,handleProductDetail} = useProductTerm();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -65,8 +67,25 @@ const ProductManagement = () => {
   const handleImport = async(importedProducts) => {
     setLoading(true);
     let result = await handleProductImport(importedProducts, token);    
+    console.log(result);
+    
     if (result.success) {
       setProducts(importedProducts);
+      setModalVisible(false); 
+      message.success('Products imported successfully!');
+      setLoading(false);
+    }
+
+  };
+
+  const handleNewStock = async(importedProducts) => {
+    setLoading(true);
+    let result = await handleSetNewStock(importedProducts, token);    
+    console.log(result);
+    
+    if (result.success) {
+      // setProducts(importedProducts);
+      fetchProducts();
       setModalVisible(false); 
       message.success('Products imported successfully!');
       setLoading(false);
@@ -116,6 +135,12 @@ const ProductManagement = () => {
       icon: <UploadOutlined />,
       label: 'Import Product',
       onClick: () => setModalVisible(true),
+    },
+    {
+      key:'setStock',
+      icon: <UploadOutlined />,
+      label: 'Import New Stock',
+      onClick: () => setModalSetNewStock(true),
     },
     {
       key: 'update',
@@ -210,6 +235,11 @@ const filteredProducts = products.filter((product) => {
               visible={modalVisible}
               onCancel={() => setModalVisible(false)}
               onImport={handleImport}
+            />
+            <ImportNewStock
+              visible={modalSetNewStock}
+              onCancel={() => setModalSetNewStock(false)}
+              OnImportNewStock={handleNewStock}
             />
             <ProductUpdatePrice
               visible={modalUpdatePriceVisible}

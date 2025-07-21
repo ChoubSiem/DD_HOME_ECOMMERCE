@@ -37,7 +37,8 @@ import {
   uomConversionsUpdate,
   UpdatePriceByCode,
   updateCategory,
-  getProductDetail
+  getProductDetail,
+  setNewStcok
 } from '../services/productTermService';
 
 export const useProductTerm = () => {
@@ -264,6 +265,19 @@ export const useProductTerm = () => {
   const handleProductImport = async (values,token) => {
     try {
       const productData = await importProduct(values,token);      
+      return {
+        success: true,
+        products: productData.products,     
+        message: productData.message  
+      };
+      
+    } catch (error) {
+      
+    }
+  };
+  const handleSetNewStock = async (values,token) => {
+    try {
+      const productData = await setNewStcok(values,token);      
       return {
         success: true,
         products: productData.products,     
@@ -626,7 +640,8 @@ export const useProductTerm = () => {
      handleUomConversionsUpdate,
      handleUpdateProductPrice,
      handleCategoryUpdate,
-     handleProductDetail
+     handleProductDetail,
+     handleSetNewStock
 
     };
 };

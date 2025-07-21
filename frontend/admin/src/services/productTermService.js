@@ -111,6 +111,15 @@ export const importProduct = async (products, token) => {
   
   return response.data;
 };
+export const setNewStcok = async (products, token) => {
+
+  const response = await axios.put(`${API_BASE}/product/update/stock`, { products: products }, {
+    headers: { Authorization: `Bearer ${token}` },
+    
+  });  
+  
+  return response.data;
+};
 
 export const UpdatePriceByCode = async (products, token) => {
 
