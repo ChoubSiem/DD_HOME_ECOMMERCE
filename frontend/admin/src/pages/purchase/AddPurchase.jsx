@@ -106,6 +106,7 @@ const AddPurchase = () => {
       key: Date.now(),
       productId: selectedProduct.id,
       productName: selectedProduct.name,
+      productCode: selectedProduct.code,
       quantity: 1,
       price: selectedProduct.cost,
       unit_code: selectedProduct.unit_code,
@@ -178,6 +179,12 @@ const AddPurchase = () => {
       key: "No",
       width: 50,
       render: (text, record, index) => <span>{index + 1}</span>,
+    },
+    {
+      title: "Code",
+      dataIndex: "productCode",
+      key: "code",
+      width: 100,
     },
     {
       title: "Product",
@@ -334,6 +341,8 @@ const AddPurchase = () => {
       setLoading(false);
     }
   };  
+  console.log(selectedProducts);
+  
 
   return (
 
