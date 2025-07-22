@@ -221,6 +221,9 @@ function PosAdd() {
     }
   };
 
+  // console.log(initialValues);
+  
+
 
   const EditItemModal = ({ 
     visible, 
@@ -247,6 +250,8 @@ function PosAdd() {
       }
     }, [visible, initialValues]);
 
+    // console.log(initialValues);
+    
     const handleDiscountTypeChange = (e) => {
       setDiscountType(e.target.value);
       form.setFieldsValue({ discount: 0 });
@@ -284,13 +289,13 @@ function PosAdd() {
             <Input value={initialValues?.name} disabled />
           </Form.Item>
           
-          <Form.Item label="Original Price">
+          {/* <Form.Item label="Original Price">
             <Input 
-              value={initialValues?.current_price?.toFixed(2)} 
+              // value={initialValues?.current_price?.toFixed(2)} 
               prefix="$" 
               disabled 
             />
-          </Form.Item>
+          </Form.Item> */}
           
           <Form.Item 
             label="Selling Price" 
