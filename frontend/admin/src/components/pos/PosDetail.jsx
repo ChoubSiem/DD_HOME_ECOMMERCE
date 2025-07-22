@@ -9,8 +9,7 @@ import "./PosSaleDetail.css";
 const PosSaleDetail = ({ open, onCancel, sale, onEdit }) => {
   const invoiceRef = useRef();
   const [isExporting, setIsExporting] = useState(false);
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(false);  
   const formatDate = useMemo(() => {
     return (dateString) => {
       if (!dateString) return "N/A";
@@ -30,11 +29,11 @@ const PosSaleDetail = ({ open, onCancel, sale, onEdit }) => {
     if (!sale?.items) return { subTotal: "0.00", discount: "0.00", grandTotal: "0.00" };
 
     const subTotal = sale.items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
-    const discount = sale.items.reduce((sum, item) => sum + (parseFloat(item.discount) || 0), 0);
+    // const discount = sale.items.reduce((sum, item) => sum + (parseFloat(item.discount) || 0), 0);
     return {
       subTotal: subTotal.toFixed(2),
-      discount: discount.toFixed(2),
-      grandTotal: (subTotal - discount).toFixed(2),
+      // discount: discount.toFixed(2),
+      grandTotal: (subTotal - sale.discount ).toFixed(2),
     };
   }, [sale]);
 
@@ -255,10 +254,10 @@ const PosSaleDetail = ({ open, onCancel, sale, onEdit }) => {
               <span className="total-label">Sub Total:</span>
               <span className="total-value">${subTotal}</span>
             </div>
-                {parseFloat(discount) > 0 && (
+                {parseFloat(sale.discount) > 0 && (
                 <div className="total-row">
                   <span className="total-label">Discount:</span>
-                  <span className="total-value">${parseFloat(discount).toFixed(2)}</span>
+                  <span className="total-value">${parseFloat(sale.discount).toFixed(2)}</span>
                 </div>
               )}
 

@@ -380,13 +380,14 @@ const ProductsTable = ({
                       <Col span={12}>
                         <Form.Item label="Amount">
                           <InputNumber
-                            min={0}
-                            value={payment.amount}
-                            onChange={(value) => handlePaymentAmountChange(value, index)}
-                            formatter={(value) => formatCurrency(value, payment.currency)}
-                            parser={value => parseFloat(value.replace(/[^\d.-]/g, ''))}
-                            style={{ width: '100%' }}
-                          />
+                              min={0}
+                              value={Math.floor(payment.amount)} 
+                              onChange={(value) => handlePaymentAmountChange(value, index)}
+                              formatter={(value) => `${parseInt(value || 0)}`} 
+                              parser={(value) => parseInt(value.replace(/[^\d]/g, ''), 10)} 
+                              style={{ width: '100%' }}
+                            />
+
                         </Form.Item>
                       </Col>
                     </Row>
@@ -409,8 +410,8 @@ const ProductsTable = ({
                       <Col span={12}>
                         <Form.Item label="Exchange Rate">
                           <InputNumber
-                            min={0.0001}
-                            step={0.0001}
+                            min={1}
+                            step={1}
                             value={payment.exchangeRate}
                             onChange={(value) => handleExchangeRateChange(value, index)}
                             style={{ width: '100%' }}

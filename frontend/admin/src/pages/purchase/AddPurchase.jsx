@@ -303,6 +303,10 @@ const AddPurchase = () => {
       message.error("Please select a payment method");
       return;
     }
+    if (!selectedSupplier) {
+      message.error("Please select supplier");
+      return;
+    }
 
     setLoading(true);
     const purchaseData = {

@@ -128,13 +128,9 @@ const ProductSearchModal = ({
               <span className="price-label">VIP:</span>
               <span className="price-value vip">${product.vip_price?.toFixed(2)}</span>
             </div>
-            <div className="price-item">
-              <span className="price-label">Dealer:</span>
-              <span className="price-value vip">${product.dealer_price?.toFixed(2)}</span>
-            </div>
             <div className="stock-item">
               <span className={`stock-value ${product.stock <= 0 ? 'out-of-stock' : 'in-stock'}`}>
-                {product.stock <= 0 ? `${product.stock} Out of stock` : `${product.stock} available`}
+                {product.stock <= 0 ? 'Out of stock' : `${product.stock} available`}
               </span>
             </div>
           </div>

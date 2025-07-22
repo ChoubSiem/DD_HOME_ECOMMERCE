@@ -184,6 +184,7 @@ function PosAdd() {
   const [shiftId, setShiftId] = useState(() => {
     return Cookies.get("shift_id") || Cookies.get("shift-id") || undefined;
   });
+  const EXCHANGE_RATE = 4050; 
 
   const handleKeyDown = (e, currency) => {
     if (e.key === 'Enter') {
@@ -192,9 +193,10 @@ function PosAdd() {
         message.warning("Please enter a valid payment amount");
         return;
       }
+      const usdAmount = currency === 'KHR' ? amount / EXCHANGE_RATE : amount;
       const newPayment = {
         method: selectedPaymentMethod,
-        amount: currency === 'KHR' ? amount / 4050 : amount,
+        amount: usdAmount,
         currency,
         date: dayjs().format("YYYY-MM-DD HH:mm:ss")
       };
@@ -205,168 +207,169 @@ function PosAdd() {
       });
       setInputAmount('');
       setActiveCurrency(currency);
-      message.success(`Added ${currency === 'USD' ? '$' : '៛'}${amount.toFixed(2)} payment via ${selectedPaymentMethod}`);
+      message.success(`Added ${currency === 'USD' ? '$' : '៛'}${amount.toFixed(currency === 'USD' ? 2 : 0)} payment via ${selectedPaymentMethod}`);
     }
   };
 
+  const roundToNearest10 = (amount) => {
+    return Math.floor(amount / 10) * 10;
+  };
+
   const handleFocus = (currency) => {
+    if (!selectedCustomer) {
+      message.warning('Please select customer');
+      return;
+    }
     setActiveCurrency(currency);
-    
     if (!inputAmount) {
-      if (currency == 'KHR') {
-        setInputAmount((total * 4050).toFixed(0));
+      if (currency === 'KHR') {
+        setInputAmount((total * EXCHANGE_RATE).toFixed(0));
       } else {
-        setInputAmount(total.toFixed(2)); 
+        setInputAmount(total.toFixed(2));
+      }
+    } else if (inputAmount) {
+      const parsedAmount = parseFloat(inputAmount) || 0;
+      if (currency === 'KHR' && activeCurrency === 'USD') {
+        const khrAmount = roundToNearest10(parsedAmount * EXCHANGE_RATE); 
+        setInputAmount(khrAmount.toFixed(0));
+      } else if (currency === 'USD' && activeCurrency === 'KHR') {
+        setInputAmount((parsedAmount / EXCHANGE_RATE).toFixed(2));
       }
     }
   };
+
 
   // console.log(initialValues);
   
 
 
-  const EditItemModal = ({ 
-    visible, 
-    onCancel, 
-    onSubmit, 
-    initialValues 
-  }) => {
-    const [form] = Form.useForm();
-    const [discountType, setDiscountType] = useState(initialValues?.discountType || 'amount');
-    const [price, setPrice] = useState(initialValues?.current_price || 0);
-    const [discount, setDiscount] = useState(initialValues?.discount || 0);
+const EditItemModal = ({
+  visible,
+  onCancel,
+  onSubmit,
+  initialValues
+}) => {
+  const [form] = Form.useForm();
+  const [discountType, setDiscountType] = useState(initialValues?.discountType || 'amount');
+  const [price, setPrice] = useState(initialValues?.current_price || 0);
+  const [discount, setDiscount] = useState(initialValues?.discount || 0);
 
-    useEffect(() => {
-      if (visible) {
-        form.setFieldsValue({
-          price: initialValues?.current_price || 0,
-          discount: initialValues?.discount || 0,
-          discountType: initialValues?.discountType || 'amount',
-          quantity: initialValues?.quantity || 1
-        });
-        setDiscountType(initialValues?.discountType || 'amount');
-        setPrice(initialValues?.current_price || 0);
-        setDiscount(initialValues?.discount || 0);
-      }
-    }, [visible, initialValues]);
-
-    // console.log(initialValues);
-    
-    const handleDiscountTypeChange = (e) => {
-      setDiscountType(e.target.value);
-      form.setFieldsValue({ discount: 0 });
-      setDiscount(0);
-    };
-
-    const calculateDiscountedPrice = () => {
-      if (discountType === 'percentage') {
-        return price * (1 - (discount / 100));
-      } else if (discountType === 'amount') {
-        return Math.max(0, price - discount);
-      }
-      return price;
-    };
-
-    const handleSubmit = () => {
-      form.validateFields().then(values => {
-        onSubmit({
-          ...values,
-          finalPrice: calculateDiscountedPrice()
-        });
+  useEffect(() => {
+    if (visible) {
+      form.setFieldsValue({
+        price: initialValues?.current_price || 0,
+        discount: initialValues?.discount || 0,
+        discountType: initialValues?.discountType || 'amount',
+        quantity: initialValues?.quantity || 1
       });
-    };
+      setDiscountType(initialValues?.discountType || 'amount');
+      setPrice(initialValues?.current_price || 0);
+      setDiscount(initialValues?.discount || 0);
+    }
+  }, [visible, initialValues]);
 
-    return (
-      <Modal
-        title="Edit Item"
-        visible={visible}
-        onCancel={onCancel}
-        onOk={handleSubmit}
-        okText="Save Changes"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item label="Product Name">
-            <Input value={initialValues?.name} disabled />
-          </Form.Item>
-          
-          {/* <Form.Item label="Original Price">
-            <Input 
-              // value={initialValues?.current_price?.toFixed(2)} 
-              prefix="$" 
-              disabled 
-            />
-          </Form.Item> */}
-          
-          <Form.Item 
-            label="Selling Price" 
-            name="price"
-            rules={[{ required: true, message: 'Please enter selling price' }]}
-          >
-            <Input 
-              prefix="$" 
-              type="number" 
-              min="0" 
-              step="0.01" 
-              onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-            />
-          </Form.Item>
-          
-          <Form.Item 
-            label="Quantity" 
-            name="quantity"
-            rules={[{ required: true, message: 'Please enter quantity' }]}
-          >
-            <Input type="number" min="1" />
-          </Form.Item>
-          
-          <Form.Item label="Discount Type" name="discountType">
-            <Radio.Group onChange={handleDiscountTypeChange} value={discountType}>
-              <Radio value="amount">Amount ($)</Radio>
-              <Radio value="percentage">Percentage (%)</Radio>
-            </Radio.Group>
-          </Form.Item>
-          
-          <Form.Item 
-            label={discountType === 'percentage' ? 'Discount Percentage' : 'Discount Amount'}
-            name="discount"
-            rules={[
-              { required: true, message: 'Please enter discount' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (discountType === 'percentage') {
-                    if (value >= 0 && value <= 100) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('Discount must be between 0-100%'));
-                  } else {
-                    if (value >= 0 && value <= getFieldValue('price')) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error(`Discount cannot exceed $${getFieldValue('price')}`));
-                  }
-                },
-              }),
-            ]}
-          >
-            <Input 
-              prefix={discountType === 'percentage' ? '%' : '$'} 
-              type="number" 
-              min="0"
-              max={discountType === 'percentage' ? 100 : undefined}
-              onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-            />
-          </Form.Item>
-          
-          <Form.Item label="Final Price">
-            <Input 
-              value={`$${calculateDiscountedPrice().toFixed(2)}`} 
-              disabled 
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-    );
+  const handleDiscountTypeChange = (e) => {
+    setDiscountType(e.target.value);
+    form.setFieldsValue({ discount: 0 });
+    setDiscount(0);
   };
+
+const calculateDiscountedPrice = () => {
+  if (discountType === 'percentage') {
+    return price * (1 - (discount / 100));
+  } else if (discountType === 'amount') {
+    return Math.max(0, price - discount);
+  }
+  return price;
+};
+
+  const handleSubmit = () => {
+    form.validateFields().then((values) => {
+      onSubmit({
+        ...values,
+        finalPrice: calculateDiscountedPrice()
+      });
+    });
+  };
+
+  return (
+    <Modal
+      title="Edit Item"
+      visible={visible}
+      onCancel={onCancel}
+      onOk={handleSubmit}
+      okText="Save Changes"
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item label="Product Name">
+          <Input value={initialValues?.name} disabled />
+        </Form.Item>
+        <Form.Item
+          label="Selling Price"
+          name="price"
+          rules={[{ required: true, message: 'Please enter selling price' }]}
+        >
+          <Input
+            prefix="$"
+            type="number"
+            min="0"
+            step="0.01"
+            onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+          />
+        </Form.Item>
+        <Form.Item
+          label="Quantity"
+          name="quantity"
+          rules={[{ required: true, message: 'Please enter quantity' }]}
+        >
+          <Input type="number" min="1" />
+        </Form.Item>
+        <Form.Item label="Discount Type" name="discountType">
+          <Radio.Group onChange={handleDiscountTypeChange} value={discountType}>
+            <Radio value="amount">Amount ($)</Radio>
+            <Radio value="percentage">Percentage (%)</Radio>
+          </Radio.Group>
+        </Form.Item>
+        <Form.Item
+          label={discountType === 'percentage' ? 'Discount Percentage' : 'Discount Amount'}
+          name="discount"
+          rules={[
+            { required: true, message: 'Please enter discount' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (discountType === 'percentage') {
+                  if (value >= 0 && value <= 100) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Discount must be between 0-100%'));
+                } else {
+                  if (value >= 0 && value <= getFieldValue('price')) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error(`Discount cannot exceed $${getFieldValue('price')}`));
+                }
+              },
+            }),
+          ]}
+        >
+          <Input
+            prefix={discountType === 'percentage' ? '%' : '$'}
+            type="number"
+            min="0"
+            max={discountType === 'percentage' ? 100 : undefined}
+            onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+          />
+        </Form.Item>
+        <Form.Item label="Final Price">
+          <Input
+            value={`$${calculateDiscountedPrice().toFixed(2)}`}
+            disabled
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
 
   const handleSalespersonChange = (selectedId) => {
     const selectedPerson = salepersons.find(person => person.id === selectedId);    
@@ -697,22 +700,51 @@ function PosAdd() {
     message.success(`${product.name} added to cart`);
   };
 
-  const removeFromCart = (productId) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
-    message.success("Item removed from cart");
-  };
-
-  const updateQuantity = (productId, newQuantity) => {
-    if (newQuantity < 1) {
-      removeFromCart(productId);
-      return;
+const removeFromCart = (productId) => {
+  setCartItems((prev) => {
+    const updatedItems = prev.filter((item) => item.id !== productId);
+    if (updatedItems.length === 0) {
+      // Clear payment-related data if cart becomes empty
+      setPayments([]);
+      setInputAmount('');
+      setNextPaymentDate(null);
+      setNextPaymentAmount(0);
+      setIsPaymentModalVisible(false);
+      localStorage.removeItem('posPayments');
+      localStorage.removeItem('posNextPaymentDate');
+      localStorage.removeItem('posNextPaymentAmount');
     }
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
+    return updatedItems;
+  });
+  message.success("Item removed from cart");
+};
+
+const updateQuantity = (productId, newQuantity) => {
+  if (newQuantity < 1) {
+    setCartItems((prev) => {
+      const updatedItems = prev.filter((item) => item.id !== productId);
+      if (updatedItems.length === 0) {
+        // Clear payment-related data if cart becomes empty
+        setPayments([]);
+        setInputAmount('');
+        setNextPaymentDate(null);
+        setNextPaymentAmount(0);
+        setIsPaymentModalVisible(false);
+        localStorage.removeItem('posPayments');
+        localStorage.removeItem('posNextPaymentDate');
+        localStorage.removeItem('posNextPaymentAmount');
+      }
+      return updatedItems;
+    });
+    message.success("Item removed from cart");
+    return;
+  }
+  setCartItems((prev) =>
+    prev.map((item) =>
+      item.id === productId ? { ...item, quantity: newQuantity } : item
+    )
+  );
+};
 
   const clearCart = () => {
     setCartItems([]);
@@ -1044,20 +1076,21 @@ function PosAdd() {
   };
 
   const handleSaveEdit = (values) => {
-    setCartItems(prev => 
-      prev.map(item => 
-        item.id === editingItem.id ? { 
-          ...item, 
-          price: values.price,
-          current_price: values.finalPrice,
-          quantity: values.quantity,
-          discount: values.discount,
-          discountType: values.discountType,
-          original_price: editingItem.original_price
-        } : item
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === editingItem.id
+          ? {
+              ...item,
+              current_price: editingItem.original_price, 
+              price: values.price, 
+              quantity: values.quantity,
+              discount: values.discount,
+              discountType: values.discountType,
+              original_price: editingItem.original_price
+            }
+          : item
       )
     );
-        
     setIsEditModalVisible(false);
     message.success("Item updated successfully");
   };
@@ -1727,7 +1760,7 @@ function PosAdd() {
                   {cartItems.map((item) => (
                     <tr key={item.id} style={{borderBottom: "1px solid #e2e8f0"}}>
                       <td style={{padding: "12px"}}>{item.name}</td>
-                      <td style={{padding: "12px", textAlign: "right"}}>${Number(item?.current_price || 0).toFixed(2) || item.price}</td>
+                      <td style={{ padding: "12px", textAlign: "right" }}>${Number(item.current_price || 0).toFixed(2)}</td>
                       <td style={{padding: "12px", textAlign: "center"}}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <button 
@@ -1818,7 +1851,7 @@ function PosAdd() {
               </div>
               <div className="currency-input-row">
                 <Input
-                  value={activeCurrency === 'KHR' ? inputAmount * 4050 : ''}
+                  value={activeCurrency === 'KHR' ? inputAmount : ''}
                   onChange={(e) => {
                     setInputAmount(e.target.value);
                     setActiveCurrency('KHR');
@@ -1832,8 +1865,8 @@ function PosAdd() {
                   step="1000"
                   onWheel={(e) => e.target.blur()}
                 />
-
               </div>
+
             </div>
 
             <div className="summary-details">
@@ -1842,46 +1875,59 @@ function PosAdd() {
                 <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="summary-row">
-                <span>Discount </span>
+                <span>Item Discounts</span>
+                <span>${itemDiscountTotal.toFixed(2)}</span>
+              </div>
+              <div className="summary-row">
+                <span>Cart Discount</span>
                 <span>${calculatedCartDiscount.toFixed(2)}</span>
               </div>
+              {/* <div className="summary-row">
+                <span>Tax</span>
+                <span>${tax.toFixed(2)}</span>
+              </div>
+              <div className="summary-row">
+                <span>Delivery Fee</span>
+                <span>${deliveryFee.toFixed(2)}</span>
+              </div> */}
               <div className="summary-row">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
               </div>
               <div className="summary-row">
-                <span>Paid Amount</span>
-                <span>${totalPaidAmount.toFixed(2)}</span>
-              </div>
-              {total - totalPaidAmount > 0 && (
-                <div className="summary-row">
-                  <span>Balance</span>
-                  <span>${(total - totalPaidAmount).toFixed(2)}</span>
-                </div>
-              )}
-              {totalPaidAmount > total && (
-                <>
-                  <div className="summary-row">
-                    <span>Change</span>
-                    <span>${(totalPaidAmount - total).toFixed(2)}</span>
-                  </div>
-                  <div className="summary-row">
-                    <span></span>
-                    <span>៛{((totalPaidAmount - total) * 4050).toFixed(2)}</span>
-                  </div>
-                </>
-              )}
-              {payments.length > 0 && (
-                <div className="summary-row">
-                  <Button
-                    size="small"
-                    onClick={() => setIsPaymentHistoryModalVisible(true)}
-                  >
-                    View Payments
-                  </Button>
-                </div>
-              )}
+  <span>Paid Amount</span>
+  <span>${totalPaidAmount.toFixed(2)}</span>
+</div>
+{total - totalPaidAmount > 0 && (
+  <div className="summary-row">
+    <span>Balance</span>
+    <span>${(total - totalPaidAmount).toFixed(2)}</span>
+  </div>
+)}
+{totalPaidAmount > total && (
+  <>
+    <div className="summary-row">
+      <span>Change</span>
+      <span>${(totalPaidAmount - total).toFixed(2)}</span>
+    </div>
+    <div className="summary-row">
+      <span></span>
+      <span>៛{((totalPaidAmount - total) * EXCHANGE_RATE).toFixed(0)}</span>
+    </div>
+  </>
+)}
+{payments.length > 0 && (
+  <div className="summary-row">
+    <Button
+      size="small"
+      onClick={() => setIsPaymentHistoryModalVisible(true)}
+    >
+      View Payments
+    </Button>
+  </div>
+)}
             </div>
+
 
             <div className="cart-actions">
               <div className="checkout-buttons">
