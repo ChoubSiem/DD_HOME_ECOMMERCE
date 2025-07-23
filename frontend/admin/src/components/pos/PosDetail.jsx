@@ -239,7 +239,7 @@ const PosSaleDetail = ({ open, onCancel, sale, onEdit }) => {
                       {item.quantity} {item.unit || ""}
                     </td>
                     <td className="col-discount">{parseFloat(item.discount || 0).toFixed(2)}</td>
-                    <td className="col-total">{parseFloat(item.total || 0).toFixed(2)}</td>
+                    <td className="col-total">{parseFloat(item.total - sale.discount || 0).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
