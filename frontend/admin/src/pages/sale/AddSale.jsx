@@ -261,13 +261,18 @@ const AddSale = () => {
       message.error('Please add at least one product before submitting');
       return;
     }
-
+    
     setLoading(true);
     let warehouse_id = values.warehouse_id;
     let customer_id = null;
     if (userData.warehouse_id) {
       warehouse_id = userData.warehouse_id;
       customer_id = selectedCustomer;
+    }
+    if (!toWarehouseId && customer_id == 0) {
+      
+      message.error('Please select customer ');
+      return;
     }
     const firstNextDate = paymentMethods?.[0]?.nextPaymentDate;
     const creditMethod = paymentMethods.find(pm => pm.method === 'credit');
