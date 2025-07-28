@@ -19,7 +19,7 @@ const ProductSearchModal = ({
   const { handleProducts } = useProductTerm();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [displayCount, setDisplayCount] = useState(20); // Increased initial display count
+  const [displayCount, setDisplayCount] = useState(20); 
   const [isSearching, setIsSearching] = useState(false);
   const token = localStorage.getItem('token');
   const userData = JSON.parse(Cookies.get('user') || {});
@@ -30,8 +30,8 @@ const ProductSearchModal = ({
     debounce((term) => {
       setDebouncedSearchTerm(term);
       setIsSearching(!!term);
-      setDisplayCount(20); // Reset to initial count when searching
-    }, 300), // Slightly longer debounce time
+      setDisplayCount(20);
+    }, 300),
     []
   );
 
@@ -161,6 +161,24 @@ const ProductSearchModal = ({
       )
     },
     { 
+      title: 'VIP', 
+      key: 'vip_price',
+      render: (_, record) => (
+        <Space>
+          <span style={{ color: '#1890ff' }}>${record.vip_price?.toFixed(2)}</span>
+        </Space>
+      )
+    },
+    { 
+      title: 'Dealer', 
+      key: 'dealer_price',
+      render: (_, record) => (
+        <Space>
+          <span style={{ color: '#1890ff' }}>${record.dealer_price?.toFixed(2)}</span>
+        </Space>
+      )
+    },
+    { 
       title: 'Qty', 
       key: 'quantity',
       render: (_, record) => (
@@ -168,7 +186,7 @@ const ProductSearchModal = ({
           min={1}
           value={record.quantity}
           onChange={(value) => updateTempQuantity(record.id, value)}
-          style={{ width: 70 }}
+          style={{ width: 50 }}
         />
       )
     },
@@ -215,12 +233,16 @@ const ProductSearchModal = ({
         <Button 
           key="submit" 
           type="primary" 
-          onClick={() => onConfirm(tempSelectedProducts)}
+          onClick={() => {
+            onConfirm(tempSelectedProducts);   // Call the parent handler
+            setTempSelectedProducts([]);       // Clear the selection
+          }}
           disabled={tempSelectedProducts.length === 0}
           className="confirm-button"
         >
-          Add {tempSelectedProducts.length} Selected Product(s)
-        </Button>,
+          Confirm
+        </Button>
+
       ]}
       className="product-search-modal"
     >
