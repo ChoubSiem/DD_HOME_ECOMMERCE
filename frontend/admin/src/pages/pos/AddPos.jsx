@@ -380,6 +380,10 @@ const calculateDiscountedPrice = () => {
     setSelectedPayment(value);
   };
 
+  const handleChangePrice = () =>{
+
+  }
+
   const handleConfirm = (selectedItems) => {
     setSelectedProducts(selectedItems);
     setModalVisible(false);
@@ -1081,7 +1085,7 @@ const updateQuantity = (productId, newQuantity) => {
         item.id === editingItem.id
           ? {
               ...item,
-              current_price: editingItem.original_price, 
+              current_price: editingItem.price, 
               price: values.price, 
               quantity: values.quantity,
               discount: values.discount,
@@ -1384,7 +1388,7 @@ const updateQuantity = (productId, newQuantity) => {
     </Modal>
   );  
 
-  const AddDiscountModal = ({ subtotal, initialDiscount, initialDiscountType, onSubmit, onCancel }) => {
+  const AddDiscountModal = ({ subtotal, initialDiscount, initialDiscountType, onSubmit, onCancel, itemId }) => {
     const [discount, setDiscount] = useState(initialDiscount);
     const [discountType, setDiscountType] = useState(initialDiscountType);
     const [error, setError] = useState('');
@@ -1402,17 +1406,29 @@ const updateQuantity = (productId, newQuantity) => {
     const handleSubmit = () => {
       const numericValue = parseFloat(inputValue);
       const roundedDiscount = parseFloat(numericValue.toFixed(2));
-      
       const maxDiscount = discountType === 'percent' ? 100 : subtotal;
-      
+
       if (roundedDiscount < 0) {
         setError('Discount cannot be negative');
         return;
       }
-      
+
       if (roundedDiscount > maxDiscount) {
         setError(`Discount cannot exceed ${discountType === 'percent' ? '100%' : `$${subtotal.toFixed(2)}`}`);
         return;
+      }
+
+      // ✅ Update localStorage
+      try {
+        const cart = JSON.parse(localStorage.getItem('posCartItems')) || [];
+        const updatedCart = cart.map(item =>
+          item.id === itemId
+            ? { ...item, discount: roundedDiscount, discountType }
+            : item
+        );
+        localStorage.setItem('posCartItems', JSON.stringify(updatedCart));
+      } catch (e) {
+        console.error('Failed to update discount in localStorage', e);
       }
 
       setError('');
@@ -1420,16 +1436,13 @@ const updateQuantity = (productId, newQuantity) => {
     };
 
     const formatDisplayValue = (value) => {
-      if (discountType === 'percent') {
-        return `${value}%`;
-      }
-      return `$${value.toFixed(2)}`;
+      return discountType === 'percent' ? `${value}%` : `$${value.toFixed(2)}`;
     };
 
     const handleDiscountChange = (e) => {
       const value = e.target.value;
       setInputValue(value);
-      
+
       if (value === '') {
         setDiscount(0);
       } else if (/^\d*\.?\d*$/.test(value)) {
@@ -1457,7 +1470,7 @@ const updateQuantity = (productId, newQuantity) => {
             <Select.Option value="percent">Percentage (%)</Select.Option>
           </Select>
         </div>
-        
+
         <div style={{ marginBottom: '16px' }}>
           <label>Discount Value</label>
           <Input
@@ -1467,7 +1480,6 @@ const updateQuantity = (productId, newQuantity) => {
             placeholder={discountType === 'percent' ? '0-100%' : `0-${subtotal.toFixed(2)}`}
             style={{ marginTop: '8px' }}
             addonAfter={discountType === 'percent' ? '%' : '$'}
-            step="0.01"
           />
           {error && (
             <Alert 
@@ -1483,7 +1495,7 @@ const updateQuantity = (productId, newQuantity) => {
             </div>
           )}
         </div>
-        
+
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
           <Button onClick={onCancel}>Cancel</Button>
           <Button 
