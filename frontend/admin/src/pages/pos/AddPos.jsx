@@ -181,6 +181,7 @@ function PosAdd() {
   const [categories, setCategories] = useState([]);
   const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
   const [isSuspendedOrdersModalVisible, setIsSuspendedOrdersModalVisible] = useState(false);
+  const [totalPrice , setTotalPrice] = useState(0);
   const [shiftId, setShiftId] = useState(() => {
     return Cookies.get("shift_id") || Cookies.get("shift-id") || undefined;
   });
@@ -237,12 +238,6 @@ function PosAdd() {
       }
     }
   };
-
-
-  // console.log(initialValues);
-  
-
-
 const EditItemModal = ({
   visible,
   onCancel,
@@ -804,7 +799,8 @@ const updateQuantity = (productId, newQuantity) => {
                   return {
                       ...item,
                       current_price: price,
-                      originalPrice: item.price, 
+                      originalPrice: price ,
+                      original_price: price ,
                       priceType: group
                   };
               });
@@ -1079,25 +1075,38 @@ const updateQuantity = (productId, newQuantity) => {
     setIsEditModalVisible(true);
   };
 
-  const handleSaveEdit = (values) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === editingItem.id
-          ? {
-              ...item,
-              current_price: editingItem.price, 
-              price: values.price, 
-              quantity: values.quantity,
-              discount: values.discount,
-              discountType: values.discountType,
-              original_price: editingItem.original_price
-            }
-          : item
-      )
-    );
-    setIsEditModalVisible(false);
-    message.success("Item updated successfully");
-  };
+const handleSaveEdit = (values) => {
+  setCartItems((prev) =>
+    prev.map((item) => {
+      if (item.id !== editingItem.id) return item;      
+      const originalPrice = Number(values.price);
+      let finalPrice = originalPrice;
+
+      if (values.discountType === 'amount') {
+        finalPrice = originalPrice -  (Number(values.discount) || 0);
+      } else if (values.discountType === 'percent') {
+        finalPrice = originalPrice * (1  - (Number(values.discount) || 0) / 100);
+      }
+
+      console.log(finalPrice);
+      
+
+      return {
+        ...item,
+        current_price: parseFloat(Number(values.price).toFixed(2)),
+        quantity: values.quantity,
+        discount: values.discount || 0,
+        discountType: values.discountType || 'amount',
+        original_price: editingItem.original_price,
+      };
+    })
+  );
+
+  setIsEditModalVisible(false);
+  message.success("Item updated successfully");
+};
+
+
 
   const handleApplyDiscount = (discount, type) => {
     setCartDiscount(discount);
@@ -1737,52 +1746,66 @@ const updateQuantity = (productId, newQuantity) => {
             </Select>
           </div>
 
-          <div className="products-container">
-            {cartItems.length === 0 ? (
-              <div className="empty-state" style={{background:"#DEDDDE", padding: "40px 20px",height:'100%'}}>
-                <div
-                  className="empty-icon"
-                  style={{
-                    margin: "0 auto 20px",
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: "column", 
-                    alignItems: "center", 
-                    justifyContent: "center", 
-                    padding: "20px"
-                  }}
-                >
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <h3 style={{ marginBottom: "10px" }}>No Items found</h3>
-                </div>
+        <div className="products-container">
+          {cartItems.length === 0 ? (
+            <div className="empty-state" style={{ background: "#DEDDDE", padding: "40px 20px", height: '100%' }}>
+              <div
+                className="empty-icon"
+                style={{
+                  margin: "0 auto 20px",
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "20px"
+                }}
+              >
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <h3 style={{ marginBottom: "10px" }}>No Items found</h3>
               </div>
-            ) : (
-              <table className="cart-table" style={{width: "100%", borderCollapse: "collapse"}}>
-                <thead>
-                  <tr style={{backgroundColor: "#f8fafc"}}>
-                    <th style={{padding: "12px", textAlign: "left"}}>Name</th>
-                    <th style={{padding: "12px", textAlign: "right"}}>Price</th>
-                    <th style={{padding: "12px", textAlign: "center"}}>Qty</th>
-                    <th style={{padding: "12px", textAlign: "center"}}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cartItems.map((item) => (
-                    <tr key={item.id} style={{borderBottom: "1px solid #e2e8f0"}}>
-                      <td style={{padding: "12px"}}>{item.name}</td>
+            </div>
+          ) : (
+            <table className="cart-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ backgroundColor: "#f8fafc" }}>
+                  <th style={{ padding: "12px", textAlign: "left" }}>Name</th>
+                  <th style={{ padding: "12px", textAlign: "right" }}>Price</th>
+                  <th style={{ padding: "12px", textAlign: "right" }}>Discount</th>
+                  <th style={{ padding: "12px", textAlign: "center" }}>Qty</th>
+                  <th style={{ padding: "12px", textAlign: "right" }}>Total Price</th>
+                  <th style={{ padding: "12px", textAlign: "center" }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cartItems.map((item) => {
+                  // Calculate per-item total price
+                  const itemTotalPrice =
+                    item.discountType === "percentage"
+                      ? item.original_price * item.quantity * (1 - (item.discount || 0) / 100)
+                      : (item.original_price - (item.discount || 0)) * item.quantity;
+
+                  return (
+                    <tr key={item.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                      <td style={{ padding: "12px" }}>{item.name} ({item.code})</td>
                       <td style={{ padding: "12px", textAlign: "right" }}>${Number(item.current_price || 0).toFixed(2)}</td>
-                      <td style={{padding: "12px", textAlign: "center"}}>
+                      <td style={{ padding: "12px", textAlign: "right" }}>
+                        {item.discountType === "percentage"
+                          ? `${Number(item.discount || 0).toFixed(2)}%`
+                          : `$${Number(item.discount || 0).toFixed(2)}`}
+                      </td>
+                      <td style={{ padding: "12px", textAlign: "center" }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <button 
+                          <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                             style={{ padding: '2px 8px', marginRight: '8px' }}
                           >
                             -
                           </button>
                           <span>{item.quantity}</span>
-                          <button 
+                          <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             style={{ padding: '2px 8px', marginLeft: '8px' }}
                           >
@@ -1790,24 +1813,26 @@ const updateQuantity = (productId, newQuantity) => {
                           </button>
                         </div>
                       </td>
-                      <td style={{padding: "12px", textAlign: "center"}}>
-                        <Button 
+                      <td style={{ padding: "12px", textAlign: "right" }}>${Number(itemTotalPrice || 0).toFixed(2)}</td>
+                      <td style={{ padding: "12px", textAlign: "center" }}>
+                        <Button
                           icon={<EditOutlined />}
                           onClick={() => handleEditItem(item)}
                           style={{ marginRight: 8 }}
                         />
-                        <Button 
+                        <Button
                           danger
                           icon={<DeleteOutlined />}
                           onClick={() => removeFromCart(item.id)}
                         />
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
         </div>
         <div className="cart-panel">
           <div className="cart-header">
