@@ -344,9 +344,7 @@ const AddPurchase = () => {
     } finally {
       setLoading(false);
     }
-  };  
-  console.log(selectedProducts);
-  
+  };    
 
   return (
 
