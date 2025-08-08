@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Card,
   Table,
@@ -8,10 +8,9 @@ import {
   message,
   InputNumber,
   Select,
-  Input,
   Spin,
 } from "antd";
-import { SearchOutlined, PlusOutlined, DeleteOutlined, EditOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import { SaveOutlined, CloseOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import PurchaseDetailCard from "../../components/purchase/addPurchase/PurchaseDetailCard";
 import NoteSection from "../../components/purchase/addPurchase/NoteSection";
 import PurchaseSearchBar from "../../components/purchase/addPurchase/PurchaseSearchBar";
@@ -31,62 +30,66 @@ const AddPurchase = () => {
   const [loading, setLoading] = useState(false);
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
-  const [purchase, setPurchase] = useState([]);
   const [reference, setReference] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [payment, setPayment] = useState(null); 
   const [editingKey, setEditingKey] = useState('');
   const token = localStorage.getItem("token");
   const user = JSON.parse(Cookies.get("user"));
-  const warehouseId = user.warehouse_id;
   const { handleSuppliers } = useUser();
   const userData = JSON.parse(Cookies.get("user"));
   const { handleCreatePurchase } = useStock();
   const navigate = useNavigate();
 
+  // Load initial data only once
   useEffect(() => {
-    const savedProducts = localStorage.getItem("selectedProducts");
+    const loadInitialData = async () => {
+      setLoading(true);
+      try {
+        // Load saved products if they exist
+        const savedProducts = localStorage.getItem("selectedProducts");
+        if (savedProducts) {
+          setSelectedProducts(JSON.parse(savedProducts));
+        }
+        
+        // Fetch products and suppliers in parallel
+        const [productsResult, suppliersResult] = await Promise.all([
+          handleProducts(token, userData.warehouse_id),
+          handleSuppliers(token)
+        ]);
+        
+        if (productsResult) {
+          setProducts(productsResult.products);
+        }
+        if (suppliersResult?.success) {
+          setSuppliers(suppliersResult.suppliers);
+        }
+      } catch (error) {
+        console.error("Initialization error:", error);
+        message.error("Failed to load initial data");
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    if (savedProducts) {
-      setSelectedProducts(JSON.parse(savedProducts));
-    }
-    setPurchase(userData);
-    fetchProducts();
-    handleSupplierData();
+    loadInitialData();
+    
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests if component unmounts
+    };
   }, []);
 
+  // Debounce localStorage writes
   useEffect(() => {
-    localStorage.setItem("selectedProducts", JSON.stringify(selectedProducts));
+    const timer = setTimeout(() => {
+      localStorage.setItem("selectedProducts", JSON.stringify(selectedProducts));
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [selectedProducts]);
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const result = await handleProducts(token, userData.warehouse_id);
-      if (result) {
-        setProducts(result.products);
-      } else {
-        message.error("Failed to load product: No data received");
-      }
-    } catch (error) {
-      message.error("Failed to load product");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSupplierData = async () => {
-    let result = await handleSuppliers(token);
-    if (result.success) {
-      setSuppliers(result.suppliers);
-    }
-  }
-
-  const handleSearchChange = (value) => {
-  setSearchTerm(value);
-};
-
-  const handleProductSelect = (value) => {
+  const handleProductSelect = useCallback((value) => {
     const selectedProduct = products.find((product) => product.name === value);
 
     if (!selectedProduct) {
@@ -102,83 +105,89 @@ const AddPurchase = () => {
       message.warning(`${selectedProduct.name} is already added.`);
       return;
     }    
-    const newProduct = {
-      key: Date.now(),
-      productId: selectedProduct.id,
-      productName: selectedProduct.name,
-      productCode: selectedProduct.code,
-      quantity: 1,
-      price: selectedProduct.cost,
-      unit_code: selectedProduct.unit_code,
-      unit_name: selectedProduct.unit_name,
-      total: selectedProduct.cost * 1,
-    };
     
-    setSelectedProducts([...selectedProducts, newProduct]);
+    setSelectedProducts(prev => [
+      ...prev,
+      {
+        key: Date.now(),
+        productId: selectedProduct.id,
+        productName: selectedProduct.name,
+        productCode: selectedProduct.code,
+        quantity: 1,
+        price: selectedProduct.cost,
+        unit_code: selectedProduct.unit_code,
+        unit_name: selectedProduct.unit_name,
+        total: selectedProduct.cost * 1,
+      }
+    ]);
+    
     message.success(`${selectedProduct.name} has been added to the purchase list.`);
     setSearchTerm("");
-  };
+  }, [products, selectedProducts]);
 
-  const handleQuantityChange = (key, value) => {
-    const updatedProducts = selectedProducts.map((product) =>
-      product.key === key ? { 
-        ...product, 
-        quantity: value, 
-        total: value * product.price 
-      } : product
+  const handleQuantityChange = useCallback((key, value) => {
+    setSelectedProducts(prev => 
+      prev.map(product => 
+        product.key === key ? { 
+          ...product, 
+          quantity: value, 
+          total: value * product.price 
+        } : product
+      )
     );
-    setSelectedProducts(updatedProducts);
-  };
+  }, []);
 
-  const handlePriceChange = (key, value) => {
-    const updatedProducts = selectedProducts.map((product) =>
-      product.key === key ? { 
-        ...product, 
-        price: value,
-        total: value * product.quantity 
-      } : product
+  const handlePriceChange = useCallback((key, value) => {
+    setSelectedProducts(prev => 
+      prev.map(product => 
+        product.key === key ? { 
+          ...product, 
+          price: value,
+          total: value * product.quantity 
+        } : product
+      )
     );
-    setSelectedProducts(updatedProducts);
-  };
+  }, []);
 
-  const handleUnitChange = (key, value) => {
-    const updatedProducts = selectedProducts.map((product) =>
-      product.key === key ? { ...product, unit: value } : product
+  const handleUnitChange = useCallback((key, value) => {
+    setSelectedProducts(prev => 
+      prev.map(product => 
+        product.key === key ? { ...product, unit: value } : product
+      )
     );
-    setSelectedProducts(updatedProducts);
-  };
+  }, []);
 
-  const handleRemoveProduct = (key) => {
-    const updatedProducts = selectedProducts.filter((p) => p.key !== key);
-    setSelectedProducts(updatedProducts);
-  };
+  const handleRemoveProduct = useCallback((key) => {
+    setSelectedProducts(prev => prev.filter((p) => p.key !== key));
+  }, []);
 
-  const isEditing = (record) => record.key === editingKey;
+  const isEditing = useCallback((record) => record.key === editingKey, [editingKey]);
 
-  const edit = (record) => {
+  const edit = useCallback((record) => {
     setEditingKey(record.key);
-  };
+  }, []);
 
-  const cancelEdit = () => {
+  const cancelEdit = useCallback(() => {
     setEditingKey('');
-  };
+  }, []);
 
-  const saveEdit = (key) => {
+  const saveEdit = useCallback((key) => {
     setEditingKey('');
-  };
+  }, []);
 
-  const totalAmount = selectedProducts.reduce(
-    (sum, product) => sum + product.total,
-    0
+  // Memoize the total amount calculation
+  const totalAmount = useMemo(() => 
+    selectedProducts.reduce((sum, product) => sum + product.total, 0),
+    [selectedProducts]
   );
 
-  const columns = [
+  // Memoize columns to prevent unnecessary re-renders
+  const columns = useMemo(() => [
     {
       title: "No",
-      dataIndex: "No",
       key: "No",
       width: 50,
-      render: (text, record, index) => <span>{index + 1}</span>,
+      render: (_, __, index) => <span>{index + 1}</span>,
     },
     {
       title: "Code",
@@ -194,7 +203,6 @@ const AddPurchase = () => {
     },
     {
       title: "Unit",
-      dataIndex: "unit",
       key: "unit",
       width: 120,
       render: (_, record) => {
@@ -212,7 +220,6 @@ const AddPurchase = () => {
     },
     {
       title: "Quantity",
-      dataIndex: "quantity",
       key: "quantity",
       width: 120,
       render: (_, record) => {
@@ -229,7 +236,6 @@ const AddPurchase = () => {
     },
     {
       title: "Price",
-      dataIndex: "price",
       key: "price",
       width: 120,
       render: (_, record) => {
@@ -246,10 +252,13 @@ const AddPurchase = () => {
     },
     {
       title: "Total",
-      dataIndex: "total",
       key: "total",
       width: 120,
-      render: (_, record) => <span style={{display: 'flex', justifyContent: 'flex-end', width: '100%'}}>${record.total?.toFixed(2)}</span>,
+      render: (_, record) => (
+        <span style={{display: 'flex', justifyContent: 'flex-end', width: '100%'}}>
+          ${record.total?.toFixed(2)}
+        </span>
+      ),
     },
     {
       title: "Action",
@@ -259,39 +268,23 @@ const AddPurchase = () => {
         const editable = isEditing(record);
         return editable ? (
           <Space>
-            <Button
-              onClick={() => saveEdit(record.key)}
-              icon={<SaveOutlined />}
-              size="small"
-            />
-            <Button
-              onClick={cancelEdit}
-              icon={<CloseOutlined />}
-              size="small"
-            />
+            <Button onClick={() => saveEdit(record.key)} icon={<SaveOutlined />} size="small" />
+            <Button onClick={cancelEdit} icon={<CloseOutlined />} size="small" />
           </Space>
         ) : (
           <Space>
-            <Button
-              onClick={() => edit(record)}
-              icon={<EditOutlined />}
-              size="small"
-            />
+            <Button onClick={() => edit(record)} icon={<EditOutlined />} size="small" />
             <Popconfirm
               title="Are you sure to delete this product?"
               onConfirm={() => handleRemoveProduct(record.key)}
             >
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                size="small"
-              />
+              <Button danger icon={<DeleteOutlined />} size="small" />
             </Popconfirm>
           </Space>
         );
       },
     }
-  ];
+  ], [isEditing, handleUnitChange, handleQuantityChange, handlePriceChange, saveEdit, cancelEdit, edit, handleRemoveProduct]);
 
   const handleSubmit = async () => {
     if (selectedProducts.length === 0) {
@@ -312,8 +305,8 @@ const AddPurchase = () => {
     const purchaseData = {
       date: dayjs().format('YYYY-MM-DD HH:mm:ss'),
       reference: reference,
-      purchaser: purchase.id,
-      supplier_id : selectedSupplier,
+      purchaser: userData.id,
+      supplier_id: selectedSupplier,
       warehouse_id: userData.warehouse_id,
       note: note || null,
       payments: payment.payments,
@@ -327,6 +320,7 @@ const AddPurchase = () => {
         unit_code: product.unit_code || null
       }))
     };    
+    
     try {
       const result = await handleCreatePurchase(purchaseData, token);
       if (result.success) {
@@ -344,12 +338,9 @@ const AddPurchase = () => {
     } finally {
       setLoading(false);
     }
-  };  
-  console.log(selectedProducts);
-  
+  };
 
   return (
-
     <Spin spinning={loading}>
       <div className="add-purchase-container">
         <Card style={{ border: 'none', borderBottom: '1px solid #52c41a', borderRadius: 0, marginBottom: '20px' }}>
@@ -363,16 +354,16 @@ const AddPurchase = () => {
           reference={reference} 
           setReference={setReference}
           suppliers={suppliers}
-          purchase={purchase}
+          purchase={userData}
           onPaymentSubmit={setPayment} 
-          selectSupplier = {setSelectedSupplier}
+          selectSupplier={setSelectedSupplier}
           total={totalAmount}
         />
         
         <PurchaseSearchBar
           products={products}
           searchTerm={searchTerm}
-          handleSearchChange={handleSearchChange} 
+          handleSearchChange={setSearchTerm} 
           handleProductSelect={handleProductSelect}
         />
         
@@ -383,9 +374,10 @@ const AddPurchase = () => {
           pagination={false}
           rowClassName="editable-row"
           style={{ marginBottom: '20px' }}
+          rowKey="key"
         />
         
-        <div className="total-amount" style={{ marginBottom: '20px', textAlign: 'right',marginRight:"13%" }}>
+        <div className="total-amount" style={{ marginBottom: '20px', textAlign: 'right', marginRight: "13%" }}>
           <strong style={{ fontSize: '16px' }}>Total Amount: ${totalAmount.toFixed(2)}</strong>
         </div>
         
@@ -402,4 +394,4 @@ const AddPurchase = () => {
   );
 };
 
-export default AddPurchase;
+export default React.memo(AddPurchase);

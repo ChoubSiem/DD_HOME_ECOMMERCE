@@ -274,14 +274,16 @@ const AddSale = () => {
       message.error('Please select customer ');
       return;
     }
+    // console.log(values);
+    
     const firstNextDate = paymentMethods?.[0]?.nextPaymentDate;
     const creditMethod = paymentMethods.find(pm => pm.method === 'credit');
     const creditAmount = creditMethod ? creditMethod.amount : null;
     const amount_paid = paymentMethods.map(payment => payment.amount).reduce((sum, amount) => sum + amount, 0);
     const saleData = {
-      date: values.date || dayjs().format("YYYY-MM-DD HH:mm:ss"),
+      date: values.date || dayjs().format('YYYY-MM-DD HH:mm:ss'),
       reference: reference,
-      sale_person: adjuster.id,
+      sale_person: adjuster.id, 
       warehouse_id: warehouse_id ?? null,
       from_warehouse_id: fromWarehouseId == 'company' ? null : fromWarehouseId,
       to_warehouse_id: toWarehouseId ?? null,

@@ -16,6 +16,7 @@ import {
 import SaleModalDetail from "./SaleModalDetail";
 import { formatDate, formatCurrency } from "../../util/helper";
 import Cookies from 'js-cookie';
+import dayjs from 'dayjs';
 const { Text } = Typography;
 
 const greenTheme = {
@@ -115,7 +116,7 @@ const SalesTable = ({
       selector: row => row.saleDate,
       sortable: true,
       width: '180px',
-      cell: (row) => <Text>{row.saleDate}</Text>,
+      cell: (row) => <Text>{dayjs(row.saleDate).format('DD-MM-YYYY HH:mm:ss')}</Text>,
     },
   // {
   //     name: 'Type',
