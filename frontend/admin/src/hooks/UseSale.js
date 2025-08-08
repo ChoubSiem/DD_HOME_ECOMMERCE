@@ -55,9 +55,11 @@ export const useSale = () => {
   };
   const handlePosSaleCreate = async (values,token) => {
     try {
-      const posSaleData = await addPosSale(values,token);            
+      const posSaleData = await addPosSale(values,token);   
+      console.log(posSaleData);
+               
       return {
-        success: true,
+        success: posSaleData.success,
         data: posSaleData,
         sales: posSaleData.sales, 
       };
