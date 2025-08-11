@@ -25,20 +25,20 @@ import {
   updateProduct,
   selectWarehouseProduct,
   warehouseProducts,
-  uomTranfers,
-  uomTransferCreate,
-  uomTransferEdit,
-  uomTranfersUpdate,
-  uomTranfersDelete,
+  // uomTransfers,
+  // uomTransferCreate,
+  // uomTransferEdit,
+  // uomTransferssUpdate,
+  // uomTransfersDelete,
   uomConversions,
-  uomConversionsCreate,
-  uomConversionsEdit,
-  uomConversionsDelete,
-  uomConversionsUpdate,
-  UpdatePriceByCode,
+  uomConversionCreate,
+  uomConversionEdit,
+  uomConversionDelete,
+  uomConversionUpdate,
+  updatePriceByCode,
   updateCategory,
   getProductDetail,
-  setNewStcok
+  setNewStock
 } from '../services/productTermService';
 
 export const useProductTerm = () => {
@@ -277,7 +277,7 @@ export const useProductTerm = () => {
   };
   const handleSetNewStock = async (values,token) => {
     try {
-      const productData = await setNewStcok(values,token);      
+      const productData = await setNewStock(values,token);      
       return {
         success: true,
         products: productData.products,     
@@ -499,7 +499,7 @@ export const useProductTerm = () => {
   };
   const handleUomConversionsCreate = async (values,token) => {
     try {
-      const uomData = await uomConversionsCreate(values,token);      
+      const uomData = await uomConversionCreate(values,token);      
       return {
         success: true,
         uom  : uomData.uom,     
@@ -517,7 +517,7 @@ export const useProductTerm = () => {
   
   const handleUomConversionsEdit = async (uomId,token) => {
     try {
-      const uomData = await uomConversionsEdit(uomId,token);      
+      const uomData = await uomConversionEdit(uomId,token);      
       return {
         success: true,
         uom  : uomData.uom,     
@@ -535,7 +535,7 @@ export const useProductTerm = () => {
 
   const handleUomConversionsUpdate = async (uomId,values,token) => {
     try {
-      const uomData = await uomConversionsUpdate(uomId,values,token);      
+      const uomData = await uomConversionUpdate(uomId,values,token);      
       return {
         success: true,
         uom  : uomData.uom,     
@@ -552,7 +552,7 @@ export const useProductTerm = () => {
   };
   const handleUomConversionsDelete = async (uomId,token) => {
     try {
-      const uomData = await uomConversionsDelete(uomId,token);      
+      const uomData = await uomConversionDelete(uomId,token);      
       return {
         success: true,
         uom  : uomData.uom,     
@@ -570,7 +570,7 @@ export const useProductTerm = () => {
 
   const handleUpdateProductPrice = async (values, token) => {
     try {
-      const productData = await UpdatePriceByCode(values, token);
+      const productData = await updatePriceByCode(values, token);
 
       return {
         success: true,
@@ -641,7 +641,9 @@ export const useProductTerm = () => {
      handleUpdateProductPrice,
      handleCategoryUpdate,
      handleProductDetail,
-     handleSetNewStock
+     handleSetNewStock,
+     handleRegional,
+     handleWarehouse
 
     };
 };

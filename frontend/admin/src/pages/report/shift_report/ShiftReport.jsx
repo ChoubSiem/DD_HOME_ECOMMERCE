@@ -65,7 +65,7 @@ const ShiftReports = () => {
 
   const handleShifts = async () => {
     setLoading(true);
-    let result = await getShiftReportData(userData.warehouse_id, token);        
+    let result = await getShiftReportData(userData.warehouse_id, token);            
     if (result.success) {
       setShifts(result.shifts);
       setLoading(false);
@@ -83,6 +83,7 @@ const ShiftReports = () => {
       link.click();
     }
   };
+console.log(selectedShift);
 
   let exchange_rate = selectedShift?.close_cashes?.KHR?.[0]?.exchange_rate;  
   useEffect(() => {
@@ -121,7 +122,6 @@ const ShiftReports = () => {
   const getStatusColor = (status) => {
     if (!status) return '#d9d9d9';    
     switch (status.toLowerCase()) {
-      case 'processing': return '#1890ff';
       case 'completed': return '#52c41a';
       case 'processing': return '#faad14';
       default: return '#d9d9d9';
@@ -139,9 +139,6 @@ const ShiftReports = () => {
     }
   };
 
-  const handleDownloadPDF = () => {
-    console.log("Downloading PDF...");
-  };
 
   const columns = [
     {
@@ -242,8 +239,6 @@ const ShiftReports = () => {
         />
       ),
       ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
     },
   ];
 

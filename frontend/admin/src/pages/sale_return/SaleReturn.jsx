@@ -62,7 +62,9 @@ const SalesReturnPage = () => {
   };
 
   const handleSalesReturnData = async () => {
-    let result = await handleSaleReturns(user.warehouse_id, token);        
+    let result = await handleSaleReturns(user.warehouse_id, token);    
+    console.log(result);
+        
     if (result.success) {
       setReturns(result.sale);
     }

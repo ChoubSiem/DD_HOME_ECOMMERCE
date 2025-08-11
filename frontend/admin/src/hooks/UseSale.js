@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import { getPosSales,addPosSale,addOpenShift ,getOneOpenShift,UpdateOpenShift,addCloseShift,getSalesInventory,getSalePaymentOne,getOneInventorySale,updateSaleInventory,deleteSaleInventory, deletePosSale, getOneProcessingShift,getSaleReturn,getOneSaleReturn,addSaleReturn,updateSaleReturn,deleteSaleReturn ,getOnePosSale} from '../services/saleService';
+import { getPosSales,addPosSale,addOpenShift ,getOneOpenShift,updateOpenShift,addCloseShift,getSalesInventory,getSalePaymentOne,getOneInventorySale,updateSaleInventory,deleteSaleInventory, deletePosSale, getOneProcessingShift,getSaleReturn,getOneSaleReturn,addSaleReturn,updateSaleReturn,deleteSaleReturn ,getOnePosSale} from '../services/saleService';
 export const useSale = () => {
   const handlePosSales = async (warehouseId,token) => {
     try {
@@ -55,9 +55,7 @@ export const useSale = () => {
   };
   const handlePosSaleCreate = async (values,token) => {
     try {
-      const posSaleData = await addPosSale(values,token);   
-      console.log(posSaleData);
-               
+      const posSaleData = await addPosSale(values,token);                  
       return {
         success: posSaleData.success,
         data: posSaleData,
@@ -125,7 +123,7 @@ export const useSale = () => {
   
   const handleOpenShiftUpdate = async (shiftId,values,token) => {
     try {
-      const posSaleData = await UpdateOpenShift(shiftId,values,token);            
+      const posSaleData = await updateOpenShift(shiftId,values,token);            
       return {
         success: true,
         data: posSaleData,

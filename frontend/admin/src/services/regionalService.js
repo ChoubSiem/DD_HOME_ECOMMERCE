@@ -1,40 +1,36 @@
-import axios from 'axios';
-const API_BASE = 'https://backend.ddhomekh.com/api';
+import api from "../api/axiosConfig";
 
 export const fetchRegional = async (token) => {
-  
-  const response = await axios.get(`${API_BASE}/regional/list`, {
+  const response = await api.get('/regional/list', {
     headers: { Authorization: `Bearer ${token}` }
-  });  
-  
-  return response.data;
+  });
+  return response;
 };
 
 export const showRegional = async (id, token) => {
-  const response = await axios.get(`${API_BASE}/regional/show/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-  });  
-  return response.data;
+  const response = await api.get(`/regional/show/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response;
 };
 
 export const createRegional = async (values, token) => {
-  const response = await axios.post(`${API_BASE}/regional/create`, values, {
+  const response = await api.post('/regional/create', values, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  
-  return response.data;
+  return response;
 };
 
 export const updateRegional = async (id, values, token) => {
-  const response = await axios.put(`${API_BASE}/regional/update/${id}`, values, {
+  const response = await api.put(`/regional/update/${id}`, values, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return response;
 };
 
 export const deleteRegional = async (id, token) => {
-  const response = await axios.delete(`${API_BASE}/regional/delete/${id}`, {
+  const response = await api.delete(`/regional/delete/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
-  });  
-  return response.data;
+  });
+  return response;
 };

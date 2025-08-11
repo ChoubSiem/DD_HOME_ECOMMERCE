@@ -15,8 +15,8 @@ import {
     showPurchase, 
     updatePurchase, 
     deletePurchase,
-    createSuspand,
-    deleteSuspand,
+    createSuspend,
+    deleteSuspend,
     getSuspends,
     fetchPurchase,
     getStockTransfers
@@ -199,7 +199,7 @@ export const useStock = () => {
 
 
     const handleSuspandCreate = async(values,warehouseId, token) => {        
-        let result = await createSuspand(values ,warehouseId,token);
+        let result = await createSuspend(values ,warehouseId,token);
         if (result) {
             return{
                 success:true,
@@ -219,7 +219,7 @@ export const useStock = () => {
         }
     }
     const handleSuspendDelete = async(id, token) => {        
-        let result = await deleteSuspand(id,token);
+        let result = await deleteSuspend(id,token);
         if (result) {
             return{
                 success:true,

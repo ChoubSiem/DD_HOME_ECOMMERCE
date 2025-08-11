@@ -17,7 +17,7 @@ export const useAuth = () => {
         phone: user?.phone || values.phone,
         warehouse_id: user?.warehouse_id || values.warehouse_id || null,
         }, permissions,values.remember); 
-
+        
       const success = await login(token, {
         name: user?.username || null,
         id: user?.id || null,

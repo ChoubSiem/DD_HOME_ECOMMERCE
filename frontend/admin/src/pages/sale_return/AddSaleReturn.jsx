@@ -34,7 +34,7 @@ const AddSaleReturn = () => {
   const [formData, setFormData] = useState({
     sale_id: id,
     reference: `SR-${dayjs().format('YYMMDDHHmm')}`,
-    date: dayjs().format('YYYY-MM-DD'),
+    date: dayjs().format('YYYY-MM-DD HH:mm:ss'),
     warehouse_id: user.warehouse_id,
     saleperson: user.name,
     note: '',
@@ -65,6 +65,7 @@ const AddSaleReturn = () => {
       
       if (result.success) {
         setOriginalSale(result.sale);
+        console.log(result);
         
         const savedItems = localStorage.getItem(`saleReturnItems_${id}`);
         if (savedItems) {
@@ -79,7 +80,7 @@ const AddSaleReturn = () => {
             original_qty: item.qty,
             discount: (Number(item.discount) + Number(item.inv_discount)) || 0,
             discount_amount: ((Number(item.discount) + Number(item.inv_discount))) || 0,
-            total: item.price * 1 - ((Number(item.discount) + Number(item.inv_discount)) || 0)
+            total: Number(item.price) * 1 - ((Number(item.discount) + Number(item.inv_discount)) || 0)
           }));
           setSaleItems(items);
         }
@@ -214,16 +215,25 @@ const AddSaleReturn = () => {
           <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Return Information</h3>
           
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-            <div style={{ flex: '1 1 45%', minWidth: '250px' }}>
-              <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Date*</label>
-              <Calendar 
-                value={new Date(formData.date)} 
-                onChange={(e) => setFormData({...formData, date: dayjs(e.value).format('YYYY-MM-DD')})}
-                dateFormat="yy-mm-dd"
-                style={{ width: '100%', height: '44px' }}
-                inputStyle={{ paddingLeft: '10px' }}
-              />
-            </div>  
+<div style={{ flex: '1 1 45%', minWidth: '250px' }}>
+  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Date*</label>
+<Calendar 
+  value={formData.date ? new Date(formData.date) : new Date()} // Use current date if formData.date is empty
+  onChange={(e) =>
+    setFormData({
+      ...formData,
+      date: dayjs(e.value).format('YYYY-MM-DD HH:mm:ss'),
+    })
+  }
+  dateFormat="yy-mm-dd"
+  showTime
+  hourFormat="24"
+  style={{ width: '100%', height: '44px' }}
+  inputStyle={{ paddingLeft: '10px' }}
+/>
+
+</div>
+
             <div style={{ flex: '1 1 45%', minWidth: '250px' }}>
               <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px' }}>Reference*</label>
               <InputText 
@@ -349,14 +359,14 @@ const AddSaleReturn = () => {
               <Column 
                 header="Discount" 
                 body={(rowData) => (
-                  <span>${((rowData.discount_amount / rowData.original_qty) * rowData.return_qty).toFixed(2)}</span>
+                  <span>${((Number(rowData.discount_amount) / Number(rowData.original_qty)) * rowData.return_qty).toFixed(2)}</span>
                 )}
               />
               <Column 
                 header="Total" 
                 body={(rowData) => (
                   <span style={{ fontWeight: '600' }}>
-                    ${((rowData.return_qty * rowData.price) - ((rowData.discount_amount / rowData.original_qty) * rowData.return_qty)).toFixed(2)}
+                    ${((rowData.return_qty * rowData.price) - ((Number(rowData.discount_amount) / Number(rowData.original_qty)) * rowData.return_qty)).toFixed(2)}
                   </span>
                 )}
               />

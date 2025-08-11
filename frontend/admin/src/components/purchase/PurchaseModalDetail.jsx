@@ -142,7 +142,7 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
 
               </td>
               <td className="document-info">
-                <h2>PURCHASE ORDER</h2>
+                <h2>PURCHASE</h2>
                 <table className="meta-table">
                   <tbody>
                     <tr>

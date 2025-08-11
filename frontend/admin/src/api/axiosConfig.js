@@ -1,29 +1,25 @@
+// api/axiosConfig.js
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-  timeout: 10000,
+  baseURL: 'http://127.0.0.1:8000/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 30000,
 });
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 api.interceptors.response.use(
-  (response) => response.data,
-  (error) => {
-    if (error.response?.status === 401) {
-        
-    }
-    return Promise.reject(error.response?.data || error.message);
-  }
+  response => response.data,
+  error => Promise.reject(error.response?.data || error.message)
 );
 
 export default api;

@@ -1,38 +1,36 @@
-import axios from 'axios';
-
-const API_BASE = 'https://backend.ddhomekh.com/api';
+import api from "../api/axiosConfig";
 
 export const fetchCompany = async (token) => {
-  const response = await axios.get(`${API_BASE}/company/list`, {
+  const response = await api.get(`/company/list`, {
     headers: { Authorization: `Bearer ${token}` }
   });  
-  return response.data;
+  return response;
 };
 
 export const createCompany = async (values, token) => {
-  const response = await axios.post(`${API_BASE}/company/create`, values, {
+  const response = await api.post(`/company/create`, values, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  return response.data;
+  return response;
 };
 
 export const showCompany = async (id, token) => {
-  const response = await axios.get(`${API_BASE}/company/show/${id}`, {
+  const response = await api.get(`/company/show/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   });  
-  return response.data;
+  return response;
 };
 
 export const updateCompany = async (id, values, token) => {
-  const response = await axios.put(`${API_BASE}/company/update/${id}`, values, {
+  const response = await api.put(`/company/update/${id}`, values, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  return response.data;
+  return response;
 };
 
 export const deleteCompany = async (id, token) => {
-  const response = await axios.delete(`${API_BASE}/company/delete/${id}`, {
+  const response = await api.delete(`/company/delete/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  return response.data;
+  return response;
 };

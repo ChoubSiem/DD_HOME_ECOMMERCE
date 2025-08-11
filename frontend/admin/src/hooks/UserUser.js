@@ -15,7 +15,7 @@ import {
   getCustomerGroups,
   updateCustomerGroup,
   deleteCustomerGroup,
-  udpateCustomer,
+  updateCustomer,
   deleteCustomer,
   importCustomer,
   getOneCustomer
@@ -265,7 +265,7 @@ export const useUser = () => {
   };
   const handleUpdateCustomer = async (groupId ,values , token) => {
     try {
-      const result = await udpateCustomer(groupId,values,token);                  
+      const result = await updateCustomer(groupId,values,token);                  
       return {
         success: true,
         customer: result.customer, 

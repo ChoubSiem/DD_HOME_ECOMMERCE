@@ -6,7 +6,7 @@ import { Tooltip, Drawer, message, Button, Input, Modal, Alert, Table, Badge, Sp
 import Cookies from "js-cookie";
 import "./AddPos.css";
 import { motion, AnimatePresence } from "framer-motion";
-import { useProductTerm } from "../../hooks/UserProductTerm";  
+import { useProductTerm } from "../../hooks/UserProductTerm";
 import { useUser } from "../../hooks/UserUser";
 import OpenShiftModal from '../../components/pos/shift/OpenShift';
 import CloseShiftModal from '../../components/pos/shift/CloseShift';
@@ -57,7 +57,7 @@ function PosAdd() {
   const [selectedSalesperson, setSelectedSalesperson] = useState(null);
   const [customerGroup, setCustomerGroup] = useState('');
   const [groupOptions, setGroupOptions] = useState([]);
-  const [priceType, setPriceType] = useState('retail_price'); 
+  const [priceType, setPriceType] = useState('retail_price');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newCustomerName, setNewCustomerName] = useState("");
   const [newCustomerPhone, setNewCustomerPhone] = useState("");
@@ -127,22 +127,22 @@ function PosAdd() {
       return 'amount';
     }
   });
-    const handleRemovePayment = (index) => {
-      Modal.confirm({
-        title: 'Remove Payment',
-        content: 'Are you sure you want to remove this payment?',
-        okText: 'Yes',
-        cancelText: 'No',
-        onOk: () => {
-          setPayments(prev => {
-            const updatedPayments = prev.filter((_, i) => i !== index);
-            localStorage.setItem('posPayments', JSON.stringify(updatedPayments));
-            message.success('Payment removed successfully');
-            return updatedPayments;
-          });
-        },
-      });
-    };
+  const handleRemovePayment = (index) => {
+    Modal.confirm({
+      title: 'Remove Payment',
+      content: 'Are you sure you want to remove this payment?',
+      okText: 'Yes',
+      cancelText: 'No',
+      onOk: () => {
+        setPayments(prev => {
+          const updatedPayments = prev.filter((_, i) => i !== index);
+          localStorage.setItem('posPayments', JSON.stringify(updatedPayments));
+          message.success('Payment removed successfully');
+          return updatedPayments;
+        });
+      },
+    });
+  };
   const [nextPaymentDate, setNextPaymentDate] = useState(() => {
     const savedDate = localStorage.getItem('posNextPaymentDate');
     try {
@@ -150,7 +150,7 @@ function PosAdd() {
     } catch (error) {
       return null;
     }
-  });  
+  });
   const [nextPaymentAmount, setNextPaymentAmount] = useState(() => {
     const savedAmount = localStorage.getItem('posNextPaymentAmount');
     try {
@@ -181,18 +181,22 @@ function PosAdd() {
   const [categories, setCategories] = useState([]);
   const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
   const [isSuspendedOrdersModalVisible, setIsSuspendedOrdersModalVisible] = useState(false);
-  const [totalPrice , setTotalPrice] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
   const [shiftId, setShiftId] = useState(() => {
     return Cookies.get("shift_id") || Cookies.get("shift-id") || undefined;
   });
-  const EXCHANGE_RATE = 4050; 
+  const EXCHANGE_RATE = 4050;
 
   const handleKeyDown = (e, currency) => {
     if (e.key === 'Enter') {
-      const amount = parseFloat(inputAmount) || 0;
+      let amount = parseFloat(inputAmount) || 0;
       if (amount <= 0) {
         message.warning("Please enter a valid payment amount");
         return;
+      }
+      // Round KHR amounts to the nearest 100
+      if (currency === 'KHR') {
+        amount = roundToNearest100(amount);
       }
       const usdAmount = currency === 'KHR' ? amount / EXCHANGE_RATE : amount;
       const newPayment = {
@@ -208,7 +212,7 @@ function PosAdd() {
       });
       setInputAmount('');
       setActiveCurrency(currency);
-      message.success(`Added ${currency === 'USD' ? '$' : '៛'}${amount.toFixed(currency === 'USD' ? 2 : 0)} payment via ${selectedPaymentMethod}`);
+      message.success(`Added ${currency === 'USD' ? '$' : '៛'}${currency === 'USD' ? amount.toFixed(2) : amount.toFixed(0)} payment via ${selectedPaymentMethod}`);
     }
   };
 
@@ -224,150 +228,151 @@ function PosAdd() {
     setActiveCurrency(currency);
     if (!inputAmount) {
       if (currency === 'KHR') {
-        setInputAmount((total * EXCHANGE_RATE).toFixed(0));
+        const khrAmount = roundToNearest100(total * EXCHANGE_RATE);
+        setInputAmount(khrAmount.toFixed(0));
       } else {
         setInputAmount(total.toFixed(2));
       }
-    } else if (inputAmount) {
+    } else {
       const parsedAmount = parseFloat(inputAmount) || 0;
       if (currency === 'KHR' && activeCurrency === 'USD') {
-        const khrAmount = roundToNearest10(parsedAmount * EXCHANGE_RATE); 
+        const khrAmount = roundToNearest100(parsedAmount * EXCHANGE_RATE);
         setInputAmount(khrAmount.toFixed(0));
       } else if (currency === 'USD' && activeCurrency === 'KHR') {
         setInputAmount((parsedAmount / EXCHANGE_RATE).toFixed(2));
       }
     }
   };
-const EditItemModal = ({
-  visible,
-  onCancel,
-  onSubmit,
-  initialValues
-}) => {
-  const [form] = Form.useForm();
-  const [discountType, setDiscountType] = useState(initialValues?.discountType || 'amount');
-  const [price, setPrice] = useState(initialValues?.current_price || 0);
-  const [discount, setDiscount] = useState(initialValues?.discount || 0);
+  const EditItemModal = ({
+    visible,
+    onCancel,
+    onSubmit,
+    initialValues
+  }) => {
+    const [form] = Form.useForm();
+    const [discountType, setDiscountType] = useState(initialValues?.discountType || 'amount');
+    const [price, setPrice] = useState(initialValues?.current_price || 0);
+    const [discount, setDiscount] = useState(initialValues?.discount || 0);
 
-  useEffect(() => {
-    if (visible) {
-      form.setFieldsValue({
-        price: initialValues?.current_price || 0,
-        discount: initialValues?.discount || 0,
-        discountType: initialValues?.discountType || 'amount',
-        quantity: initialValues?.quantity || 1
+    useEffect(() => {
+      if (visible) {
+        form.setFieldsValue({
+          price: initialValues?.current_price || 0,
+          discount: initialValues?.discount || 0,
+          discountType: initialValues?.discountType || 'amount',
+          quantity: initialValues?.quantity || 1
+        });
+        setDiscountType(initialValues?.discountType || 'amount');
+        setPrice(initialValues?.current_price || 0);
+        setDiscount(initialValues?.discount || 0);
+      }
+    }, [visible, initialValues]);
+
+    const handleDiscountTypeChange = (e) => {
+      setDiscountType(e.target.value);
+      form.setFieldsValue({ discount: 0 });
+      setDiscount(0);
+    };
+
+    const calculateDiscountedPrice = () => {
+      if (discountType === 'percentage') {
+        return price * (1 - (discount / 100));
+      } else if (discountType === 'amount') {
+        return Math.max(0, price - discount);
+      }
+      return price;
+    };
+
+    const handleSubmit = () => {
+      form.validateFields().then((values) => {
+        onSubmit({
+          ...values,
+          finalPrice: calculateDiscountedPrice()
+        });
       });
-      setDiscountType(initialValues?.discountType || 'amount');
-      setPrice(initialValues?.current_price || 0);
-      setDiscount(initialValues?.discount || 0);
-    }
-  }, [visible, initialValues]);
+    };
 
-  const handleDiscountTypeChange = (e) => {
-    setDiscountType(e.target.value);
-    form.setFieldsValue({ discount: 0 });
-    setDiscount(0);
-  };
-
-const calculateDiscountedPrice = () => {
-  if (discountType === 'percentage') {
-    return price * (1 - (discount / 100));
-  } else if (discountType === 'amount') {
-    return Math.max(0, price - discount);
-  }
-  return price;
-};
-
-  const handleSubmit = () => {
-    form.validateFields().then((values) => {
-      onSubmit({
-        ...values,
-        finalPrice: calculateDiscountedPrice()
-      });
-    });
-  };
-
-  return (
-    <Modal
-      title="Edit Item"
-      visible={visible}
-      onCancel={onCancel}
-      onOk={handleSubmit}
-      okText="Save Changes"
-    >
-      <Form form={form} layout="vertical">
-        <Form.Item label="Product Name">
-          <Input value={initialValues?.name} disabled />
-        </Form.Item>
-        <Form.Item
-          label="Selling Price"
-          name="price"
-          rules={[{ required: true, message: 'Please enter selling price' }]}
-        >
-          <Input
-            prefix="$"
-            type="number"
-            min="0"
-            step="0.01"
-            onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-          />
-        </Form.Item>
-        <Form.Item
-          label="Quantity"
-          name="quantity"
-          rules={[{ required: true, message: 'Please enter quantity' }]}
-        >
-          <Input type="number" min="1" />
-        </Form.Item>
-        <Form.Item label="Discount Type" name="discountType">
-          <Radio.Group onChange={handleDiscountTypeChange} value={discountType}>
-            <Radio value="amount">Amount ($)</Radio>
-            <Radio value="percentage">Percentage (%)</Radio>
-          </Radio.Group>
-        </Form.Item>
-        <Form.Item
-          label={discountType === 'percentage' ? 'Discount Percentage' : 'Discount Amount'}
-          name="discount"
-          rules={[
-            { required: true, message: 'Please enter discount' },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (discountType === 'percentage') {
-                  if (value >= 0 && value <= 100) {
-                    return Promise.resolve();
+    return (
+      <Modal
+        title="Edit Item"
+        visible={visible}
+        onCancel={onCancel}
+        onOk={handleSubmit}
+        okText="Save Changes"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item label="Product Name">
+            <Input value={initialValues?.name} disabled />
+          </Form.Item>
+          <Form.Item
+            label="Selling Price"
+            name="price"
+            rules={[{ required: true, message: 'Please enter selling price' }]}
+          >
+            <Input
+              prefix="$"
+              type="number"
+              min="0"
+              step="0.01"
+              onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+            />
+          </Form.Item>
+          <Form.Item
+            label="Quantity"
+            name="quantity"
+            rules={[{ required: true, message: 'Please enter quantity' }]}
+          >
+            <Input type="number" min="1" />
+          </Form.Item>
+          <Form.Item label="Discount Type" name="discountType">
+            <Radio.Group onChange={handleDiscountTypeChange} value={discountType}>
+              <Radio value="amount">Amount ($)</Radio>
+              <Radio value="percentage">Percentage (%)</Radio>
+            </Radio.Group>
+          </Form.Item>
+          <Form.Item
+            label={discountType === 'percentage' ? 'Discount Percentage' : 'Discount Amount'}
+            name="discount"
+            rules={[
+              { required: true, message: 'Please enter discount' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (discountType === 'percentage') {
+                    if (value >= 0 && value <= 100) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error('Discount must be between 0-100%'));
+                  } else {
+                    if (value >= 0 && value <= getFieldValue('price')) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error(`Discount cannot exceed $${getFieldValue('price')}`));
                   }
-                  return Promise.reject(new Error('Discount must be between 0-100%'));
-                } else {
-                  if (value >= 0 && value <= getFieldValue('price')) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(new Error(`Discount cannot exceed $${getFieldValue('price')}`));
-                }
-              },
-            }),
-          ]}
-        >
-          <Input
-            prefix={discountType === 'percentage' ? '%' : '$'}
-            type="number"
-            min="0"
-            max={discountType === 'percentage' ? 100 : undefined}
-            onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-          />
-        </Form.Item>
-        <Form.Item label="Final Price">
-          <Input
-            value={`$${calculateDiscountedPrice().toFixed(2)}`}
-            disabled
-          />
-        </Form.Item>
-      </Form>
-    </Modal>
-  );
-};
+                },
+              }),
+            ]}
+          >
+            <Input
+              prefix={discountType === 'percentage' ? '%' : '$'}
+              type="number"
+              min="0"
+              max={discountType === 'percentage' ? 100 : undefined}
+              onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+            />
+          </Form.Item>
+          <Form.Item label="Final Price">
+            <Input
+              value={`$${calculateDiscountedPrice().toFixed(2)}`}
+              disabled
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+    );
+  };
 
   const handleSalespersonChange = (selectedId) => {
-    const selectedPerson = salepersons.find(person => person.id === selectedId);    
+    const selectedPerson = salepersons.find(person => person.id === selectedId);
     setSelectedSalesperson(selectedPerson);
   };
 
@@ -375,7 +380,7 @@ const calculateDiscountedPrice = () => {
     setSelectedPayment(value);
   };
 
-  const handleChangePrice = () =>{
+  const handleChangePrice = () => {
 
   }
 
@@ -414,9 +419,9 @@ const calculateDiscountedPrice = () => {
 
   const filteredProducts = products.filter(product => {
     const name = product.name?.toLowerCase() || '';
-    const code = product.code?.toLowerCase() || ''; 
+    const code = product.code?.toLowerCase() || '';
     const matchesSearch = name.includes(searchProductTerm.toLowerCase()) ||
-                          code.includes(searchProductTerm.toLowerCase());
+      code.includes(searchProductTerm.toLowerCase());
     const matchesCategory = selectedCategory ? product.category_name === selectedCategory : true;
     return matchesSearch && matchesCategory;
   });
@@ -461,7 +466,7 @@ const calculateDiscountedPrice = () => {
         } else {
           setShiftData(null);
           setIsShiftOpen(false);
-          setShiftModalVisible(true); 
+          setShiftModalVisible(true);
         }
       } catch (error) {
         message.error("Failed to load shift data");
@@ -476,7 +481,7 @@ const calculateDiscountedPrice = () => {
   }, [userData?.warehouse_id, token]);
 
   useEffect(() => {
-    localStorage.setItem('posCartItems', JSON.stringify(cartItems));    
+    localStorage.setItem('posCartItems', JSON.stringify(cartItems));
     if (cartItems.length === 0) {
       setCartDiscount(0);
       setCartDiscountType('amount');
@@ -519,16 +524,16 @@ const calculateDiscountedPrice = () => {
       await handleCustomerData();
       await handleEmployeeData();
     };
-    
+
     fetchInitialData();
-    
+
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
         setSearchCustomerTerm('');
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [shouldFetchProducts]);
@@ -540,9 +545,9 @@ const calculateDiscountedPrice = () => {
         e.stopPropagation();
       }
     };
-  
+
     window.addEventListener('keydown', disableEsc);
-  
+
     return () => {
       window.removeEventListener('keydown', disableEsc);
     };
@@ -552,7 +557,7 @@ const calculateDiscountedPrice = () => {
     setCurrentPage(1);
   }, [searchProductTerm, selectedCategory]);
 
-  const handleEmployeeData = async() => {
+  const handleEmployeeData = async () => {
     let result = await handleEmployee(token);
     if (result.success) {
       setSalePersons(result.employees);
@@ -573,7 +578,7 @@ const calculateDiscountedPrice = () => {
     } finally {
       setLoading(false);
     }
-  }; 
+  };
 
   const handleCustomerData = async () => {
     setLoading(true);
@@ -616,13 +621,13 @@ const calculateDiscountedPrice = () => {
       if (!shiftId) {
         return;
       }
-      
+
       if (!userData?.warehouse_id || !token) {
         return;
       }
-      
+
       let result = await handleGetOneOpenShift(shiftId, userData.warehouse_id, token);
-      
+
       if (result?.success) {
         return result.data;
       } else {
@@ -663,15 +668,15 @@ const calculateDiscountedPrice = () => {
 
     setCartItems(prev => {
       const existingItem = prev.find(item => item.id === product.id);
-      if (existingItem) {      
+      if (existingItem) {
         return prev.map(item =>
           item.id === product.id
             ? {
-                ...item,
-                quantity: item.quantity + 1,
-                original_price: originalPrice,
-                current_price: currentPrice,
-              }
+              ...item,
+              quantity: item.quantity + 1,
+              original_price: originalPrice,
+              current_price: currentPrice,
+            }
             : item
         );
       }
@@ -679,7 +684,7 @@ const calculateDiscountedPrice = () => {
       let discount = parseFloat(product.discount) || 0;
       if (isNaN(discount) || discount < 0 || discount > 100) {
         discount = 0;
-      }    
+      }
 
       return [
         ...prev,
@@ -699,27 +704,7 @@ const calculateDiscountedPrice = () => {
     message.success(`${product.name} added to cart`);
   };
 
-const removeFromCart = (productId) => {
-  setCartItems((prev) => {
-    const updatedItems = prev.filter((item) => item.id !== productId);
-    if (updatedItems.length === 0) {
-      // Clear payment-related data if cart becomes empty
-      setPayments([]);
-      setInputAmount('');
-      setNextPaymentDate(null);
-      setNextPaymentAmount(0);
-      setIsPaymentModalVisible(false);
-      localStorage.removeItem('posPayments');
-      localStorage.removeItem('posNextPaymentDate');
-      localStorage.removeItem('posNextPaymentAmount');
-    }
-    return updatedItems;
-  });
-  message.success("Item removed from cart");
-};
-
-const updateQuantity = (productId, newQuantity) => {
-  if (newQuantity < 1) {
+  const removeFromCart = (productId) => {
     setCartItems((prev) => {
       const updatedItems = prev.filter((item) => item.id !== productId);
       if (updatedItems.length === 0) {
@@ -736,14 +721,34 @@ const updateQuantity = (productId, newQuantity) => {
       return updatedItems;
     });
     message.success("Item removed from cart");
-    return;
-  }
-  setCartItems((prev) =>
-    prev.map((item) =>
-      item.id === productId ? { ...item, quantity: newQuantity } : item
-    )
-  );
-};
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity < 1) {
+      setCartItems((prev) => {
+        const updatedItems = prev.filter((item) => item.id !== productId);
+        if (updatedItems.length === 0) {
+          // Clear payment-related data if cart becomes empty
+          setPayments([]);
+          setInputAmount('');
+          setNextPaymentDate(null);
+          setNextPaymentAmount(0);
+          setIsPaymentModalVisible(false);
+          localStorage.removeItem('posPayments');
+          localStorage.removeItem('posNextPaymentDate');
+          localStorage.removeItem('posNextPaymentAmount');
+        }
+        return updatedItems;
+      });
+      message.success("Item removed from cart");
+      return;
+    }
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === productId ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
 
   const clearCart = () => {
     setCartItems([]);
@@ -765,58 +770,58 @@ const updateQuantity = (productId, newQuantity) => {
   };
 
   const handleSelect = (customer) => {
-      setIsUpdatingPrices(true);
-      setSelectedCustomer(customer);
-      setIsOpen(false);
-      setSearchCustomerTerm('');
-      
-      const updatedItems = changePriceByCustomerType(customer.group_name || 'walkin');
-      localStorage.setItem("posCartItems", JSON.stringify(updatedItems));
-      setCartItems(updatedItems);
-      setIsUpdatingPrices(false);
+    setIsUpdatingPrices(true);
+    setSelectedCustomer(customer);
+    setIsOpen(false);
+    setSearchCustomerTerm('');
+
+    const updatedItems = changePriceByCustomerType(customer.group_name || 'walkin');
+    localStorage.setItem("posCartItems", JSON.stringify(updatedItems));
+    setCartItems(updatedItems);
+    setIsUpdatingPrices(false);
   };
 
   const changePriceByCustomerType = (customerGroup) => {
-      let cartItems = localStorage.getItem("posCartItems");
-      
-      if (cartItems) {
-          try {
-              let items = JSON.parse(cartItems);
-              items = items.map(item => {
-                  let price;
-                  const group = customerGroup ? customerGroup.toLowerCase() : 'walkin';                  
-                  switch(group) {
-                      case 'dealer customer':
-                          price = item.dealer_price || item.price; 
-                          break;
-                      case 'vip customer':
-                          price = item.vip_price || item.price;
-                          break;
-                      case 'walkin':
-                      default:
-                          price = item.retail_price || item.price;
-                  }                  
-                  return {
-                      ...item,
-                      current_price: price,
-                      originalPrice: price ,
-                      original_price: price ,
-                      priceType: group
-                  };
-              });
-              localStorage.setItem("posCartItems", JSON.stringify(items));
-              return items;
-          } catch (error) {
-              console.error("Error processing cart items:", error);
-              return [];
+    let cartItems = localStorage.getItem("posCartItems");
+
+    if (cartItems) {
+      try {
+        let items = JSON.parse(cartItems);
+        items = items.map(item => {
+          let price;
+          const group = customerGroup ? customerGroup.toLowerCase() : 'walkin';
+          switch (group) {
+            case 'dealer customer':
+              price = item.dealer_price || item.price;
+              break;
+            case 'vip customer':
+              price = item.vip_price || item.price;
+              break;
+            case 'walkin':
+            default:
+              price = item.retail_price || item.price;
           }
+          return {
+            ...item,
+            current_price: price,
+            originalPrice: price,
+            original_price: price,
+            priceType: group
+          };
+        });
+        localStorage.setItem("posCartItems", JSON.stringify(items));
+        return items;
+      } catch (error) {
+        console.error("Error processing cart items:", error);
+        return [];
       }
-      
-      return [];
+    }
+
+    return [];
   };
 
-  const getCustomerGroup = async() => {
-    const customerGroup = await handleGetCustomerGroup(token);    
+  const getCustomerGroup = async () => {
+    const customerGroup = await handleGetCustomerGroup(token);
     if (customerGroup) {
       setGroupOptions(customerGroup.groups);
     }
@@ -828,13 +833,13 @@ const updateQuantity = (productId, newQuantity) => {
       return;
     }
     try {
-      const newCustomer = { 
+      const newCustomer = {
         username: newCustomerName.trim(),
         phone: newCustomerPhone.trim(),
         customer_group: customerGroup
       };
-  
-      let result = await handleCustomerQuickCreate(newCustomer, token);      
+
+      let result = await handleCustomerQuickCreate(newCustomer, token);
       if (result?.success) {
         message.success("Customer added successfully");
         setCustomers(prev => [...prev, result.customer]);
@@ -848,14 +853,14 @@ const updateQuantity = (productId, newQuantity) => {
     } catch (error) {
       message.error("Error adding customer");
     }
-  };  
+  };
 
   const handleOpenShift = (amount, newShiftId) => {
     if (!amount) {
       message.warning('Please enter starting amount');
       return;
     }
-    
+
     setShiftId(newShiftId);
     setShiftOpen(true);
     setShowShiftForm(false);
@@ -898,14 +903,14 @@ const updateQuantity = (productId, newQuantity) => {
 
       return sum + discountValue;
     }, 0);
-    
+
     const calculatedCartDiscount = cartDiscountType === 'percent'
       ? (subtotal - itemDiscountTotal) * (cartDiscount / 100)
       : cartDiscount;
     const tax = subtotal * 0;
     const deliveryFee = selectedDelivery?.price || 0;
     const total = subtotal - itemDiscountTotal - calculatedCartDiscount + tax + deliveryFee;
-    
+
     const newSuspendedOrder = {
       customer_id: selectedCustomer.id,
       price_type: priceType,
@@ -938,7 +943,7 @@ const updateQuantity = (productId, newQuantity) => {
         setNextPaymentDate(null);
         setNextPaymentAmount(0);
         setPayments([]);
-        
+
         await fetchSuspendedOrders();
         message.success('Order suspended successfully');
       } else {
@@ -953,7 +958,7 @@ const updateQuantity = (productId, newQuantity) => {
     try {
       const suspendedOrders = JSON.parse(localStorage.getItem('suspendedOrders') || '[]');
       const order = suspendedOrders.find(o => o.id === orderId);
-      
+
       if (!order) {
         message.error("Order not found");
         return;
@@ -974,14 +979,13 @@ const updateQuantity = (productId, newQuantity) => {
             }
 
             setPriceType(order.price_type || 'retail_price');
-            
+
             const items = order.items.map(item => {
-              
+
               return {
                 // ...product,
                 id: item.product_id,
                 name: item?.product?.name || `Product ${item.product_id}`,
-                price: item.price,
                 price: item.price,
                 current_price: item.price,
                 original_price: item.price,
@@ -996,7 +1000,7 @@ const updateQuantity = (productId, newQuantity) => {
             setCartItems(items);
             setCartDiscount(order.discount_value || 0);
             setCartDiscountType(order.discount_type || 'amount');
-            
+
             if (order.delivery_option) {
               const delivery = deliveryOptions.find(d => d.id === order.delivery_option);
               setSelectedDelivery(delivery || null);
@@ -1015,6 +1019,9 @@ const updateQuantity = (productId, newQuantity) => {
       message.error("Failed to load order");
     }
   };
+  function roundToNearest100(amount) {
+    return Math.round(amount / 100) * 100;
+  }
 
   const handleBack = () => {
     navigate("/pos");
@@ -1028,7 +1035,7 @@ const updateQuantity = (productId, newQuantity) => {
     if (cartItems.length === 0) {
       message.warning("Please add items to cart first");
       return;
-    }    
+    }
     if (totalPaidAmount <= 0) {
       message.warning("Please add payment!");
       return;
@@ -1042,7 +1049,7 @@ const updateQuantity = (productId, newQuantity) => {
       const remainingBalance = total - totalPaid;
       const nextDate = new Date();
       nextDate.setDate(nextDate.getDate() + 30);
-      const formattedNextDate = nextDate.toISOString().split('T')[0]; 
+      const formattedNextDate = nextDate.toISOString().split('T')[0];
       setNextPaymentAmount(remainingBalance);
       setNextPaymentDate(formattedNextDate);
       message.warning(`Partial payment received. Remaining $${remainingBalance.toFixed(2)} due on ${formattedNextDate}`);
@@ -1075,36 +1082,33 @@ const updateQuantity = (productId, newQuantity) => {
     setIsEditModalVisible(true);
   };
 
-const handleSaveEdit = (values) => {
-  setCartItems((prev) =>
-    prev.map((item) => {
-      if (item.id !== editingItem.id) return item;      
-      const originalPrice = Number(values.price);
-      let finalPrice = originalPrice;
+  const handleSaveEdit = (values) => {
+    setCartItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== editingItem.id) return item;
+        const originalPrice = Number(values.price);
+        let finalPrice = originalPrice;
 
-      if (values.discountType === 'amount') {
-        finalPrice = originalPrice -  (Number(values.discount) || 0);
-      } else if (values.discountType === 'percent') {
-        finalPrice = originalPrice * (1  - (Number(values.discount) || 0) / 100);
-      }
+        if (values.discountType === 'amount') {
+          finalPrice = originalPrice - (Number(values.discount) || 0);
+        } else if (values.discountType === 'percent') {
+          finalPrice = originalPrice * (1 - (Number(values.discount) || 0) / 100);
+        }
 
-      console.log(finalPrice);
-      
+        return {
+          ...item,
+          current_price: parseFloat(Number(values.price).toFixed(2)),
+          quantity: values.quantity,
+          discount: values.discount || 0,
+          discountType: values.discountType || 'amount',
+          original_price: editingItem.original_price,
+        };
+      })
+    );
 
-      return {
-        ...item,
-        current_price: parseFloat(Number(values.price).toFixed(2)),
-        quantity: values.quantity,
-        discount: values.discount || 0,
-        discountType: values.discountType || 'amount',
-        original_price: editingItem.original_price,
-      };
-    })
-  );
-
-  setIsEditModalVisible(false);
-  message.success("Item updated successfully");
-};
+    setIsEditModalVisible(false);
+    message.success("Item updated successfully");
+  };
 
 
 
@@ -1124,9 +1128,16 @@ const handleSaveEdit = (values) => {
     if (cartItems.length === 0) {
       message.warning("Please add items to cart first");
       return;
-    }  
+    }
+
     if (payments.length === 0 && total > 0) {
       message.warning("Please add payment method before processing");
+      return;
+    }
+
+    // Validate payment amount
+    if (totalPaidAmount < total) {
+      message.error(`Payment amount ($${totalPaidAmount.toFixed(2)}) is less than total ($${total.toFixed(2)}). Please pay at least the full amount.`);
       return;
     }
 
@@ -1152,9 +1163,12 @@ const handleSaveEdit = (values) => {
         tax,
         delivery_fee: selectedDelivery?.price || 0,
         total,
-        amount_paid: totalPaidAmount,
-        change_due: parseFloat(totalPaidAmount - total).toFixed(2),
-        payments: payments,
+        amount_paid: total, // Cap amount_paid at total, even if totalPaidAmount is higher
+        change_due: 0, // No change is returned
+        payments: payments.map(payment => ({
+          ...payment,
+          amount: Math.min(payment.amount, total - payments.slice(0, payments.indexOf(payment)).reduce((sum, p) => sum + p.amount, 0))
+        })), // Cap payments to not exceed total
         sale_type: 'POS',
         amount: total,
         sale_person: selectedSalesperson?.id ?? null
@@ -1173,11 +1187,16 @@ const handleSaveEdit = (values) => {
             tax,
             delivery_fee: selectedDelivery?.price || 0,
             total,
-            amount_paid: totalPaidAmount,
-            change_due: totalPaidAmount - total,
+            amount_paid: total, // Reflect only the total as paid
+            change_due: totalPaidAmount > total ? totalPaidAmount - total : 0,
+            change_due_khr: totalPaidAmount > total ? roundToNearest100((totalPaidAmount - total) * EXCHANGE_RATE) : 0, // Add rounded KHR change
             user: userData
           },
-          payment_method: payments,
+          payment_method: payments.map(payment => ({
+            ...payment,
+            amount: Math.min(payment.amount, total - payments.slice(0, payments.indexOf(payment)).reduce((sum, p) => sum + p.amount, 0)),
+            amount_khr: payment.currency === 'KHR' ? roundToNearest100(payment.amount * EXCHANGE_RATE) : null // Add rounded KHR amount for KHR payments
+          })),
           customer: selectedCustomer,
           items: cartItems
         };
@@ -1190,6 +1209,7 @@ const handleSaveEdit = (values) => {
         setNextPaymentDate(null);
         setNextPaymentAmount(0);
         setPayments([]);
+        setSelectedPaymentMethod('Cash')
 
         localStorage.removeItem('posCartItems');
         localStorage.removeItem('posCartDiscount');
@@ -1214,11 +1234,11 @@ const handleSaveEdit = (values) => {
 
     const root = ReactDOM.createRoot(receiptContainer);
     root.render(
-      <InvoiceTemplate 
-        sale={printData.sale} 
-        customer={printData.customer} 
-        items={printData.items} 
-        payment_method={printData.payment_method} 
+      <InvoiceTemplate
+        sale={printData.sale}
+        customer={printData.customer}
+        items={printData.items}
+        payment_method={printData.payment_method}
       />
     );
 
@@ -1258,12 +1278,12 @@ const handleSaveEdit = (values) => {
       printWindow.document.write(receiptHtml);
       printWindow.document.close();
 
-      printWindow.onload = function() {
+      printWindow.onload = function () {
         setTimeout(() => {
           printWindow.focus();
           printWindow.print();
           printWindow.close();
-          
+
           document.body.removeChild(receiptContainer);
         }, 500);
       };
@@ -1300,8 +1320,8 @@ const handleSaveEdit = (values) => {
         render: (_, record) => (
           <Space size="small">
             <Tooltip title="Edit">
-              <Button 
-                type="text" 
+              <Button
+                type="text"
                 icon={<EditOutlined />}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1311,9 +1331,9 @@ const handleSaveEdit = (values) => {
               />
             </Tooltip>
             <Tooltip title="Remove">
-              <Button 
-                type="text" 
-                danger 
+              <Button
+                type="text"
+                danger
                 icon={<DeleteOutlined />}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1322,8 +1342,8 @@ const handleSaveEdit = (values) => {
               />
             </Tooltip>
             <Tooltip title="Load Order">
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 icon={<DownloadOutlined />}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1381,8 +1401,8 @@ const handleSaveEdit = (values) => {
           { title: 'Product', dataIndex: 'productName', key: 'productName' },
           { title: 'Original Price', dataIndex: 'original', key: 'original', render: val => `$${val}` },
           { title: 'Current Price', dataIndex: 'current', key: 'current', render: val => `$${val}` },
-          { 
-            title: 'Difference', 
+          {
+            title: 'Difference',
             key: 'difference',
             render: (_, record) => (
               <span style={{ color: record.difference > 0 ? 'red' : 'green' }}>
@@ -1395,7 +1415,7 @@ const handleSaveEdit = (values) => {
         pagination={false}
       />
     </Modal>
-  );  
+  );
 
   const AddDiscountModal = ({ subtotal, initialDiscount, initialDiscountType, onSubmit, onCancel, itemId }) => {
     const [discount, setDiscount] = useState(initialDiscount);
@@ -1491,10 +1511,10 @@ const handleSaveEdit = (values) => {
             addonAfter={discountType === 'percent' ? '%' : '$'}
           />
           {error && (
-            <Alert 
-              message={error} 
-              type="error" 
-              showIcon 
+            <Alert
+              message={error}
+              type="error"
+              showIcon
               style={{ marginTop: '8px' }}
             />
           )}
@@ -1507,8 +1527,8 @@ const handleSaveEdit = (values) => {
 
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
           <Button onClick={onCancel}>Cancel</Button>
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             onClick={handleSubmit}
           >
             Apply
@@ -1537,7 +1557,7 @@ const handleSaveEdit = (values) => {
         <div style={{ display: "flex", gap: "20px", padding: "10px" }}>
           {!isShiftOpen ? (
             <div>
-              <Button 
+              <Button
                 type="primary"
                 icon={<UnlockOutlined style={{ fontSize: "20px" }} />}
                 onClick={() => setShiftModalVisible(true)}
@@ -1578,7 +1598,7 @@ const handleSaveEdit = (values) => {
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
                       transition: 'all 0.3s ease',
                     }}
-                    onClick={() => setViewShiftVisible(true)}  
+                    onClick={() => setViewShiftVisible(true)}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                   />
@@ -1618,17 +1638,17 @@ const handleSaveEdit = (values) => {
           )}
         </div>
       </div>
-    
+
       <div className="pos-system">
         <div className="products-panel">
           <div className="control-bar">
-            <motion.div 
+            <motion.div
               className="search-container"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-             
 
-             transition={{ duration: 0.3 }}
+
+              transition={{ duration: 0.3 }}
               onClick={() => {
                 setIsProductSearchModalVisible(true);
               }}
@@ -1645,7 +1665,7 @@ const handleSaveEdit = (values) => {
             </motion.div>
 
             <div className="customer-select" ref={dropdownRef}>
-              <div 
+              <div
                 className="select-trigger"
                 onClick={() => {
                   setIsOpen(!isOpen);
@@ -1683,7 +1703,7 @@ const handleSaveEdit = (values) => {
                       autoFocus
                     />
                     {searchCustomerTerm && (
-                      <button 
+                      <button
                         className="clear-search"
                         onClick={() => setSearchCustomerTerm('')}
                       >
@@ -1730,114 +1750,114 @@ const handleSaveEdit = (values) => {
                 </div>
               )}
             </div>
-            <Select 
-              onChange={handleSalespersonChange} 
-              value={selectedSalesperson?.id} 
-              style={{ width: 200 }} 
+            <Select
+              onChange={handleSalespersonChange}
+              value={selectedSalesperson?.id}
+              style={{ width: 200 }}
               showSearch={false}
               placeholder="Select salesperson"
               className="saleperson-select"
             >
               {salepersons.map((person) => (
-                <Option key={person.id} value={person.id}> 
+                <Option key={person.id} value={person.id}>
                   {person.username}
                 </Option>
               ))}
             </Select>
           </div>
 
-        <div className="products-container">
-          {cartItems.length === 0 ? (
-            <div className="empty-state" style={{ background: "#DEDDDE", padding: "40px 20px", height: '100%' }}>
-              <div
-                className="empty-icon"
-                style={{
-                  margin: "0 auto 20px",
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "20px"
-                }}
-              >
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <h3 style={{ marginBottom: "10px" }}>No Items found</h3>
+          <div className="products-container">
+            {cartItems.length === 0 ? (
+              <div className="empty-state" style={{ background: "#DEDDDE", padding: "40px 20px", height: '100%' }}>
+                <div
+                  className="empty-icon"
+                  style={{
+                    margin: "0 auto 20px",
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "20px"
+                  }}
+                >
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <h3 style={{ marginBottom: "10px" }}>No Items found</h3>
+                </div>
               </div>
-            </div>
-          ) : (
-            <table className="cart-table" style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ backgroundColor: "#f8fafc" }}>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Name</th>
-                  <th style={{ padding: "12px", textAlign: "right" }}>Price</th>
-                  <th style={{ padding: "12px", textAlign: "right" }}>Discount</th>
-                  <th style={{ padding: "12px", textAlign: "center" }}>Qty</th>
-                  <th style={{ padding: "12px", textAlign: "right" }}>Total Price</th>
-                  <th style={{ padding: "12px", textAlign: "center" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cartItems.map((item) => {
-                  // Calculate per-item total price
-                  const itemTotalPrice =
-                    item.discountType === "percentage"
-                      ? item.original_price * item.quantity * (1 - (item.discount || 0) / 100)
-                      : (item.original_price - (item.discount || 0)) * item.quantity;
+            ) : (
+              <table className="cart-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "#f8fafc" }}>
+                    <th style={{ padding: "12px", textAlign: "left" }}>Name</th>
+                    <th style={{ padding: "12px", textAlign: "right" }}>Price</th>
+                    <th style={{ padding: "12px", textAlign: "right" }}>Discount</th>
+                    <th style={{ padding: "12px", textAlign: "center" }}>Qty</th>
+                    <th style={{ padding: "12px", textAlign: "right" }}>Total Price</th>
+                    <th style={{ padding: "12px", textAlign: "center" }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cartItems.map((item) => {
+                    // Calculate per-item total price
+                    const itemTotalPrice =
+                      item.discountType === "percentage"
+                        ? item.original_price * item.quantity * (1 - (item.discount || 0) / 100)
+                        : (item.original_price - (item.discount || 0)) * item.quantity;
 
-                  return (
-                    <tr key={item.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
-                      <td style={{ padding: "12px" }}>{item.name} ({item.code})</td>
-                      <td style={{ padding: "12px", textAlign: "right" }}>${Number(item.current_price || 0).toFixed(2)}</td>
-                      <td style={{ padding: "12px", textAlign: "right" }}>
-                        {item.discountType === "percentage"
-                          ? `${Number(item.discount || 0).toFixed(2)}%`
-                          : `$${Number(item.discount || 0).toFixed(2)}`}
-                      </td>
-                      <td style={{ padding: "12px", textAlign: "center" }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            style={{ padding: '2px 8px', marginRight: '8px' }}
-                          >
-                            -
-                          </button>
-                          <span>{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            style={{ padding: '2px 8px', marginLeft: '8px' }}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </td>
-                      <td style={{ padding: "12px", textAlign: "right" }}>${Number(itemTotalPrice || 0).toFixed(2)}</td>
-                      <td style={{ padding: "12px", textAlign: "center" }}>
-                        <Button
-                          icon={<EditOutlined />}
-                          onClick={() => handleEditItem(item)}
-                          style={{ marginRight: 8 }}
-                        />
-                        <Button
-                          danger
-                          icon={<DeleteOutlined />}
-                          onClick={() => removeFromCart(item.id)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+                    return (
+                      <tr key={item.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                        <td style={{ padding: "12px" }}>{item.name} ({item.code})</td>
+                        <td style={{ padding: "12px", textAlign: "right" }}>${Number(item.current_price || 0).toFixed(2)}</td>
+                        <td style={{ padding: "12px", textAlign: "right" }}>
+                          {item.discountType === "percentage"
+                            ? `${Number(item.discount || 0).toFixed(2)}%`
+                            : `$${Number(item.discount || 0).toFixed(2)}`}
+                        </td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              style={{ padding: '2px 8px', marginRight: '8px' }}
+                            >
+                              -
+                            </button>
+                            <span>{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              style={{ padding: '2px 8px', marginLeft: '8px' }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td style={{ padding: "12px", textAlign: "right" }}>${Number(itemTotalPrice || 0).toFixed(2)}</td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          <Button
+                            icon={<EditOutlined />}
+                            onClick={() => handleEditItem(item)}
+                            style={{ marginRight: 8 }}
+                          />
+                          <Button
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => removeFromCart(item.id)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
         <div className="cart-panel">
           <div className="cart-header">
             <div className="payment-method-selector">
-              <Select 
+              <Select
                 defaultValue="Cash"
                 value={selectedPaymentMethod}
                 onChange={(value) => {
@@ -1847,8 +1867,8 @@ const handleSaveEdit = (values) => {
                 style={{ width: '100%' }}
               >
                 {paymentOptions.map((method) => (
-                  <Option 
-                    key={method.name} 
+                  <Option
+                    key={method.name}
                     value={method.name}
                     label={
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1919,62 +1939,54 @@ const handleSaveEdit = (values) => {
                 <span>Cart Discount</span>
                 <span>${calculatedCartDiscount.toFixed(2)}</span>
               </div>
-              {/* <div className="summary-row">
-                <span>Tax</span>
-                <span>${tax.toFixed(2)}</span>
-              </div>
-              <div className="summary-row">
-                <span>Delivery Fee</span>
-                <span>${deliveryFee.toFixed(2)}</span>
-              </div> */}
               <div className="summary-row">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
               </div>
               <div className="summary-row">
-  <span>Paid Amount</span>
-  <span>${totalPaidAmount.toFixed(2)}</span>
-</div>
-{total - totalPaidAmount > 0 && (
-  <div className="summary-row">
-    <span>Balance</span>
-    <span>${(total - totalPaidAmount).toFixed(2)}</span>
-  </div>
-)}
-{totalPaidAmount > total && (
-  <>
-    <div className="summary-row">
-      <span>Change</span>
-      <span>${(totalPaidAmount - total).toFixed(2)}</span>
-    </div>
-    <div className="summary-row">
-      <span></span>
-      <span>៛{((totalPaidAmount - total) * EXCHANGE_RATE).toFixed(0)}</span>
-    </div>
-  </>
-)}
-{payments.length > 0 && (
-  <div className="summary-row">
-    <Button
-      size="small"
-      onClick={() => setIsPaymentHistoryModalVisible(true)}
-    >
-      View Payments
-    </Button>
-  </div>
-)}
+                <span>Paid Amount</span>
+                <span>${totalPaidAmount.toFixed(2)}</span>
+              </div>
+              {total - totalPaidAmount > 0 && (
+                <div className="summary-row">
+                  <span>Balance</span>
+                  <span>${(total - totalPaidAmount).toFixed(2)}</span>
+                </div>
+              )}
+              {totalPaidAmount > total && (
+                <>
+                  <div className="summary-row">
+                    <span>Change</span>
+                    <span>${(totalPaidAmount - total).toFixed(2)}</span>
+                  </div>
+                  <div className="summary-row">
+                    <span></span>
+                    <span>៛{roundToNearest100((totalPaidAmount - total) * EXCHANGE_RATE).toFixed(0)}</span>
+                  </div>
+                </>
+              )}
+              {payments.length > 0 && (
+                <div className="summary-row">
+                  <Button
+                    size="small"
+                    onClick={() => setIsPaymentHistoryModalVisible(true)}
+                  >
+                    View Payments
+                  </Button>
+                </div>
+              )}
             </div>
 
 
             <div className="cart-actions">
               <div className="checkout-buttons">
-                <button 
+                <button
                   className="discount-button"
                   onClick={() => setIsDiscountModalVisible(true)}
                 >
                   % Cart Dis
                 </button>
-                <button 
+                <button
                   className="suspend-button"
                   disabled={cartItems.length === 0}
                   onClick={suspendOrder}
@@ -1982,9 +1994,9 @@ const handleSaveEdit = (values) => {
                   Suspend
                 </button>
               </div>
-              
+
               <div className="checkout-buttons">
-                <button 
+                <button
                   className="checkout-button"
                   disabled={cartItems.length === 0 || total <= 0}
                   onClick={() => {
@@ -1993,7 +2005,7 @@ const handleSaveEdit = (values) => {
                       return;
                     }
                     handleProceedToPayment();
-                  }}  
+                  }}
                 >
                   Checkout
                 </button>
@@ -2090,7 +2102,7 @@ const handleSaveEdit = (values) => {
           footer={null}
           centered
         >
-                    <Table
+          <Table
             dataSource={payments.map((payment, index) => ({ ...payment, key: index }))}
             columns={[
               {
@@ -2104,7 +2116,7 @@ const handleSaveEdit = (values) => {
                 render: (_, record) =>
                   record.currency === 'USD'
                     ? `$${record.amount.toFixed(2)}`
-                    : `៛${(record.amount * 4050).toFixed(0)} ($${record.amount.toFixed(2)})`,
+                    : `៛${roundToNearest100(record.amount * EXCHANGE_RATE).toFixed(0)} ($${record.amount.toFixed(2)})`,
               },
               {
                 title: 'Date',
@@ -2128,7 +2140,6 @@ const handleSaveEdit = (values) => {
             pagination={false}
             size="small"
           />
-
         </Modal>
 
         <PriceWarningModal />
@@ -2145,8 +2156,8 @@ const handleSaveEdit = (values) => {
           }}
         >
           {suspendedOrders.length > 0 ? (
-            <SuspendedOrdersTable 
-              className="no-radius-table" 
+            <SuspendedOrdersTable
+              className="no-radius-table"
               onOrderLoaded={() => setSuspendedOrders(JSON.parse(localStorage.getItem('suspendedOrders') || []))}
             />
           ) : (

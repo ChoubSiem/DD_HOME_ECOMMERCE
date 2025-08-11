@@ -28,7 +28,6 @@ const RoleTable = ({
           <strong>{row.name}</strong>
         </div>
       ),
-      sortable: true,
       width: '30%',
     },
     {
@@ -40,7 +39,6 @@ const RoleTable = ({
           <strong>{row.users_count}</strong>
         </div>
       ),
-      sortable: true,
       width: '30%',
     },
     {

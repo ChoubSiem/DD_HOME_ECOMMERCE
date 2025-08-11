@@ -1,43 +1,31 @@
-import axios from 'axios';
-const API_BASE = 'https://backend.ddhomekh.com/api';
+import api from "../api/axiosConfig";
 
-export const createPayment = async (values , token) => {
-  
-  const response = await axios.post(`${API_BASE}/sale-payment/create`,values, {
+export const createPayment = async (values, token) => {
+  const response = await api.post(`/sale-payment/create`, values, {
     headers: { Authorization: `Bearer ${token}` }
-  });  
-  
-  return response.data;
+  });
+  return response;
 };
+
 export const getPurchasePayment = async (purchaseId, token) => {
-  const response = await axios.get(`${API_BASE}/purchase-payment/${purchaseId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });  
-  return response.data;
+  const response = await api.get(`/purchase-payment/${purchaseId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response;
 };
+
 export const addPurchasePayment = async (values, token) => {
-  const response = await axios.post(`${API_BASE}/purchase-payment/add`, values, {
-    headers: { 
-      Authorization: `Bearer ${token}`
-    },
-    params: {
-      warehouse_id: values.warehouse_id 
-    }
+  const response = await api.post(`/purchase-payment/add`, values, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { warehouse_id: values.warehouse_id }
   });
-
-  return response.data;
+  return response;
 };
-export const updatePurchasePayment = async (purchaseId,values, token) => {
-  const response = await axios.post(`${API_BASE}/purchase-payment/edit/${purchaseId}`, values, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    },
-    params: {
-      warehouse_id: values.warehouse_id 
-    }
-  });
 
-  return response.data;
+export const updatePurchasePayment = async (purchaseId, values, token) => {
+  const response = await api.post(`/purchase-payment/edit/${purchaseId}`, values, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { warehouse_id: values.warehouse_id }
+  });
+  return response;
 };

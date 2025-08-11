@@ -188,7 +188,7 @@ const MainLayout = () => {
       const roleId = user.role_id;    
       
       if (roleId) {
-        const data = await handleRolePermission(roleId);                        
+        const data = await handleRolePermission(roleId);                                
         if (data) {
           setPermission(data.rolePermissions || []);
         }      
@@ -204,8 +204,7 @@ const MainLayout = () => {
     itemMenuLeftTmp.forEach((item) => {      
       const hasPermission = permission.some(perm => 
         `/${perm.web_route_key}` === item.key
-      );
-      
+      );      
       if (item.children) {
         const filteredChildren = item.children.filter(child => 
           permission.some(perm => `/${perm.web_route_key}` === child.key)

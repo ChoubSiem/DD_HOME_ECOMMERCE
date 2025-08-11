@@ -1,122 +1,152 @@
 import { create } from 'zustand';
 import Cookies from 'js-cookie';
-// import { useNavigate } from 'react-router-dom';
 import { fetchUserProfile } from '../services/authService';
 
-const secureGetToken = () => {
-  return localStorage.getItem('token');
-};
+const secureGetToken = () => localStorage.getItem('token');
+const secureRemoveToken = () => localStorage.removeItem('token');
 
-const secureRemoveToken = () => {
-  localStorage.removeItem('token');
-};
-// let token =  localStorage.getItem('token');
-
-export const useProfileStore = create((set) => ({
+export const useProfileStore = create((set, get) => ({
   isAuthenticated: false,
   user: null,
-  permissions:null,
+  permissions: null,
   token: null,
   error: null,
   loading: true,
 
-  initialize: async (navigate) => {
-    // const navigate = useNavigate();
-    const token = localStorage.getItem('token');
+  initialize: async () => {
+    set({ loading: true });
+    const token = secureGetToken();
+    const userCookie = Cookies.get('user');
+    const permissionsCookie = Cookies.get('permissions');
 
-    const user = Cookies.get('user');    
     if (!token) {
       set({ isAuthenticated: false, loading: false });
-      return;
+      return false;
     }
 
-  
     try {
-      const result = await fetchUserProfile(token);                        
-      if (result) {
+      // Try to get fresh data from API first
+      const result = await fetchUserProfile(token);
+      
+      if (result?.data) {
+        const userData = result.data.user || (userCookie ? JSON.parse(userCookie) : null);
+        const permissions = result.data.permissions || (permissionsCookie ? JSON.parse(permissionsCookie) : null);
+        
+        // Update cookies with fresh data
+        Cookies.set('user', JSON.stringify(userData), { expires: 7 });
+        if (permissions) {
+          Cookies.set('permissions', JSON.stringify(permissions), { expires: 7 });
+        }
+
         set({
           isAuthenticated: true,
           token,
-          user: user ? JSON.parse(user) : null,
+          user: userData,
+          permissions,
           loading: false,
+          error: null
         });
-      }else{
-        navigate("/login");
-        Cookies.remove("permission");
+        return true;
       }
+
+      // Fallback to cookie data if API fails but we have cookies
+      if (userCookie) {
+        set({
+          isAuthenticated: true,
+          token,
+          user: JSON.parse(userCookie),
+          permissions: permissionsCookie ? JSON.parse(permissionsCookie) : null,
+          loading: false
+        });
+        return true;
+      }
+
+      // If no valid data found
+      secureRemoveToken();
+      Cookies.remove('user');
+      Cookies.remove('permissions');
+      set({ isAuthenticated: false, loading: false });
+      return false;
+
     } catch (error) {
+      console.error('Profile initialization error:', error);
+      secureRemoveToken();
+      Cookies.remove('user');
+      Cookies.remove('permissions');
       set({
         isAuthenticated: false,
-        token,
+        token: null,
         user: null,
-        permissions:null,
+        permissions: null,
         loading: false,
+        error: error.message || 'Failed to initialize session'
       });
-      localStorage.removeItem('token');
-      Cookies.remove('user');
-      navigate("/login");
+      return false;
     }
   },
-  
-  
-  login: async (token, userInfo,permissions, remember) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        localStorage.setItem('token', token);
-        Cookies.set('user', JSON.stringify(userInfo), { expires: remember ? 7 : null });
-        Cookies.set('permissions', JSON.stringify(permissions));
-        
-        set({
-          isAuthenticated: true,
-          token,
-          user: userInfo,
-          permissions:permissions,
-          error: null,
-          loading: false
-        });
-  
-        resolve(true);
-      } catch (error) {
-        set({
-          error: error.message,
-          isAuthenticated: false,
-          token: null,
-          permissions:null,
-          user: null,
-          loading: false
-        });
-        reject(error);
+
+  login: async (token, userInfo, permissions, remember = false) => {
+    try {
+      // Store tokens and user data
+      localStorage.setItem('token', token);
+      Cookies.set('user', JSON.stringify(userInfo), { expires: remember ? 7 : undefined });
+      
+      if (permissions && Array.isArray(permissions)) {
+        Cookies.set('permissions', JSON.stringify(permissions), { expires: remember ? 7 : undefined });
       }
+
+      set({
+        isAuthenticated: true,
+        token,
+        user: userInfo,
+        permissions,
+        error: null,
+        loading: false
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      // Clean up on error
+      secureRemoveToken();
+      Cookies.remove('user');
+      Cookies.remove('permissions');
+      
+      set({
+        error: error.message || 'Login failed',
+        isAuthenticated: false,
+        token: null,
+        user: null,
+        permissions: null,
+        loading: false
+      });
+      throw error;
+    }
+  },
+
+  logout: () => {
+    secureRemoveToken();
+    Cookies.remove('user');
+    Cookies.remove('permissions');
+    set({ 
+      isAuthenticated: false, 
+      token: null, 
+      user: null,
+      permissions: null, 
+      loading: false,
+      error: null
     });
   },
-  
-  
-  
 
-  // Handle logout: Remove token and user data
-  logout: () => {
-    localStorage.removeItem('token');
-    set({ isAuthenticated: false, token: null, user: null,permissions:null, loading: false });
+  // Helper method to check permissions
+  hasPermission: (permissionKey) => {
+    const { permissions } = get();
+    if (!permissions) return false;
+    return permissions.some(perm => 
+      perm.web_route_key === permissionKey || 
+      perm.name === permissionKey
+    );
   },
 
   setError: (error) => set({ error }),
-  refreshToken: async () => {
-    try {
-      const response = await fetch('http://yourapi.com/refresh-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token: secureGetToken() }),
-      });
-
-      const data = await response.json();
-      if (data.token) {
-        secureStoreToken(data.token); 
-        set({ token: data.token }); 
-      }
-    } catch (error) {
-      set({ error: 'Failed to refresh token' });
-    }
-  },
 }));
