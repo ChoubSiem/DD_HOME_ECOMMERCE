@@ -272,7 +272,7 @@ const items = [
           field="customer.username" 
           header="Customer" 
           sortable 
-          body={(rowData) => rowData.customer.username}
+          body={(rowData) => rowData?.customer?.username}
         />
         <Column 
           field="type" 
