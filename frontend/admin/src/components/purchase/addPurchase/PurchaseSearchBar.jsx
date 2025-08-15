@@ -1,5 +1,6 @@
 import { AutoComplete } from "antd";
 import React from "react";
+import "./font.css";
 
 const PurchaseSearchBar = ({ 
   products, 

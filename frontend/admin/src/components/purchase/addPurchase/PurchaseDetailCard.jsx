@@ -34,6 +34,7 @@ const { Option } = Select;
 const { Text } = Typography;
 import Cookies from "js-cookie";
 import { useUser } from "../../../hooks/UserUser";
+import "./font.css"; // Import custom styles for supplier options
 const paymentOptions = [
   { name: "Cash", icon: <DollarOutlined /> },
   { name: "ABA", icon: <BankOutlined /> },
@@ -62,7 +63,7 @@ const PurchaseDetailsCard = ({
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentNote, setPaymentNote] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
-  const [exchangeRate, setExchangeRate] = useState(4100);
+  const [exchangeRate, setExchangeRate] = useState(4050);
   const token = localStorage.getItem('token');
   const safePurchase = {
     name: purchase?.name || '',
@@ -233,14 +234,19 @@ const handleInputChange = (e) => {
             <Col xs={24} sm={6} md={6} lg={6}>
               <Form.Item label="Suppliers" style={{ marginBottom: 0 }}>
                 <div style={{ display: 'flex' }}>
-                  <Select 
+                  <Select className="supplier-select"
+                    showSearch
                     placeholder="Select supplier"
-                    style={{ width: '100%', marginRight: 8 }}
+                    style={{ width: '100%', marginRight: 8}}
                     onChange={handleSupplierChange}
                     value={selectedSupplier}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option?.children?.toLowerCase().includes(input.toLowerCase())
+                    }
                   >
                     {suppliers?.map((supplier) => (
-                      <Option key={supplier.id} value={supplier.id}>
+                      <Option key={supplier.id} value={supplier.id} className="supplier-option" >
                         {supplier.username}
                       </Option>
                     ))}
@@ -369,7 +375,7 @@ const handleInputChange = (e) => {
                 <InputNumber 
                   min={1} 
                   value={exchangeRate} 
-                  onChange={(value) => setExchangeRate(value || 4100)}
+                  onChange={(value) => setExchangeRate(value || 4050)}
                   style={{ width: 100 }}
                 />
                 <Text>៛ per $1</Text>

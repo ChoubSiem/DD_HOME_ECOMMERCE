@@ -1,5 +1,6 @@
 import { Table, InputNumber, Select, Button, Popconfirm } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
+import "./font.css";
 import React from "react";
 
 const { Option } = Select;
