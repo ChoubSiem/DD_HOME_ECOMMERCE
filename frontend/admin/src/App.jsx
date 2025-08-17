@@ -82,12 +82,12 @@ import UomConversion from "./pages/inventory/UomConversion/UomConversion";
 import BrandManagement from "./pages/brand/Brand";
 import StockTransition from "./pages/report/stock_report/StockTransition";
 import CreditInvoice from "./pages/report/sale_report/CreditSaleInvoice";
+import Shelf from "./pages/inventory/shelf/Shelf";
 // import AddSaleReturn from "./pages/sale_return/AddSaleReturn";
 // import { useNavigate } from 'react-router-dom';
 
 // sale report 
 import DailySaleReport from "./pages/report/sale_report/SaleReport";
-import Shelf from "./pages/inventory/shelf/Shelf";
 
 const App = () => {
   const { initialize, login, logout, isAuthenticated, user, loading } = useProfileStore();
