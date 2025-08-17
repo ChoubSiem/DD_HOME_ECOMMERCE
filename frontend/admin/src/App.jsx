@@ -87,6 +87,7 @@ import CreditInvoice from "./pages/report/sale_report/CreditSaleInvoice";
 
 // sale report 
 import DailySaleReport from "./pages/report/sale_report/SaleReport";
+import Shelf from "./pages/inventory/shelf/Shelf";
 
 const App = () => {
   const { initialize, login, logout, isAuthenticated, user, loading } = useProfileStore();
@@ -162,6 +163,7 @@ const App = () => {
           <Route path="/sale-return/show/:saleReturnId" element={<SaleReturn />} />
           <Route path="/sale-return/update/:saleReturnId" element={<SaleReturn />} />
           <Route path="/sale-return/delete/:saleReturnId" element={<SaleReturn />} />
+          <Route path="/shelf" element={<Shelf />} />
 
           {/* <Route path="/sale-return/add" element={<AddSaleReturn />} /> */}
           {/* <Route path="/sale-return/edit" element={<EditSaleReturn />} /> */}
