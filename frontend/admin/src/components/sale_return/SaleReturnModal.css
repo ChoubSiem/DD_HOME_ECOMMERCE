@@ -1,0 +1,243 @@
+/* Main container */
+.return-document-container {
+  font-family: 'Arial', sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #ffffff;
+  color: #333;
+}
+
+/* Header styles */
+.return-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.logo-container {
+  width: 120px;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 80px;
+  height: auto;
+}
+
+.company-details {
+  flex: 1;
+}
+
+.company-name {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.company-info {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 15px 0;
+}
+
+/* Title section */
+.return-title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.return-title {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 15px;
+}
+
+.return-meta {
+  display: flex;
+  align-items: center;
+}
+
+.return-number {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.return-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.detail-row {
+  display: flex;
+  font-size: 15px;
+}
+
+.totals-section {
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.total-label {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.total-value {
+  font-weight: 500;
+}
+
+.grand-total {
+  border-top: 2px solid #e0e0e0;
+  border-bottom: 2px solid #e0e0e0;
+  font-weight: bold;
+}
+
+.signatures-section {
+  margin: 40px 0 20px;
+}
+
+.signature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+}
+
+.signature-box {
+  text-align: center;
+}
+
+.signature-line {
+  height: 1px;
+}
+
+.signature-label {
+  font-size: 14px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .return-header {
+    flex-direction: column;
+  }
+  
+  .company-details {
+    padding-left: 0;
+    margin-top: 20px;
+  }
+  
+  .return-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .totals-section {
+    max-width: 100%;
+  }
+  
+  .signature-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.p-dialog-detail.return-modal .p-dialog-header {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem 1.5rem;
+}
+
+.p-dialog-detail.return-modal .p-dialog-content {
+  padding: 0;
+  overflow-y: visible;
+}
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.footer-button {
+  flex: 1;
+  min-width: 100px;
+  background: green;
+  color: white;
+}
+.close{
+    background: red;
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    flex-wrap: wrap;
+  }
+  .footer-button {
+    flex: 1 0 45%;
+    margin: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-button {
+    flex: 1 0 100%;
+  }
+}
+
+.p-dialog-detail.return-modal .p-dialog-footer {
+  border-top: 1px solid #e0e0e0;
+  padding: 1rem 1.5rem;
+}
+
+/* Action buttons in footer */
+.p-dialog-detail.return-modal .p-dialog-footer .p-button {
+  min-width: 100px;
+  margin-left: 0.5rem;
+}
+
+/* DataTable overrides */
+.p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+}
+
+.p-datatable.p-datatable-sm .p-datatable-tbody > tr > td {
+  padding: 0.5rem 1rem;
+}
+
+/* Print-specific styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .return-document-container, .return-document-container * {
+    visibility: visible;
+  }
+  .return-document-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    box-shadow: none;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
