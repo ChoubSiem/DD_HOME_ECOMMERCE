@@ -72,6 +72,7 @@ import DDLogo from "./assets/logo/DD_Home_Logo 2.jpg";
 import Setting from "./pages/setting/Setting";
 import PaymentPos from "./pages/pos/PaymentPos";
 import { useProfileStore } from './stores/ProfileStore';
+import FastandSlowReport from "./pages/report/fast_slow_moving/FastSlowMoving";
 
 import React , { useEffect } from "react";
 import ProtectedRoute from './components/route/ProtectedRoute';
@@ -196,6 +197,7 @@ const App = () => {
           <Route path="/sale/add" element={<AddSale />} />
           <Route path="/sale/edit/:id" element={<EditSale />} />
           <Route path="/reports/credit-sale" element={<CreditInvoice />} />
+          <Route path="/reports/fast-slow-moving" element={<FastandSlowReport />} />
         </Route>
           <Route path="/pos/add" element={<AddPos/>} />
         

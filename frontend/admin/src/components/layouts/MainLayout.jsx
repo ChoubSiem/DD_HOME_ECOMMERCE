@@ -103,6 +103,7 @@ const itemMenuLeftTmp = [
     getItem("Brand", "/brand", <BarcodeOutlined />),
     getItem("Product Group", "/product-group", <ProjectOutlined />),
     getItem("Group Suppliers", "/supplier-group", <ContainerOutlined />),
+    getItem("Shelf", "/shelf", <TagsOutlined />),
     getItem("Warehouse", "/warehouse", <HomeOutlined />),
     getItem("Regional", "/regional", <EnvironmentOutlined />),
     getItem("Company", "/company", <TeamOutlined />),

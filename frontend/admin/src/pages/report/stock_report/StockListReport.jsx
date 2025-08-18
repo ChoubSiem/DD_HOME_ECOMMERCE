@@ -100,6 +100,20 @@ const StockReports = () => {
       path: '/reports/purchase',
       color: colors.black,
       type: 'purchase'
+    },
+    {
+      title: 'Shelf Report',
+      icon: <ExceptionOutlined />,
+      path: '/reports/purchase',
+      color: colors.black,
+      type: 'shelf'
+    },
+    {
+      title: 'Fast And Slow Moving Product',
+      icon: <ExceptionOutlined />,
+      path: '/reports/fast-slow-moving',
+      color: colors.black,
+      type: 'fast-slow-moving'
     }
   ];
 
@@ -160,6 +174,8 @@ const StockReports = () => {
                       {report.type === 'movement' && 'Inventory transfers'}
                       {report.type === 'record' && 'Historical stock data'}
                       {report.type === 'purchase' && 'Purchase reports'}
+                      {report.type === 'shelf' && 'Shelf inventory details'}
+                      {report.type === 'fast-slow-moving' && 'Fast and slow moving products'}
                     </span>
                     <div style={{ marginTop: 8 }}>
                       <Tag 

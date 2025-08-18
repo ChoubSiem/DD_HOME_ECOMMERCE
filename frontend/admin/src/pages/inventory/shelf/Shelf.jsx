@@ -1,18 +1,18 @@
 import React, { useState, useEffect,useMemo  } from "react";
 import { Card, message, Space, Button, Spin,Dropdown, Menu } from "antd";
 import { UploadOutlined, DownloadOutlined, PlusOutlined ,MenuOutlined, EditFilled } from "@ant-design/icons";
-import CategoryModal from "../../components/category/CategoryModal";
-import ProductTable from "../../components/product/ProductTable";
-import ProductToolBar from "../../components/product/ProductToolbar";
+import CategoryModal from "../../../components/category/CategoryModal";
+import ProductTable from "../../../components/product/ProductTable";
+import ProductToolBar from "../../../components/product/ProductToolbar";
 import "./Product.css";
 import Cookies from "js-cookie";
-import { useProductTerm } from "../../hooks/UserProductTerm";
+import { useProductTerm } from "../../../hooks/UserProductTerm";
 import { useNavigate } from "react-router-dom";
-import ImportProductModal from '../../components/product/addProduct/ImporProductModal';
-import ProductDetailModal from '../../components/product/ProductDetailModal';
-import ProductUpdatePrice from "../../components/product/importUpdateProductPrice";
-import { useCompany } from "../../hooks/UseCompnay";
-import ImportNewStock from "../../components/product/addProduct/importSetNewStockModal";
+import ImportProductModal from '../../../components/product/addProduct/ImporProductModal';
+import ProductDetailModal from '../../../components/product/ProductDetailModal';
+import ProductUpdatePrice from "../../../components/product/importUpdateProductPrice";
+import { useCompany } from "../../../hooks/UseCompnay";
+import ImportNewStock from "../../../components/product/addProduct/importSetNewStockModal";
 
 const Shelf = () => {
   const [loading, setLoading] = useState(false);
