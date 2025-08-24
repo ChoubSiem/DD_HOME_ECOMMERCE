@@ -17,7 +17,7 @@ export const useReport = () => {
     if (response.sales) {
         return {
             success: true,
-            sales: response.sales,     
+            sales: response,     
             message: response.message  
         };
     }
