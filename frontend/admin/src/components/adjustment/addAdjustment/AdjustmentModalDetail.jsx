@@ -10,6 +10,8 @@ import logo from '../../../assets/logo/DD_Home_Logo 2.jpg';
 const AdjustmentModalDetail = ({ open, onCancel, onEdit, adjustment }) => {
   const invoiceRef = useRef();
   const [capturing, setCapturing] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  
   const downloadAsImage = () => {
     setCapturing(true);
     message.loading('Capturing image...', 0);
@@ -43,42 +45,176 @@ const AdjustmentModalDetail = ({ open, onCancel, onEdit, adjustment }) => {
     }, 500);
   };
 
-  const exportToExcel = () => {
-    if (!adjustment?.items || adjustment.items.length === 0) {
-      message.warning('No data to export');
-      return;
-    }
-
+  const exportToExcel = async () => {
+    setExportLoading(true);
+    
     try {
-      // Prepare data for Excel
-      const worksheetData = [
-        ['No', 'Product', 'Quantity', 'Type', 'Unit']
-      ];
-
-      adjustment.items.forEach((item, index) => {
-        worksheetData.push([
-          index + 1,
-          item.product?.name || 'N/A',
-          item.qty || 0,
-          item.operation?.toUpperCase() || 'N/A',
-          item.unit || 'N/A'
-        ]);
-      });
+      if (!adjustment?.items || adjustment.items.length === 0) {
+        message.warning('No data available to export');
+        return;
+      }
 
       // Create workbook and worksheet
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const worksheet = XLSX.utils.aoa_to_sheet([]);
+
+      // Add title row
+      XLSX.utils.sheet_add_aoa(worksheet, [["DD Home Stock Adjustment Report"]], { origin: "A1" });
+      
+      // Add report details
+      XLSX.utils.sheet_add_aoa(worksheet, [
+        [`Reference: ${adjustment?.reference || 'N/A'}`],
+        [`Date: ${adjustment?.date ? new Date(adjustment.date).toLocaleDateString('en-US') : 'N/A'}`],
+        [`Adjuster: ${adjustment?.adjuster?.username || 'N/A'}`],
+        [`Warehouse: ${adjustment?.warehouse?.name || 'N/A'}`],
+        [`Note: ${adjustment?.note || 'N/A'}`],
+        [""] // Empty row
+      ], { origin: "A2" });
+
+      // Define headers
+      const headers = [
+        "No",
+        "Product Code",
+        "Product Name",
+        "Quantity",
+        "Type",
+        "Unit",
+        "Unit Cost",
+        "Total Cost"
+      ];
+
+      // Add headers to worksheet
+      XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: "A8" });
+
+      // Add data rows
+      let totalQuantity = 0;
+      let totalCost = 0;
+      
+      adjustment.items.forEach((item, index) => {
+        const cost = item.cost || 0;
+        const itemTotalCost = cost * item.qty;
+        totalQuantity += item.qty;
+        totalCost += itemTotalCost;
+        
+        const rowData = [
+          index + 1,
+          item.product?.code || 'N/A',
+          item.product?.name || 'N/A',
+          item.qty || 0,
+          item.operation?.toUpperCase() || 'N/A',
+          item.unit_name || 'N/A',
+          cost,
+          itemTotalCost
+        ];
+        
+        XLSX.utils.sheet_add_aoa(worksheet, [rowData], { origin: `A${9 + index}` });
+      });
+
+      // Add totals row
+      const totalRow = [
+        "TOTAL",
+        "",
+        "",
+        totalQuantity,
+        "",
+        "",
+        "",
+        totalCost
+      ];
+      
+      XLSX.utils.sheet_add_aoa(worksheet, [totalRow], { origin: `A${9 + adjustment.items.length}` });
+
+      // Apply styling
+      const range = XLSX.utils.decode_range(worksheet['!ref']);
+      
+      // Style title row
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const address = XLSX.utils.encode_cell({r: 0, c: C});
+        if (!worksheet[address]) worksheet[address] = {t: 's'};
+        worksheet[address].s = {font: {bold: true, sz: 16}, alignment: {horizontal: 'center'}};
+      }
+      
+      // Merge title cells
+      worksheet['!merges'] = [{s: {r: 0, c: 0}, e: {r: 0, c: headers.length - 1}}];
+
+      // Style header row (row 7)
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const address = XLSX.utils.encode_cell({r: 7, c: C});
+        if (!worksheet[address]) worksheet[address] = {t: 's'};
+        worksheet[address].s = {
+          font: {bold: true}, 
+          fill: {fgColor: {rgb: "D3D3D3"}},
+          border: {
+            top: {style: 'thin'},
+            left: {style: 'thin'},
+            bottom: {style: 'thin'},
+            right: {style: 'thin'}
+          },
+          alignment: {vertical: 'middle', horizontal: 'center'}
+        };
+      }
+
+      // Style data rows
+      for (let R = 8; R < 8 + adjustment.items.length; R++) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const address = XLSX.utils.encode_cell({r: R, c: C});
+          if (!worksheet[address]) worksheet[address] = {t: 's'};
+          
+          // Format numeric columns
+          if (C === 3 || C === 6 || C === 7) { // Quantity, Unit Cost, Total Cost columns
+            worksheet[address].z = C === 3 ? '0' : '#,##0.00';
+            worksheet[address].s = {alignment: {horizontal: 'right'}};
+          }
+        }
+      }
+
+      // Style total row
+      const totalRowIndex = 8 + adjustment.items.length;
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const address = XLSX.utils.encode_cell({r: totalRowIndex, c: C});
+        if (!worksheet[address]) worksheet[address] = {t: 's'};
+        
+        worksheet[address].s = {
+          font: {bold: true},
+          border: {top: {style: 'thin'}}
+        };
+        
+        // Format numeric columns in total row
+        if (C === 3 || C === 6 || C === 7) {
+          worksheet[address].z = C === 3 ? '0' : '#,##0.00';
+          worksheet[address].s = {
+            ...worksheet[address].s,
+            alignment: {horizontal: 'right'}
+          };
+        }
+      }
+
+      // Set column widths
+      const colWidths = [
+        {wch: 5},   // No
+        {wch: 15},  // Product Code
+        {wch: 30},  // Product Name
+        {wch: 10},  // Quantity
+        {wch: 10},  // Type
+        {wch: 10},  // Unit
+        {wch: 12},  // Unit Cost
+        {wch: 12}   // Total Cost
+      ];
+      
+      worksheet['!cols'] = colWidths;
 
       // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Adjustment Items');
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Stock Adjustment');
 
       // Generate Excel file and trigger download
-      XLSX.writeFile(workbook, `adjustment-${adjustment?.reference || 'export'}.xlsx`);
+      XLSX.writeFile(workbook, `adjustment_report_${adjustment?.reference || 'export'}.xlsx`);
 
-      message.success('Excel file downloaded successfully!');
+      message.success('Excel report downloaded successfully!');
     } catch (error) {
       message.error('Failed to export to Excel');
       console.error('Error exporting to Excel:', error);
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -109,7 +245,7 @@ const AdjustmentModalDetail = ({ open, onCancel, onEdit, adjustment }) => {
       width: '15%',
       align: 'center',
     },
-        {
+    {
       title: 'Unit',
       dataIndex: 'unit',
       key: 'unit',
@@ -117,7 +253,6 @@ const AdjustmentModalDetail = ({ open, onCancel, onEdit, adjustment }) => {
       render: (_, record) => <span className="unit-value">{record.unit_name || 'N/A'}</span>,
       width: '15%',
     },
-
     {
       title: 'Quantity',
       dataIndex: 'qty',
@@ -138,7 +273,6 @@ const AdjustmentModalDetail = ({ open, onCancel, onEdit, adjustment }) => {
       align: 'center',
       width: '15%',
     },
-
   ];
 
   return (
@@ -220,6 +354,7 @@ const AdjustmentModalDetail = ({ open, onCancel, onEdit, adjustment }) => {
               icon={<FileExcelOutlined />}
               onClick={exportToExcel}
               className="excel-button"
+              loading={exportLoading}
             >
               Export to Excel
             </Button>
