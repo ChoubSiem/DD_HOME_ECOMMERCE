@@ -171,6 +171,9 @@ const AddAdjustment = () => {
         unit: product.unit??null
       }))
     };    
+    // console.log(adjustmentData);
+    // return;
+    
     try {
       const result = await handleCreateAdjustment(adjustmentData, token);
       if (result.success) {

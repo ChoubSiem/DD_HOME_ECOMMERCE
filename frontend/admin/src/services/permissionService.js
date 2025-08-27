@@ -11,7 +11,7 @@ export const fetchRolePermissions = async (token, roleId) => {
   try {
     const response = await api.get(`/role-permission/${roleId}`, {
       headers: { Authorization: `Bearer ${token}` }
-    });        
+    });            
     return response;
   } catch (error) {
     console.error('Error fetching role permissions:', error);

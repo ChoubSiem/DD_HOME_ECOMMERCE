@@ -2,30 +2,8 @@ import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import Cookies from "js-cookie";
 import { useSale } from "../../hooks/UseSale";
-import {
-  Button,
-  Card,
-  Input,
-  Space,
-  Popconfirm,
-  message,
-  Dropdown,
-  Menu,
-  Tag,
-  Spin
-} from "antd";
-import {
-  SearchOutlined,
-  PlusOutlined,
-  FilterOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  MoreOutlined,
-  EyeOutlined,
-  DollarOutlined,
-  HistoryOutlined,
-  RollbackOutlined
-} from "@ant-design/icons";
+import { Button, Card, Input, Space, Popconfirm, message, Dropdown, Menu, Tag, Spin} from "antd";
+import { SearchOutlined, PlusOutlined, FilterOutlined, EditOutlined, DeleteOutlined, MoreOutlined, EyeOutlined, DollarOutlined, HistoryOutlined, RollbackOutlined} from "@ant-design/icons";
 import PosSaleDetail from "../../components/pos/PosDetail";
 import AddPaymentModal from "../../components/pos/payment/AddPayment";
 import ViewPaymentModal from "../../components/pos/payment/ViewPayment";
@@ -320,7 +298,9 @@ const PosSaleList = () => {
           <DataTable
             columns={columns}
             data={filteredSales}
-            pagination={false} 
+            pagination                   // enable pagination
+  paginationPerPage={10}       // rows per page
+  paginationRowsPerPageOptions={[10, 25, 50, 100,500]} 
             fixedHeader 
             fixedHeaderScrollHeight="500px" 
             customStyles={{

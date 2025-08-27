@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import DataTable from "react-data-table-component";
 import { Button, Dropdown, Space, Tag, Tooltip, Typography } from "antd";
-import { 
-  EditOutlined, 
-  MoreOutlined, 
-  DeleteOutlined, 
+import {
+  EditOutlined,
+  MoreOutlined,
+  DeleteOutlined,
   EyeOutlined,
   FilePdfOutlined,
   FileExcelOutlined,
@@ -20,16 +20,16 @@ import dayjs from 'dayjs';
 const { Text } = Typography;
 
 const greenTheme = {
-  primary: '#389e0d',       
-  light: '#f6ffed',         
-  dark: '#135200',          
-  highlight: '#b7eb8f',    
-  muted: '#8c8c8c',      
-  border: '#d9d9d9',       
-  success: '#52c41a',      
-  warning: '#faad14',      
-  error: '#ff4d4f',        
-  background: '#ffffff'      
+  primary: '#389e0d',
+  light: '#f6ffed',
+  dark: '#135200',
+  highlight: '#b7eb8f',
+  muted: '#8c8c8c',
+  border: '#d9d9d9',
+  success: '#52c41a',
+  warning: '#faad14',
+  error: '#ff4d4f',
+  background: '#ffffff'
 };
 let user = Cookies.get('user');
 if (user) {
@@ -51,10 +51,10 @@ const customStyles = {
 };
 
 
-const SalesTable = ({ 
-  data, 
-  onEdit, 
-  onDelete, 
+const SalesTable = ({
+  data,
+  onEdit,
+  onDelete,
   onViewPayment,
   onAddPayment,
   loading,
@@ -67,8 +67,8 @@ const SalesTable = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
-  
-  const showModal = (sale) => {    
+
+  const showModal = (sale) => {
     setSelectedSale(sale);
     setIsModalOpen(true);
   };
@@ -85,14 +85,14 @@ const SalesTable = ({
       refunded: { color: 'volcano', text: 'REFUNDED' },
       default: { color: 'blue', text: status.toUpperCase() }
     };
-    
+
     const statusConfig = statusMap[status.toLowerCase()] || statusMap.default;
-    
+
     return (
-      <Tag 
+      <Tag
         color={statusConfig.color}
-        style={{ 
-          borderRadius: '12px', 
+        style={{
+          borderRadius: '12px',
           fontWeight: 500,
           textTransform: 'uppercase',
           fontSize: '0.75rem'
@@ -118,51 +118,51 @@ const SalesTable = ({
       width: '180px',
       cell: (row) => <Text>{dayjs(row.saleDate).format('DD-MM-YYYY HH:mm:ss')}</Text>,
     },
-  // {
-  //     name: 'Type',
-  //     selector: row => row.type,
-  //     sortable: true,
-  //     cell: (row) => (
-  //       <div>
-  //         {row.type === 'warehouse' ? 'Warehouse' : 'Customer'}
-  //       </div>
-  //     ),
-  //   },
-  {
-    name: `Customer / Warehouse`,
-    selector: row => 
-      row.customerName,
-    sortable: true,
-    cell: (row) => {
-      if (row.type === 'warehouse') {
-        return (
-          <div>
-            <Text strong style={{ display: 'block' }}>
-              {row.customerName  || 'Unknown Warehouse'}
-            </Text>
-            {row.warehouse?.location && (
-              <Text type="secondary" style={{ fontSize: '0.75rem' }}>
-                {row.warehouse.location}
+    // {
+    //     name: 'Type',
+    //     selector: row => row.type,
+    //     sortable: true,
+    //     cell: (row) => (
+    //       <div>
+    //         {row.type === 'warehouse' ? 'Warehouse' : 'Customer'}
+    //       </div>
+    //     ),
+    //   },
+    {
+      name: `Customer / Warehouse`,
+      selector: row =>
+        row.customerName,
+      sortable: true,
+      cell: (row) => {
+        if (row.type === 'warehouse') {
+          return (
+            <div>
+              <Text strong style={{ display: 'block' }}>
+                {row.customerName || 'Unknown Warehouse'}
               </Text>
-            )}
-          </div>
-        );
-      } else {
-        return (
-          <div>
-            <Text strong style={{ display: 'block' }}>
-              {row.customerName || 'Walk-in Customer'}
-            </Text>
-            {row.customer?.email && (
-              <Text type="secondary" style={{ fontSize: '0.75rem' }}>
-                {row.customer.email}
+              {row.warehouse?.location && (
+                <Text type="secondary" style={{ fontSize: '0.75rem' }}>
+                  {row.warehouse.location}
+                </Text>
+              )}
+            </div>
+          );
+        } else {
+          return (
+            <div>
+              <Text strong style={{ display: 'block' }}>
+                {row.customerName || 'Walk-in Customer'}
               </Text>
-            )}
-          </div>
-        );
-      }
+              {row.customer?.email && (
+                <Text type="secondary" style={{ fontSize: '0.75rem' }}>
+                  {row.customer.email}
+                </Text>
+              )}
+            </div>
+          );
+        }
+      },
     },
-  },
 
     {
       name: "Sub Total",
@@ -219,13 +219,13 @@ const SalesTable = ({
     },
     {
       name: "Balance",
-      selector: row => row.totalPrice -  row.paid,
+      selector: row => row.totalPrice - row.paid,
       sortable: true,
       right: true,
       width: '130px',
       cell: (row) => (
         <Text strong style={{ color: greenTheme.dark }}>
-          {formatCurrency(row.totalPrice -  row.paid)}
+          {formatCurrency(row.totalPrice - row.paid)}
         </Text>
       ),
     },
@@ -237,83 +237,83 @@ const SalesTable = ({
       center: true,
       cell: (row) => statusTag(row.payment_status),
     },
-{
-  name: "ACTIONS",
-  cell: (row) => {
-    const items = [
-      {
-        key: 'edit',
-        label: (
-          <Space onClick={() => onEdit(row)}>
-            <EditOutlined style={{ color: greenTheme.primary }} /> Edit
-          </Space>
-        ),
-      },
-      {
-        key: 'view-payment',
-        label: (
-          <Space onClick={() => onViewPayment(row)}>
-            <EyeOutlined style={{ color: '#1890ff' }} />
-            View Payment
-          </Space>
-        ),
-      },
-      ...(row.payment_status !== 'paid'
-        ? [
-            {
-              key: 'add-payment',
-              label: (
-                <Space onClick={() => onAddPayment(row)}>
-                  <PlusOutlined style={{ color: '#52c41a' }} />
-                  Add Payment
-                </Space>
-              ),
-            },
-          ]
-        : []),
-      {
-        key: 'delete',
-        label: (
-          <Space onClick={() => onDelete(row.id)}>
-            <DeleteOutlined style={{ color: greenTheme.error }} /> Delete
-          </Space>
-        ),
-      },
-       {
-        key: 'add-sale-return',
-        icon: <RollbackOutlined />, 
-        label: 'Add Sale Return',
-        onClick: () => handleAddSaleReturn(row.id,'inventory'),
-      },
-    ];
+    {
+      name: "ACTIONS",
+      cell: (row) => {
+        const items = [
+          {
+            key: 'edit',
+            label: (
+              <Space onClick={() => onEdit(row)}>
+                <EditOutlined style={{ color: greenTheme.primary }} /> Edit
+              </Space>
+            ),
+          },
+          {
+            key: 'view-payment',
+            label: (
+              <Space onClick={() => onViewPayment(row)}>
+                <EyeOutlined style={{ color: '#1890ff' }} />
+                View Payment
+              </Space>
+            ),
+          },
+          ...(row.payment_status !== 'paid'
+            ? [
+              {
+                key: 'add-payment',
+                label: (
+                  <Space onClick={() => onAddPayment(row)}>
+                    <PlusOutlined style={{ color: '#52c41a' }} />
+                    Add Payment
+                  </Space>
+                ),
+              },
+            ]
+            : []),
+          {
+            key: 'delete',
+            label: (
+              <Space onClick={() => onDelete(row.id)}>
+                <DeleteOutlined style={{ color: greenTheme.error }} /> Delete
+              </Space>
+            ),
+          },
+          {
+            key: 'add-sale-return',
+            icon: <RollbackOutlined />,
+            label: 'Add Sale Return',
+            onClick: () => handleAddSaleReturn(row.id, 'inventory'),
+          },
+        ];
 
-    return (
-      <Dropdown
-        menu={{ items }}
-        trigger={['click']}
-        placement="bottomRight"
-      >
-        <Button
-          icon={<MoreOutlined style={{ color: greenTheme.primary }} />}
-          type="text"
-          size="small"
-        />
-      </Dropdown>
-    );
-  },
-  width: '90px',
-  ignoreRowClick: true,
-  allowOverflow: true,
-}
+        return (
+          <Dropdown
+            menu={{ items }}
+            trigger={['click']}
+            placement="bottomRight"
+          >
+            <Button
+              icon={<MoreOutlined style={{ color: greenTheme.primary }} />}
+              type="text"
+              size="small"
+            />
+          </Dropdown>
+        );
+      },
+      width: '90px',
+      ignoreRowClick: true,
+      allowOverflow: true,
+    }
 
   ];
-  
+
   return (
-    <div style={{ 
+    <div style={{
       overflow: 'hidden',
       boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)'
     }}>
-      
+
       {data && data.length > 0 ? (
         <DataTable
           columns={columns}
@@ -321,6 +321,9 @@ const SalesTable = ({
           fixedHeader
           fixedHeaderScrollHeight="500px"
           progressPending={loading}
+          pagination                   // enable pagination
+          paginationPerPage={10}       // rows per page
+          paginationRowsPerPageOptions={[10, 25, 50, 100]}
           progressComponent={
             <div style={{ padding: '24px' }}>
               <Text>Loading sales data...</Text>
@@ -343,14 +346,14 @@ const SalesTable = ({
 
 
 
-      
+
       {/* <SummaryRow /> */}
 
       <SaleModalDetail
         open={isModalOpen}
         onCancel={handleCancel}
         sale={selectedSale}
-        
+
       />
     </div>
   );

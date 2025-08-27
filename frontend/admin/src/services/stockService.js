@@ -1,8 +1,9 @@
 import api from "../api/axiosConfig";
 
-export const fetchAdjustment = async (token) => {
+export const fetchAdjustment = async (token,warehouse_id) => {
   try {
     const response = await api.get('/adjustment/list', {
+      params: { warehouse_id },
       headers: { Authorization: `Bearer ${token}` }
     });
     return response;
@@ -47,6 +48,30 @@ export const updateAdjustment = async (adjustId, values, token) => {
     return false;
   }
 };
+export const approveAdjustment = async (adjustId, token) => {
+  try {
+    const response = await api.post(`/adjustments/${adjustId}/approve`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response;
+  } catch (error) {
+    console.error('Error updating adjustment:', error);
+    return false;
+  }
+};
+
+export const rejectAdjustment = async (adjustId, values, token) => {
+  try {
+    const response = await api.post(`/adjustments/${adjustId}/reject`, values, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response;
+  } catch (error) {
+    console.error('Error updating adjustment:', error);
+    return false;
+  }
+};
+
 
 export const deleteAdjustment = async (adjustId, token) => {
   try {
