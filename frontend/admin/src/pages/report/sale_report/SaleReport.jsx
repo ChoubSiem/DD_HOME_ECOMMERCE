@@ -65,6 +65,7 @@ const SalesReports = () => {
     saleType: "all",
     groupBy: ["product"],
     salesPerson: "all",
+    customerGroup: "all",
   });
 
   const [pendingFilters, setPendingFilters] = useState({
@@ -76,6 +77,7 @@ const SalesReports = () => {
     saleType: "all",
     groupBy: ["product"],
     salesPerson: "all",
+    customerGroup: "all",
   });
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -87,8 +89,9 @@ const SalesReports = () => {
   const { getSaleReportsData } = useReport();
   const userData = useMemo(() => JSON.parse(Cookies.get("user") || "{}"), []);
   const token = localStorage.getItem("token");
-  const { handleEmployee } = useUser();
+  const { handleEmployee, handleGetCustomerGroup } = useUser();
   const [employees, setEmployees] = useState();
+  const [customerGroups, setCustomerGroups] = useState([]);
   const fetchSalesReportData = async () => {
     try {
       setIsLoading(true);
@@ -116,6 +119,10 @@ const SalesReports = () => {
           appliedFilters.salesPerson !== "all"
             ? appliedFilters.salesPerson
             : undefined,
+        customer_group: // Added customer_group filter
+          appliedFilters.customerGroup !== "all"
+            ? appliedFilters.customerGroup
+            : undefined,
       };
 
       const cleanedFilters = Object.fromEntries(
@@ -124,11 +131,6 @@ const SalesReports = () => {
 
       const response = await getSaleReportsData(cleanedFilters, token);
 
-      // if (response.success) {
-      //   setSales(response.sales.sales || []);
-      //   // sale_returns  response.sales.sale_returns
-      //   setError(null);
-      // }
       if (response.success) {
         const allSales = [
           ...(response.sales.sales || []),
@@ -152,10 +154,22 @@ const SalesReports = () => {
       setEmployees(result.employees);
     }
   };
+  const fetchCustomerGroups = async () => {
+    try {
+      const result = await handleGetCustomerGroup(token);      
+      if (result.success) {
+        setCustomerGroups(result.groups || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch customer groups:", error);
+      message.error("Failed to load customer groups");
+    }
+  };
 
   useEffect(() => {
     fetchSalesReportData();
     fectchEmployees();
+    fetchCustomerGroups();
   }, [appliedFilters]);
 
   const debouncedSetPendingSearch = useMemo(
@@ -397,7 +411,7 @@ const SalesReports = () => {
   }, [sales]);
   const handleExportExcel = useCallback(async () => {
     setExportLoading(true);
-    
+
     try {
       if (!sales.length) {
         message.warning("No data available to export");
@@ -411,14 +425,12 @@ const SalesReports = () => {
         bold: true,
       };
       worksheet.addRow([
-        `Date Range: ${
-          appliedFilters.dateRange?.[0]
-            ? dayjs(appliedFilters.dateRange[0]).format("YYYY-MM-DD")
-            : "All Dates"
-        } to ${
-          appliedFilters.dateRange?.[1]
-            ? dayjs(appliedFilters.dateRange[1]).format("YYYY-MM-DD")
-            : "All Dates"
+        `Date Range: ${appliedFilters.dateRange?.[0]
+          ? dayjs(appliedFilters.dateRange[0]).format("YYYY-MM-DD")
+          : "All Dates"
+        } to ${appliedFilters.dateRange?.[1]
+          ? dayjs(appliedFilters.dateRange[1]).format("YYYY-MM-DD")
+          : "All Dates"
         }`,
       ]);
       worksheet.addRow([
@@ -780,6 +792,27 @@ const SalesReports = () => {
                   <Option key={emp.id} value={emp.id}>
                     {emp.username}
                   </Option>
+                ))}
+              </Select>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Filter by customer group"
+                value={pendingFilters.customerGroup} 
+                onChange={(value) =>
+                  setPendingFilters((prev) => ({ ...prev, customerGroup: value })) 
+                }
+                allowClear
+                size="large"
+              >
+                <Option value="all">All Customer Groups</Option>
+                <Option value="walk_in">Walk-in</Option> 
+                {(customerGroups || []).map((group) => ( 
+                  <Option key={group.id} value={group.id}>
+                    {group.name}
+                  </Option>
+                  
                 ))}
               </Select>
             </Col>
