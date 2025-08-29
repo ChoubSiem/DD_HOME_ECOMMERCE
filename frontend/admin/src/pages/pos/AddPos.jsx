@@ -43,6 +43,10 @@ function PosAdd() {
   const productsPerPage = 10;
   const [selectedPayment, setSelectedPayment] = useState("Cash");
   const printRef = useRef();
+  const formatNumber = (num, decimals = 3) => {
+  return parseFloat(num.toFixed(decimals)).toString();
+};
+
   const [selectedCustomer, setSelectedCustomer] = useState(() => {
     const savedCustomer = localStorage.getItem('posSelectedCustomer');
     try {
@@ -1929,35 +1933,35 @@ function PosAdd() {
             <div className="summary-details">
               <div className="summary-row">
                 <span>Sub Total</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>${formatNumber(subtotal,3)}</span>
               </div>
               <div className="summary-row">
                 <span>Item Discounts</span>
-                <span>${itemDiscountTotal.toFixed(2)}</span>
+                <span>${formatNumber(itemDiscountTotal,3)}</span>
               </div>
               <div className="summary-row">
                 <span>Cart Discount</span>
-                <span>${calculatedCartDiscount.toFixed(2)}</span>
+                <span>${formatNumber(calculatedCartDiscount,3)}</span>
               </div>
               <div className="summary-row">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>${total.toFixed(3)}</span>
               </div>
               <div className="summary-row">
                 <span>Paid Amount</span>
-                <span>${totalPaidAmount.toFixed(2)}</span>
+                <span>${formatNumber(totalPaidAmount,3)}</span>
               </div>
               {total - totalPaidAmount > 0 && (
                 <div className="summary-row">
                   <span>Balance</span>
-                  <span>${(total - totalPaidAmount).toFixed(2)}</span>
+                  <span>${formatNumber((total - totalPaidAmount),3)}</span>
                 </div>
               )}
               {totalPaidAmount > total && (
                 <>
                   <div className="summary-row">
                     <span>Change</span>
-                    <span>${(totalPaidAmount - total).toFixed(2)}</span>
+                    <span>${formatNumber((totalPaidAmount - total),3)}</span>
                   </div>
                   <div className="summary-row">
                     <span></span>
