@@ -206,7 +206,7 @@ const handleReject = async (adjustmentId, values) => {
           handleReject={handleReject}
           loading={loading}
           currentUser={user}
-          permissions = {permissions}
+          permissions = {permissions} 
         />
 
         {currentAdjustment && (
