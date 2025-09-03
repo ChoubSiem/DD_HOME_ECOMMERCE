@@ -12,7 +12,7 @@ export const getSaleReports = async (values, token) => {
   const response = await api.get('/report/sales', {
     headers: { Authorization: `Bearer ${token}` },
     params: values
-  });
+  });  
   return response;
 };
 

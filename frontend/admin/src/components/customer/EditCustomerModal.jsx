@@ -121,7 +121,7 @@ const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, cust
           <Form.Item
             name="phone"
             label="Contact Number"
-            rules={[{ required: true, message: 'Please enter contact number' }]}
+            // rules={[{ required: true, message: 'Please enter contact number' }]}
           >
             <Input placeholder="Enter contact number" style={{ fontSize: '16px', height: '48px' }} />
           </Form.Item>
@@ -129,7 +129,7 @@ const CustomerModal = ({ visible, onCancel, onSave, initialData, isEditing, cust
           <Form.Item
             name="address"
             label="Address"
-            rules={[{ required: true, message: 'Please enter address' }]}
+            // rules={[{ required: true, message: 'Please enter address' }]}
           >
             <Input.TextArea placeholder="Enter address" rows={4} />
           </Form.Item>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Modal, Input, Button, Table, InputNumber, Spin, Tag, Space } from 'antd';
 import { FiSearch, FiShoppingCart, FiX } from 'react-icons/fi';
 import './ProductSearchModal.css';
-import Cookies from "js-cookie";
+import Cookies from 'js-cookie';
 import { useProductTerm } from '../../../hooks/UserProductTerm';
 import { debounce } from 'lodash';
 
@@ -19,13 +19,13 @@ const ProductSearchModal = ({
   const { handleProducts } = useProductTerm();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [displayCount, setDisplayCount] = useState(20); 
+  const [displayCount, setDisplayCount] = useState(20);
   const [isSearching, setIsSearching] = useState(false);
   const token = localStorage.getItem('token');
-  const userData = JSON.parse(Cookies.get('user') || {});
+  const userData = JSON.parse(Cookies.get('user') || '{}');
 
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  
+
   const debouncedSearch = useCallback(
     debounce((term) => {
       setDebouncedSearchTerm(term);
@@ -36,26 +36,25 @@ const ProductSearchModal = ({
   );
 
   useEffect(() => {
-    if (visible) {
-      fetchProducts();
-      setDisplayCount(20);
-    }
-  }, [visible]);
-
-  useEffect(() => {
     if (searchTerm) {
       debouncedSearch(searchTerm);
     } else {
       setDebouncedSearchTerm('');
       setIsSearching(false);
+      setProducts([]); // Clear products when search term is empty
     }
     return () => debouncedSearch.cancel();
   }, [searchTerm, debouncedSearch]);
 
-  const fetchProducts = async () => {
+  // Fetch products only when explicitly triggered
+  const fetchProducts = useCallback(async () => {
+    if (!debouncedSearchTerm && !selectedCategory) return; // Don't fetch if no search term or category
     setLoading(true);
     try {
-      const result = await handleProducts(token, userData.warehouse_id);
+      const result = await handleProducts(token, userData.warehouse_id, {
+        search: debouncedSearchTerm,
+        category: selectedCategory,
+      });
       if (result?.success) {
         setProducts(result.products || []);
       }
@@ -64,15 +63,27 @@ const ProductSearchModal = ({
     } finally {
       setLoading(false);
     }
+  }, [debouncedSearchTerm, selectedCategory, token, userData.warehouse_id, handleProducts]);
+
+  // Trigger fetch on Enter key or button click
+  const handleSearch = () => {
+    if (debouncedSearchTerm || selectedCategory) {
+      fetchProducts();
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const allFilteredProducts = useMemo(() => {
     if (!debouncedSearchTerm && !selectedCategory) {
       return products;
     }
-    
     const term = debouncedSearchTerm.toLowerCase();
-    return products.filter(product => {
+    return products.filter((product) => {
       const nameMatch = product.name?.toLowerCase().includes(term);
       const codeMatch = product.code?.toLowerCase().includes(term);
       const categoryMatch = selectedCategory ? product.category_name === selectedCategory : true;
@@ -87,38 +98,37 @@ const ProductSearchModal = ({
   const hasMoreProducts = displayCount < allFilteredProducts.length;
 
   const loadMoreProducts = () => {
-    setDisplayCount(prev => prev + 20); // Load more items at once
+    setDisplayCount((prev) => prev + 20);
   };
 
   const toggleProductSelection = useCallback((product) => {
-    setTempSelectedProducts(prev => {
-      const existingIndex = prev.findIndex(p => p.id === product.id);
-      return existingIndex >= 0 
-        ? prev.filter(p => p.id !== product.id)
-        : [...prev, {...product, quantity: 1}];
+    setTempSelectedProducts((prev) => {
+      const existingIndex = prev.findIndex((p) => p.id === product.id);
+      return existingIndex >= 0
+        ? prev.filter((p) => p.id !== product.id)
+        : [...prev, { ...product, quantity: 1 }];
     });
-  }, []);
+  }, [setTempSelectedProducts]);
 
-  const updateTempQuantity = useCallback((productId, newQuantity) => {
-    setTempSelectedProducts(prev =>
-      prev.map(item =>
-        item.id === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
-      )
-    );
-  }, []);
+  const updateTempQuantity = useCallback(
+    (productId, newQuantity) => {
+      setTempSelectedProducts((prev) =>
+        prev.map((item) =>
+          item.id === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
+        )
+      );
+    },
+    [setTempSelectedProducts]
+  );
 
   const ProductCard = React.memo(({ product, isSelected, onClick }) => {
     return (
-      <div 
-        className={`product-card ${isSelected ? 'selected' : ''}`}
-        onClick={onClick}
-      >
+      <div className={`product-card ${isSelected ? 'selected' : ''}`} onClick={onClick}>
         <div className="product-info">
           <div className="product-header">
             <h4 className="product-name">{product.name}</h4>
             <span className="product-code">{product.code}</span>
           </div>
-          
           <div className="price-grid">
             <div className="price-item">
               <span className="price-label">Retail:</span>
@@ -140,73 +150,72 @@ const ProductSearchModal = ({
   });
 
   const tableColumns = [
-    { 
-      title: 'Product', 
-      dataIndex: 'name', 
+    {
+      title: 'Product',
+      dataIndex: 'name',
       key: 'name',
       render: (text, record) => (
         <div>
           <div style={{ fontWeight: 500 }}>{text}</div>
           <div style={{ fontSize: 12, color: '#666' }}>{record.code}</div>
         </div>
-      )
+      ),
     },
-    { 
-      title: 'Price', 
+    {
+      title: 'Price',
       key: 'price',
       render: (_, record) => (
         <Space>
           <span style={{ color: '#1890ff' }}>${record.retail_price?.toFixed(2)}</span>
         </Space>
-      )
+      ),
     },
-    { 
-      title: 'VIP', 
+    {
+      title: 'VIP',
       key: 'vip_price',
       render: (_, record) => (
         <Space>
           <span style={{ color: '#1890ff' }}>${record.vip_price?.toFixed(2)}</span>
         </Space>
-      )
+      ),
     },
-    { 
-      title: 'Dealer', 
+    {
+      title: 'Dealer',
       key: 'dealer_price',
       render: (_, record) => (
         <Space>
           <span style={{ color: '#1890ff' }}>${record.dealer_price?.toFixed(2)}</span>
         </Space>
-      )
+      ),
     },
-    { 
-      title: 'Qty', 
+    {
+      title: 'Qty',
       key: 'quantity',
       render: (_, record) => (
-        <InputNumber 
+        <InputNumber
           min={1}
           value={record.quantity}
           onChange={(value) => updateTempQuantity(record.id, value)}
           style={{ width: 50 }}
         />
-      )
+      ),
     },
     {
       title: '',
       key: 'action',
       render: (_, record) => (
-        <Button 
-          type="text" 
-          danger 
+        <Button
+          type="text"
+          danger
           icon={<FiX />}
           onClick={(e) => {
             e.stopPropagation();
             toggleProductSelection(record);
           }}
         />
-      )
-    }
+      ),
+    },
   ];
-
 
   return (
     <Modal
@@ -217,7 +226,7 @@ const ProductSearchModal = ({
             {isSearching ? (
               <span>Showing {displayedProducts.length} of {allFilteredProducts.length} results</span>
             ) : (
-              <span>{products.length} products available</span>
+              <span>Enter a search term or select a category to view products</span>
             )}
           </div>
         </div>
@@ -230,60 +239,58 @@ const ProductSearchModal = ({
         <Button key="back" onClick={onCancel}>
           Cancel
         </Button>,
-        <Button 
-          key="submit" 
-          type="primary" 
+        <Button
+          key="submit"
+          type="primary"
           onClick={() => {
-            onConfirm(tempSelectedProducts);   // Call the parent handler
-            setTempSelectedProducts([]);       // Clear the selection
+            onConfirm(tempSelectedProducts);
+            setTempSelectedProducts([]);
           }}
           disabled={tempSelectedProducts.length === 0}
           className="confirm-button"
         >
           Confirm
-        </Button>
-
+        </Button>,
       ]}
       className="product-search-modal"
     >
       <div className="product-search-container">
-        <div className="search-section">
+        <div className="search-section" style={{ display: 'flex', gap: 8 }}>
           <Input
             placeholder="Search by name or code..."
             prefix={<FiSearch />}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={handleKeyPress}
             allowClear
             className="search-input"
             size="large"
           />
+          <Button type="primary" onClick={handleSearch} icon={<FiSearch />}>
+            Search
+          </Button>
         </div>
 
         {loading ? (
           <div className="loading-container">
             <Spin size="large" />
           </div>
-        ) : (
+        ) : displayedProducts.length > 0 ? (
           <div className="content-container">
             <div className="product-grid-section">
               <div className="product-grid">
-                {displayedProducts.map(product => (
+                {displayedProducts.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={product}
-                    isSelected={tempSelectedProducts.some(p => p.id === product.id)}
+                    isSelected={tempSelectedProducts.some((p) => p.id === product.id)}
                     onClick={() => toggleProductSelection(product)}
                   />
                 ))}
               </div>
-              
               {hasMoreProducts && (
                 <div className="load-more-container">
-                  <Button 
-                    type="dashed" 
-                    onClick={loadMoreProducts}
-                    block
-                  >
+                  <Button type="dashed" onClick={loadMoreProducts} block>
                     Load More ({allFilteredProducts.length - displayCount} remaining)
                   </Button>
                 </div>
@@ -295,7 +302,6 @@ const ProductSearchModal = ({
                 <h3 style={{ margin: 0 }}>Selected Products</h3>
                 <Tag color="blue">{tempSelectedProducts.length} selected</Tag>
               </div>
-              
               {tempSelectedProducts.length > 0 ? (
                 <Table
                   dataSource={tempSelectedProducts}
@@ -303,45 +309,75 @@ const ProductSearchModal = ({
                   rowKey="id"
                   pagination={false}
                   bordered={false}
-                  // showHeader={false} 
                   components={{
                     table: (props) => <table {...props} />,
                     header: {
                       wrapper: (props) => <thead {...props} />,
-                      cell: (props) => <th {...props} style={{ 
-                        padding: 8,
-                        fontWeight: 'normal',
-                        textAlign: 'left'
-                      }} />
+                      cell: (props) => (
+                        <th
+                          {...props}
+                          style={{
+                            padding: 8,
+                            fontWeight: 'normal',
+                            textAlign: 'left',
+                          }}
+                        />
+                      ),
                     },
                     body: {
                       wrapper: (props) => <tbody {...props} />,
-                      cell: (props) => <td {...props} style={{ 
-                        padding: 8,
-                        border: '1px solid #ddd'
-                      }} />
-                    }
+                      cell: (props) => (
+                        <td
+                          {...props}
+                          style={{
+                            padding: 8,
+                            border: '1px solid #ddd',
+                          }}
+                        />
+                      ),
+                    },
                   }}
                   style={{
                     width: '100%',
-                    borderCollapse: 'collapse'
+                    borderCollapse: 'collapse',
                   }}
                 />
               ) : (
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  height: 200,
-                  color: '#999'
-                }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 200,
+                    color: '#999',
+                  }}
+                >
                   <FiShoppingCart size={48} style={{ marginBottom: 16, color: '#d9d9d9' }} />
                   <p style={{ marginBottom: 4 }}>No products selected yet</p>
                   <p style={{ fontSize: 12 }}>Click on products to add them</p>
                 </div>
               )}
             </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 400,
+              color: '#999',
+            }}
+          >
+            <FiSearch size={48} style={{ marginBottom: 16, color: '#d9d9d9' }} />
+            <p style={{ marginBottom: 4 }}>
+              {isSearching ? 'No products found' : 'Search for products to begin'}
+            </p>
+            <p style={{ fontSize: 12 }}>
+              {isSearching ? 'Try a different search term or category' : 'Enter a search term or select a category'}
+            </p>
           </div>
         )}
       </div>

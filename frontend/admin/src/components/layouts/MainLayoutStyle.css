@@ -49,9 +49,9 @@
     border-radius: 3px; 
   }
   
-  .ant-layout-sider::-webkit-scrollbar-thumb:hover {
+  /* .ant-layout-sider::-webkit-scrollbar-thumb:hover {
     background: #555; 
-  }
+  } */
   .ant-layout-footer{
     background: #000;
     height: 46px;
@@ -109,7 +109,7 @@
 .notification-popover .ant-list-item {
   transition: background-color 0.3s;
 }
-
-.notification-popover .ant-list-item:hover {
+/* 
+.ant-list-item:hover {
   background-color: #f5f5f5 !important;
-}
+} */

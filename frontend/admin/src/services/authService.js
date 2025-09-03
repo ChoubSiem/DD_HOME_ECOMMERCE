@@ -11,9 +11,7 @@ export const loginUser = async ({ phone, password }) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-    });
-    console.log(response);
-    
+    });    
     return response;
   } catch (error) {
     const message = error.response?.message || error.message || 'Login failed';
