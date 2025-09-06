@@ -21,7 +21,9 @@ import {
     fetchPurchase,
     getStockTransfers,
     approveAdjustment,
-    rejectAdjustment
+    rejectAdjustment,
+    approveAdjustmentItem,
+    rejectAdjustmentItem
 
 } from '../services/stockService';
 
@@ -231,7 +233,17 @@ export const useStock = () => {
         }
     }
     const handleApproveAdjustment = async(id, token) => {        
-        let result = await approveAdjustment(id,token);
+        let result = await approveAdjustment(id,token);        
+        if (result) {
+            return{
+                success:true,
+                adjustment:result.adjustment,
+                message:result.message
+            }
+        }
+    }
+    const handleApproveAdjustmentItem = async(adjustmentId, itemId , token) => {        
+        let result = await approveAdjustmentItem(adjustmentId, itemId , token);
         console.log(result);
         
         if (result) {
@@ -248,6 +260,16 @@ export const useStock = () => {
             return{
                 success:true,
                 adjustment:result.adjustment,
+                message:result.message
+            }
+        }
+    }
+    const handleRejectAdjustmentItem = async(adjustId, itemId, note, token) => {        
+        let result = await rejectAdjustmentItem(adjustId, itemId, note, token);        
+        if (result) {
+            return{
+                success:true,
+                adjustment:result.data,
                 message:result.message
             }
         }
@@ -275,7 +297,9 @@ export const useStock = () => {
     handleGetSuspends,
     handleGetStockTransfers,
     handleApproveAdjustment,
-    handleRejectAdjustment
+    handleRejectAdjustment,
+    handleApproveAdjustmentItem,
+    handleRejectAdjustmentItem
 
     };
 };

@@ -1,3 +1,4 @@
+import { message } from "antd";
 import api from "../api/axiosConfig";
 
 export const fetchAdjustment = async (token,warehouse_id) => {
@@ -53,10 +54,54 @@ export const approveAdjustment = async (adjustId, token) => {
     const response = await api.post(`/adjustments/${adjustId}/approve`, {
       headers: { Authorization: `Bearer ${token}` }
     });
+    console.log(response);
+    
     return response;
   } catch (error) {
-    console.error('Error updating adjustment:', error);
     return false;
+  }
+};
+export const rejectAdjustmentItem = async (adjustId, itemId, note, token) => {
+  try {
+    const response = await api.put(
+      `/adjustments/${adjustId}/items/${itemId}/reject`,
+      { note }, 
+      { headers: { Authorization: `Bearer ${token}` } }
+    );    
+    
+    return {
+      success: true,
+      data: response.adjustment,
+      message: response.message,
+    };
+  } catch (error) {
+    console.error("Error rejecting adjustment item:", error);
+    return {
+      success: false,
+      error: error.response?.data?.error || error.message,
+    };
+  }
+};
+
+// Approve an adjustment item
+export const approveAdjustmentItem = async (adjustId, itemId, token) => {
+  try {
+    const response = await api.put(
+      `/adjustments/${adjustId}/items/${itemId}/approve`,
+      {}, 
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Error approving adjustment item:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to approve item",
+      error: error.response?.data?.error || error.message,
+    };
   }
 };
 
@@ -64,7 +109,7 @@ export const rejectAdjustment = async (adjustId, values, token) => {
   try {
     const response = await api.post(`/adjustments/${adjustId}/reject`, values, {
       headers: { Authorization: `Bearer ${token}` }
-    });
+    });    
     return response;
   } catch (error) {
     console.error('Error updating adjustment:', error);

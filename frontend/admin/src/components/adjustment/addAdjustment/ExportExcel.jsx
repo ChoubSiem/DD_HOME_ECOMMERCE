@@ -219,17 +219,14 @@ const exportToExcel = (adjustment, itemStatuses) => {
       {hpx: 25} // Total row
     ];
 
-    // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Stock Adjustment');
 
-    // Generate Excel file and trigger download
     XLSX.writeFile(workbook, `adjustment_report_${adjustment?.reference || 'export'}.xlsx`);
 
     message.success('Excel report downloaded successfully!');
     return true;
   } catch (error) {
     message.error('Failed to export to Excel');
-    console.error('Error exporting to Excel:', error);
     return false;
   }
 };
