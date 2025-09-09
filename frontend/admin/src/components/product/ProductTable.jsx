@@ -13,7 +13,7 @@ import { Dropdown } from 'primereact/dropdown';
 import Cookies from "js-cookie";
 import { motion } from "framer-motion";
 
-const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) => {
+const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick, permissions }) => {
   const [filters, setFilters] = useState({
     global: '',
     name: '',
@@ -28,7 +28,12 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
   const toast = useRef(null);
   const dt = useRef(null);
   const userData = JSON.parse(Cookies.get("user"));
-
+  const hasEditProductPermission = permissions.some(
+      (p) => p.name === "Product.edit"
+  );
+  const hasDeleteProductPermission = permissions.some(
+      (p) => p.name === "Product.delete"
+  );
   // Unique categories for dropdown
   const uniqueCategories = useMemo(() => {
     const categories = new Set();
@@ -194,6 +199,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
       className="action-buttons d-flex justify-content-center"
       style={{padding:0,margin:0}}
     >
+      {hasEditProductPermission && (
       <Button 
         icon="pi pi-pencil" 
         text
@@ -203,6 +209,8 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
         tooltip="Edit"
         tooltipOptions={{ position: 'top' }}
       />
+      )}
+      {hasDeleteProductPermission && (
       <Button 
         icon="pi pi-trash" 
         text
@@ -212,6 +220,7 @@ const ProductTable = ({ products = [], handleEdit, handleDelete, onRowClick }) =
         tooltip="Delete"
         tooltipOptions={{ position: 'top' }}
       />
+      )}
     </motion.div>
   );
 

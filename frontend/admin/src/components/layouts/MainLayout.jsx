@@ -248,6 +248,11 @@ const MainLayout = () => {
     return null;
   }
 
+  const hasPOSPermission = permission.some(
+    (p) => p.name === "POS.create"
+  );
+  
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       {loading && <Spinner />}
@@ -270,6 +275,7 @@ const MainLayout = () => {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+            {hasPOSPermission && (
             <Tooltip title="POS">
               <div 
                 onClick={handlePOSAdd}
@@ -277,6 +283,7 @@ const MainLayout = () => {
                 <ShopOutlined style={{ color: 'white', fontSize: '20px' }} />
               </div>
             </Tooltip>
+            )}
 
             <NotificationPopover
               notifications={notifications}

@@ -6,6 +6,8 @@ import CategoryToolbar from "../../../components/category/CategoryToolbar";
 import "./Category.css";
 import { useProductTerm } from "../../../hooks/UserProductTerm";
 import { PlusOutlined } from "@ant-design/icons";
+import { usePolicy } from "../../../hooks/usePolicy";
+import Cookies from "js-cookie";
 
 const CategoryMangement = () => {
   const token = localStorage.getItem("token");
@@ -20,6 +22,23 @@ const CategoryMangement = () => {
   const [loading, setLoading] = useState(false);
   const [currentCategories, setCurrentCategories] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();  
+  const user = JSON.parse(Cookies.get("user"));
+
+  const fetchPermisson = async () => {
+      let result = await handleRolePermission(user.role_id);
+      
+      if (result.success) {
+        setPermission(result.rolePermissions);
+      }
+    }
+    useEffect(() => {
+      fetchPermisson();
+    }, []);
+    const hasCategoryPermission = permissions.some(
+      (p) => p.name === "Category.create"
+    );
 
   const handleCreate = () => {
     setCurrentCategories(null); 
@@ -106,9 +125,11 @@ const CategoryMangement = () => {
               Manage your category information
             </p>
           </div>
+          {hasCategoryPermission && (
           <Button onClick={handleCreate} type="primary">
             <PlusOutlined /> Add Category
           </Button>
+          )}
         </div>
 
         <Space direction="vertical" size="middle" style={{ width: "100%", marginBottom: "30px" }}>
@@ -120,6 +141,7 @@ const CategoryMangement = () => {
           setCurrentCategories={setCurrentCategories}
           setIsModalVisible={setIsModalVisible}
           handleDelete={handleDelete}
+          permissions={permissions}
           // OnEdit = {}
         />
 

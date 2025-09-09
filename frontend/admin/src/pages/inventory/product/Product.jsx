@@ -13,6 +13,7 @@ import ProductDetailModal from '../../../components/product/ProductDetailModal';
 import ProductUpdatePrice from "../../../components/product/importUpdateProductPrice";
 import { useCompany } from "../../../hooks/UseCompnay";
 import ImportNewStock from "../../../components/product/addProduct/importSetNewStockModal";
+import { usePolicy } from "../../../hooks/usePolicy";
 const ProductManagement = () => {
   const token = localStorage.getItem('token');
   const [modalVisible, setModalVisible] = useState(false);
@@ -38,6 +39,8 @@ const ProductManagement = () => {
   const user = Cookies.get('user');
   const userData = JSON.parse(user);    
   const [searchTriggered, setSearchTriggered] = useState(false);
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();  
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -57,6 +60,26 @@ const ProductManagement = () => {
 
     fetchProductDetail();
   }, [selectedProduct, isProductDetailVisible, userData.warehouse_id, token]);
+
+  const fetchPermisson = async () => {
+      let result = await handleRolePermission(userData.role_id);
+      
+      if (result.success) {
+        setPermission(result.rolePermissions);
+      }
+    }
+    useEffect(() => {
+      fetchPermisson();
+    }, []);
+    const hasProductPermission = permissions.some(
+      (p) => p.name === "Product.create"
+    );
+    const hasImportProductPermission = permissions.some(
+      (p) => p.name === "Product.import"
+    );
+    const hasExportProductPermission = permissions.some(
+      (p) => p.name === "Product.export"
+    );
 
   const handleRowClick = (product) => {
     setSelectedProduct(product);
@@ -130,12 +153,14 @@ const ProductManagement = () => {
     }
   };
   const items = [
+    ...hasImportProductPermission ? [ 
     {
       key: 'import',
       icon: <UploadOutlined />,
       label: 'Import Product',
       onClick: () => setModalVisible(true),
     },
+    ] : [],
     {
       key:'setStock',
       icon: <UploadOutlined />,
@@ -148,17 +173,13 @@ const ProductManagement = () => {
       label: 'Update Price',
       onClick: () => setModalUpdatePriceVisible(true),
     },
+    ...hasExportProductPermission ? [
     {
       key: 'export',
       icon: <DownloadOutlined />,
       label: 'Export Product',
     },
-    {
-      key: 'add',
-      icon: <PlusOutlined />,
-      label: 'Add Product',
-      onClick: handleCreate,
-    },
+    ] : [],
   ];
 
   useEffect(() => {
@@ -231,6 +252,7 @@ const filteredProducts = products.filter((product) => {
                 Manage your product information
               </p>
             </div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <ImportProductModal
               visible={modalVisible}
               onCancel={() => setModalVisible(false)}
@@ -246,19 +268,23 @@ const filteredProducts = products.filter((product) => {
               onCancel={() => setModalUpdatePriceVisible(false)}
               onImport={handleImportPriceUpdate}
             />
+            {hasProductPermission && (
+              <Button onClick={handleCreate} type="primary"> <PlusOutlined/>Add Product</Button>
+            )}
             <Dropdown
               menu={{ 
                 items, 
                 style: { borderRadius: 0 } 
               }}
               trigger={['click']}
-            >
+              >
               <Button 
                 icon={<MenuOutlined />} 
                 type="primary" 
                 style={{ borderRadius: 0 }} 
               />
             </Dropdown>
+            </div>
           </div>
         </Card>
 
@@ -304,6 +330,7 @@ const filteredProducts = products.filter((product) => {
           setIsModalVisible={setIsModalVisible}
           handleDelete={handleDelete}
           handleEdit={handleEdit}
+          permissions={permissions}
         />
     </Spin>
   );

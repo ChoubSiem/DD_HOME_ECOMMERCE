@@ -7,9 +7,11 @@ import RegionalToolbar from "../../../components/regional/RegionalToolbar";
 import "./Regional.css";
 import {useCompany} from "../../../hooks/UseCompnay";
 import { useNavigate } from "react-router-dom";
+import { usePolicy } from "../../../hooks/usePolicy";
 import Cookies from "js-cookie";
 
 const CompanyManagement = () => {
+  const user = JSON.parse(Cookies.get("user"));
   const token = localStorage.getItem('token');
   const {handleRegional, handleRegionalCreate , handleRegionalUpdate,handleRegionalDelete} = useCompany();
   const [regionals, setRegionals] = useState([]);
@@ -17,7 +19,23 @@ const CompanyManagement = () => {
   const navigate = useNavigate();
   const [currentRegionals, setCurrentRegionals] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();
 
+  
+  const fetchPermisson = async () => {
+      let result = await handleRolePermission(user.role_id);
+      
+      if (result.success) {
+        setPermission(result.rolePermissions);
+      }
+    }
+    useEffect(() => {
+      fetchPermisson();
+    }, []);
+    const hasRegionalPermission = permissions.some(
+      (p) => p.name === "Regional.create"
+    );
   
   useEffect(() => {
     const fetchRegionals = async () => {
@@ -36,6 +54,7 @@ const CompanyManagement = () => {
 
     fetchRegionals();
   }, []);
+  
 
   const handleCreate = () => {
     navigate("/regional/add");
@@ -107,7 +126,9 @@ const CompanyManagement = () => {
                 Manage your regional information
               </p>
             </div>
-          <Button onClick={handleCreate} type="primary"> <PlusOutlined/>Add Regional</Button>
+          {hasRegionalPermission && (
+            <Button onClick={handleCreate} type="primary"> <PlusOutlined/>Add Regional</Button>
+          )}
         </div>
 
         <Space direction="vertical" size="middle" style={{ marginBottom: "30px",marginTop:"30px" }}>
@@ -120,6 +141,7 @@ const CompanyManagement = () => {
           setIsModalVisible={setIsModalVisible}
           handleDelete={handleDelete}
           handleEdit={handleEdit}
+          permissions={permissions}
         />
 
       <RegionalModal

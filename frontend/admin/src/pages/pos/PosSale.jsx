@@ -9,6 +9,7 @@ import AddPaymentModal from "../../components/pos/payment/AddPayment";
 import ViewPaymentModal from "../../components/pos/payment/ViewPayment";
 import "./PosSale.css";
 import { useNavigate } from "react-router-dom";
+import { usePolicy } from "../../hooks/usePolicy";
 
 const PosSaleList = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,6 +23,8 @@ const PosSaleList = () => {
   const { handlePosSales, handleDeleteSalePos } = useSale();
   const token = localStorage.getItem("token");
   const userData = JSON.parse(Cookies.get("user") || "{}");
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();  
 
   useEffect(() => {
     fetchSales();
@@ -48,6 +51,23 @@ const PosSaleList = () => {
     isViewPaymentModalVisible,
     currentSale,
   ]);
+
+  const fetchPermisson = async () => {
+      let result = await handleRolePermission(userData.role_id);
+      
+      if (result.success) {
+        setPermission(result.rolePermissions);
+      }
+    }
+    useEffect(() => {
+      fetchPermisson();
+    }, []);
+    const hasPOSPermission = permissions.some(
+      (p) => p.name === "POS.create"
+    );
+    const hasPOSDeletePermission = permissions.some(
+      (p) => p.name === "POS.delete"
+    );
 
   const fetchSales = async () => {
     setLoading(true);
@@ -147,7 +167,7 @@ const PosSaleList = () => {
         label: 'Add Sale Return',
         onClick: () => handleAddSaleReturn(row.id,'pos'),
       },
-
+      ...(hasPOSDeletePermission ? [
       {
         key: 'delete',
         icon: <DeleteOutlined />,
@@ -162,7 +182,7 @@ const PosSaleList = () => {
             Delete
           </Popconfirm>
         ),
-      },
+      }] : []),
     ];
 
     return { items };
@@ -261,14 +281,16 @@ const PosSaleList = () => {
               <h1 style={{ color: "#52c41a" }}>POS Sale</h1>
               <p>Manage your point of sale transactions</p>
             </div>
+            {hasPOSPermission && (
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => message.info("Add sale functionality requires POS integration")}
+              onClick={() => navigate("/pos/add")}
               style={{ backgroundColor: "#52c41a", borderColor: "#52c41a" }}
             >
               Add Sale
             </Button>
+            )}
           </div>
         </Card>
 
@@ -299,8 +321,8 @@ const PosSaleList = () => {
             columns={columns}
             data={filteredSales}
             pagination                   // enable pagination
-  paginationPerPage={10}       // rows per page
-  paginationRowsPerPageOptions={[10, 25, 50, 100,500]} 
+            paginationPerPage={20}       // rows per page
+            paginationRowsPerPageOptions={[20, 30, 50, 100,500]} 
             fixedHeader 
             fixedHeaderScrollHeight="500px" 
             customStyles={{
