@@ -1,34 +1,6 @@
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useRef,
-} from "react";
-import {
-  Card,
-  Input,
-  Button,
-  Select,
-  Space,
-  DatePicker,
-  Row,
-  Col,
-  Statistic,
-  Progress,
-  Spin,
-  message,
-  Typography,
-} from "antd";
-import {
-  SearchOutlined,
-  FilterOutlined,
-  FileExcelOutlined,
-  FilePdfOutlined,
-  FileImageOutlined,
-  ShoppingCartOutlined,
-  ClearOutlined,
-} from "@ant-design/icons";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { Card, Input, Button, Select, Space, DatePicker, Row, Col, Statistic, Progress, Spin, message, Typography } from "antd";
+import { SearchOutlined, FilterOutlined, FileExcelOutlined, FilePdfOutlined, FileImageOutlined, ShoppingCartOutlined, ClearOutlined } from "@ant-design/icons";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import Cookies from "js-cookie";
@@ -55,11 +27,16 @@ const { RangePicker } = DatePicker;
 const { Text, Title } = Typography;
 
 const SalesReports = () => {
-  // Filter states
+  // Get today's date for default filter
+  const today = dayjs();
+  const todayStart = today.startOf('day');
+  const todayEnd = today.endOf('day');
+
+  // Filter states - Set default date range to today
   const [appliedFilters, setAppliedFilters] = useState({
     searchTerm: "",
     status: "all",
-    dateRange: null,
+    dateRange: [todayStart, todayEnd],
     customer: "all",
     reportType: "all",
     saleType: "all",
@@ -71,7 +48,7 @@ const SalesReports = () => {
   const [pendingFilters, setPendingFilters] = useState({
     searchTerm: "",
     status: "all",
-    dateRange: null,
+    dateRange: [todayStart, todayEnd],
     customer: "all",
     reportType: "all",
     saleType: "all",
@@ -79,7 +56,8 @@ const SalesReports = () => {
     salesPerson: "all",
     customerGroup: "all",
   });
-
+  
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
   const [sales, setSales] = useState([]);
@@ -92,37 +70,23 @@ const SalesReports = () => {
   const { handleEmployee, handleGetCustomerGroup } = useUser();
   const [employees, setEmployees] = useState();
   const [customerGroups, setCustomerGroups] = useState([]);
+
   const fetchSalesReportData = async () => {
     try {
       setIsLoading(true);
 
       const filters = {
         warehouse_id: userData.warehouse_id,
-        sale_type: appliedFilters.saleType,
+        sale_type: appliedFilters.saleType !== "all" ? appliedFilters.saleType : undefined,
         group_by: appliedFilters.groupBy,
-        start_date: appliedFilters.dateRange?.[0]?.format(
-          "YYYY-MM-DD HH:mm:ss"
-        ),
+        start_date: appliedFilters.dateRange?.[0]?.format("YYYY-MM-DD HH:mm:ss"),
         end_date: appliedFilters.dateRange?.[1]?.format("YYYY-MM-DD HH:mm:ss"),
-        status:
-          appliedFilters.status !== "all" ? appliedFilters.status : undefined,
-        customer:
-          appliedFilters.customer !== "all"
-            ? appliedFilters.customer
-            : undefined,
+        status: appliedFilters.status !== "all" ? appliedFilters.status : undefined,
+        customer: appliedFilters.customer !== "all" ? appliedFilters.customer : undefined,
         search_term: appliedFilters.searchTerm || undefined,
-        report_type:
-          appliedFilters.reportType !== "all"
-            ? appliedFilters.reportType
-            : undefined,
-        sales_person:
-          appliedFilters.salesPerson !== "all"
-            ? appliedFilters.salesPerson
-            : undefined,
-        customer_group: // Added customer_group filter
-          appliedFilters.customerGroup !== "all"
-            ? appliedFilters.customerGroup
-            : undefined,
+        report_type: appliedFilters.reportType !== "all" ? appliedFilters.reportType : undefined,
+        sales_person: appliedFilters.salesPerson !== "all" ? appliedFilters.salesPerson : undefined,
+        customer_group: appliedFilters.customerGroup !== "all" ? appliedFilters.customerGroup : undefined,
       };
 
       const cleanedFilters = Object.fromEntries(
@@ -148,15 +112,17 @@ const SalesReports = () => {
       setIsLoading(false);
     }
   };
+
   const fectchEmployees = async () => {
     let result = await handleEmployee(token);
     if (result.success) {
       setEmployees(result.employees);
     }
   };
+
   const fetchCustomerGroups = async () => {
     try {
-      const result = await handleGetCustomerGroup(token);      
+      const result = await handleGetCustomerGroup(token);
       if (result.success) {
         setCustomerGroups(result.groups || []);
       }
@@ -166,11 +132,23 @@ const SalesReports = () => {
     }
   };
 
+  // Add initial data fetch on component mount
   useEffect(() => {
-    fetchSalesReportData();
-    fectchEmployees();
-    fetchCustomerGroups();
-  }, [appliedFilters]);
+    const fetchInitialData = async () => {
+      await fectchEmployees();
+      await fetchCustomerGroups();
+      setHasInitialLoad(true);
+    };
+    
+    fetchInitialData();
+  }, []);
+
+  // Fetch sales data when filters change AND initial data is loaded
+  useEffect(() => {
+    if (hasInitialLoad) {
+      fetchSalesReportData();
+    }
+  }, [appliedFilters, hasInitialLoad]);
 
   const debouncedSetPendingSearch = useMemo(
     () =>
@@ -192,12 +170,11 @@ const SalesReports = () => {
     const hasDateGroup = appliedFilters.groupBy?.includes("date");
     const hasCustomerGroup = appliedFilters.groupBy?.includes("customer");
     const hasInvoiceGroup = appliedFilters.groupBy?.includes("invoice");
-    const hasSalesPersonGroup =
-      appliedFilters.groupBy?.includes("sales_person");
-    const hasCustomerGroupGroup =
-      appliedFilters.groupBy?.includes("customer_group");
+    const hasSalesPersonGroup = appliedFilters.groupBy?.includes("sales_person");
+    const hasCustomerGroupGroup = appliedFilters.groupBy?.includes("customer_group");
     const hasCategoryGroup = appliedFilters.groupBy?.includes("category");
     const baseColumns = [];
+    
     if (hasProductGroup) {
       baseColumns.push({
         field: "code",
@@ -409,6 +386,7 @@ const SalesReports = () => {
       }
     );
   }, [sales]);
+
   const handleExportExcel = useCallback(async () => {
     setExportLoading(true);
 
@@ -443,10 +421,8 @@ const SalesReports = () => {
       const hasDateGroup = appliedFilters.groupBy.includes("date");
       const hasCustomerGroup = appliedFilters.groupBy.includes("customer");
       const hasInvoiceGroup = appliedFilters.groupBy.includes("invoice");
-      const hasSalesPersonGroup =
-        appliedFilters.groupBy.includes("sales_person");
-      const hasCustomerGroupGroup =
-        appliedFilters.groupBy.includes("customer_group");
+      const hasSalesPersonGroup = appliedFilters.groupBy.includes("sales_person");
+      const hasCustomerGroupGroup = appliedFilters.groupBy.includes("customer_group");
       const hasCategoryGroup = appliedFilters.groupBy.includes("category");
       const headers = [];
 
@@ -652,16 +628,18 @@ const SalesReports = () => {
     const clearedFilters = {
       searchTerm: "",
       status: "all",
-      dateRange: null,
+      dateRange: [todayStart, todayEnd], // Reset to today when clearing
       customer: "all",
       reportType: "all",
       saleType: "all",
       groupBy: ["product"],
+      salesPerson: "all",
+      customerGroup: "all",
     };
     setPendingFilters(clearedFilters);
     setAppliedFilters(clearedFilters);
     setSelectedRows([]);
-    message.info("Filters cleared");
+    message.info("Filters cleared - Showing today's data");
   }, []);
 
   if (error) {
@@ -682,6 +660,7 @@ const SalesReports = () => {
       </div>
     );
   }
+
   return (
     <Spin
       spinning={isLoading || exportLoading}
@@ -701,11 +680,6 @@ const SalesReports = () => {
                 <Text strong>Warehouse: </Text>
                 <Text>{userData.warehouse_name || "N/A"}</Text>
               </div>
-            </Col>
-            <Col>
-              <ShoppingCartOutlined
-                style={{ fontSize: 48, color: "#b7eb8f", opacity: 0.8 }}
-              />
             </Col>
           </Row>
         </Card>
@@ -799,20 +773,19 @@ const SalesReports = () => {
               <Select
                 style={{ width: "100%" }}
                 placeholder="Filter by customer group"
-                value={pendingFilters.customerGroup} 
+                value={pendingFilters.customerGroup}
                 onChange={(value) =>
-                  setPendingFilters((prev) => ({ ...prev, customerGroup: value })) 
+                  setPendingFilters((prev) => ({ ...prev, customerGroup: value }))
                 }
                 allowClear
                 size="large"
               >
                 <Option value="all">All Customer Groups</Option>
-                <Option value="walk_in">Walk-in</Option> 
-                {(customerGroups || []).map((group) => ( 
+                <Option value="walk_in">Walk-in</Option>
+                {(customerGroups || []).map((group) => (
                   <Option key={group.id} value={group.id}>
                     {group.name}
                   </Option>
-                  
                 ))}
               </Select>
             </Col>
@@ -878,7 +851,6 @@ const SalesReports = () => {
               scrollable
               scrollHeight="600px"
               sortMode="multiple"
-              // footer={CustomFooter}
               tableStyle={{ width: "100%" }}
               className="p-datatable-striped p-datatable-gridlines"
               loading={isLoading}

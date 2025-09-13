@@ -37,7 +37,6 @@ const EditCompany = () => {
         setCurrentCompany(companyData.data);
         form.setFieldsValue(companyData.data);
       } catch (error) {
-        console.error("Error loading company:", error);
         message.error("Error loading company");
       } finally {
         setLoading(false);

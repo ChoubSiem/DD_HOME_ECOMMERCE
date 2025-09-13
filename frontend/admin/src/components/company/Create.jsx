@@ -23,7 +23,6 @@ const CreateCompany = () => {
           message.error("Failed to load employees");
         }
       } catch (error) {
-        console.error("Error loading employees:", error);
         message.error("Error loading employees");
       } finally {
         setLoading(false);

@@ -155,7 +155,7 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
         <div className="empty-state">No invoice data available</div>
       </Modal>
     );
-  }  
+  }    
 
   return (
     <Modal

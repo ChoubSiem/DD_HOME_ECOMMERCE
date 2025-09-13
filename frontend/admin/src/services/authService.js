@@ -5,7 +5,7 @@ export const loginUser = async ({ phone, password }) => {
   try {
     const response = await api.post('/login', {
       phone: phone.toString().trim(),
-      password,
+      password, 
     }, {
       headers: {
         'Content-Type': 'application/json',

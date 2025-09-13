@@ -37,6 +37,8 @@ export const getProductReports = async (values, token) => {
     headers: { Authorization: `Bearer ${token}` },
     params: values
   });
+  // console.log(response);
+  
   return response;
 };
 

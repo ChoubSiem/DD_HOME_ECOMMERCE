@@ -21,11 +21,9 @@ const AddSale = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [warehouses, setWarehouses] = useState([]);
   const [note, setNote] = useState("");
-  const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [reference, setReference] = useState('');
-  const [adjuster, setAdjuster] = useState([]);
   const token = localStorage.getItem("token");
   const userData = JSON.parse(Cookies.get("user"));
   const { handleWarehouse } = useCompany();
@@ -42,12 +40,13 @@ const AddSale = () => {
   const [invoiceDiscount, setInvoiceDiscount] = useState({
     value: 0,
     type: 'amount',
-  });  
+  });
   const [paymentMethods, setPaymentMethods] = useState([{ method: 'cash', amount: 0 }]);
   const [nextPaymentDate, setNextPaymentDate] = useState(null);
   const [creditAmount, setCreditAmount] = useState(0);
-  const [customers, setCustomers] = useState(0);
-  const [customer, setCustomer] = useState(0);
+  const [customers, setCustomers] = useState([]);
+  const [customer, setCustomer] = useState(null);
+  const [selectedSalesperson, setSelectedSalesperson] = useState(null); 
 
   const handleCreditDetailsChange = (amount, date) => {
     setCreditAmount(amount);
@@ -62,7 +61,7 @@ const AddSale = () => {
   };
 
   const handleCustomerData = async () => {
-    const result = await handleCustomers(token);    
+    const result = await handleCustomers(token);
     if (result.success) {
       setCustomers(result.customers);
     }
@@ -73,7 +72,6 @@ const AddSale = () => {
     if (savedProducts) {
       setSelectedProducts(JSON.parse(savedProducts));
     }
-    setAdjuster(userData);
     handleWarehouseData();
     fetchProducts();
     handleCustomerData();
@@ -162,11 +160,10 @@ const AddSale = () => {
 
     const customer_type = (localStorage.getItem('customer_type') || '').toLowerCase();
     let productPrice;
-    
+
     if (!userData.warehouse_id) {
-      productPrice = selectedProduct.price  || 0;
-      
-    }else{
+      productPrice = selectedProduct.price || 0;
+    } else {
       productPrice = selectedProduct.retail_price;
     }
 
@@ -195,7 +192,6 @@ const AddSale = () => {
       discountAmount: 0,
       discountPercent: 0
     };
-    
 
     setSelectedProducts([...selectedProducts, newProduct]);
     message.success(`${selectedProduct.name} has been added to the sale.`);
@@ -228,15 +224,6 @@ const AddSale = () => {
     });
   };
 
-  const handleUnitChange = (key, value) => {
-    setSelectedProducts(prev => prev.map(item => {
-      if (item.key === key) {
-        return { ...item, unit: value };
-      }
-      return item;
-    }));
-  };
-
   const handleRemoveProduct = (key) => {
     const updatedProducts = selectedProducts.filter((p) => p.key !== key);
     setSelectedProducts(updatedProducts);
@@ -261,29 +248,30 @@ const AddSale = () => {
       message.error('Please add at least one product before submitting');
       return;
     }
-    
+
     setLoading(true);
     let warehouse_id = values.warehouse_id;
     let customer_id = null;
+    
     if (userData.warehouse_id) {
       warehouse_id = userData.warehouse_id;
       customer_id = selectedCustomer;
     }
+    
     if (!toWarehouseId && customer_id == 0) {
-      
-      message.error('Please select customer ');
+      message.error('Please select customer');
       return;
     }
-    // console.log(values);
-    
+
     const firstNextDate = paymentMethods?.[0]?.nextPaymentDate;
     const creditMethod = paymentMethods.find(pm => pm.method === 'credit');
     const creditAmount = creditMethod ? creditMethod.amount : null;
     const amount_paid = paymentMethods.map(payment => payment.amount).reduce((sum, amount) => sum + amount, 0);
+    
     const saleData = {
       date: values.date || dayjs().format('YYYY-MM-DD HH:mm:ss'),
       reference: reference,
-      sale_person: adjuster.id, 
+      sale_person: selectedSalesperson.id, // Use the selected salesperson
       warehouse_id: warehouse_id ?? null,
       from_warehouse_id: fromWarehouseId == 'company' ? null : fromWarehouseId,
       to_warehouse_id: toWarehouseId ?? null,
@@ -291,12 +279,12 @@ const AddSale = () => {
       payments: paymentMethods,
       discount: invoiceDiscount.value ?? 0,
       discount_type: invoiceDiscount.type ?? 'amount',
-      credit_amount: creditAmount != null ?(amount - creditAmount):null,
+      credit_amount: creditAmount != null ? (amount - creditAmount) : null,
       sale_type: 'sale_inventory',
       amount: rawTotal,
       paid: creditAmount,
       total: amount ?? 0,
-      amount_paid: creditAmount??amount_paid,
+      amount_paid: creditAmount ?? amount_paid,
       customer_id: customer_id,
       next_payment_date: firstNextDate != null ? dayjs(firstNextDate).format('YYYY-MM-DD') : null,
       items: selectedProducts.map(product => ({
@@ -308,13 +296,13 @@ const AddSale = () => {
         discount: product.discountAmount ?? 0,
       }))
     };
-    // console.log(saleData);
-    // return    ;
-    
+
+    console.log('Sale Data:', saleData);
+
     try {
       const result = await handlePosSaleCreate(saleData, token);
-      
-      if (result.success) {        
+
+      if (result.success) {
         message.success('Sale created successfully!');
         form.resetFields();
         setSelectedProducts([]);
@@ -337,16 +325,16 @@ const AddSale = () => {
     }
 
     const searchTermLower = searchTerm.toLowerCase();
-    
+
     const results = products.filter(product => {
       const productName = String(product.name || '').toLowerCase();
-      const productCode = String(product.code || ''); 
+      const productCode = String(product.code || '');
       return (
         productName.includes(searchTermLower) ||
-        productCode.includes(searchTerm) 
+        productCode.includes(searchTerm)
       );
     });
-    
+
     setFilteredProducts(results);
   }, [searchTerm, products]);
 
@@ -368,6 +356,11 @@ const AddSale = () => {
     }
   };
 
+  // Handle salesperson selection
+  const handleSalespersonChange = (salesperson) => {
+    setSelectedSalesperson(salesperson);
+  };
+
   return (
     <div className="add-purchase-container">
       <Card style={{ border: 'none', borderBottom: '1px solid #52c41a', borderRadius: 0, marginBottom: '50px' }}>
@@ -377,16 +370,17 @@ const AddSale = () => {
         </div>
       </Card>
 
-      <SaleDetailCard 
+      <SaleDetailCard
         reference={reference}
         warehouses={warehouses}
         setReference={setReference}
-        salesperson={adjuster}
+        salesperson={selectedSalesperson} 
         customers={customers}
         setFilteredProducts={setFilteredProducts}
         selectedCustomer={setSelectedCustomer}
         onFromWarehouseChange={setFromWarehouseId}
         onToWarehouseChange={setToWarehouseId}
+        onSalespersonChange={handleSalespersonChange} 
       />
 
       <ProductSearchBar
@@ -409,14 +403,14 @@ const AddSale = () => {
         nextPaymentDate={nextPaymentDate}
         paymentMethod={paymentMethod}
         onPaymentMethodChange={setPaymentMethod}
-        onInvoiceDiscountChange={handleInvoiceDiscountChange}     
+        onInvoiceDiscountChange={handleInvoiceDiscountChange}
         onAmountChange={setAmount}
         onTotalChange={(value) => setRawTotal(value)}
         total={rawTotal}
         paymentMethods={paymentMethods}
         onPaymentMethodsChange={setPaymentMethods}
       />
-      
+
       <NoteSection note={note} setNote={setNote} />
 
       <ActionButtons
