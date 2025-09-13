@@ -1,44 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { Card, Row, Col, DatePicker, Input, Form, Select } from "antd";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 import Cookies from "js-cookie";
 import { useUser } from "../../../hooks/UserUser";
+
 const { Option } = Select;
 
 const SaleDetailCard = ({
   reference = null,
   warehouses,
-  customers, 
+  customers,
   setReference,
-  salesperson = { name: '', id: null },
+  salesperson = { name: "", id: null, username: "" },
   products,
   setFilteredProducts,
   selectedCustomer,
-  onToWarehouseChange
+  onToWarehouseChange,
+  onSalespersonChange,
 }) => {
   const now = dayjs();
   const [form] = Form.useForm();
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [salepersons, setSalePersons] = useState([]);
   const userData = JSON.parse(Cookies.get("user"));
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
+
   const safeSalesperson = {
-    name: salesperson?.name || '',
-    id: salesperson?.id || userData.id // Default to current user's ID if not provided
+    name: salesperson?.name  || "",
+    id: salesperson?.id ,
+    username: salesperson?.username || "",
   };
-  const {handleEmployee} = useUser();
-  
-  const handleEmployeeData = async() =>{
+
+  const { handleEmployee } = useUser();
+
+  const handleEmployeeData = async () => {
     let result = await handleEmployee(token);
     if (result.success) {
       setSalePersons(result.employees);
     }
-  }
+  };
 
   useEffect(() => {
     if (selectedWarehouse && selectedWarehouse !== "company") {
-      const filtered = (products || []).filter(product =>
-        product.warehouse_id === selectedWarehouse
+      const filtered = (products || []).filter(
+        (product) => product.warehouse_id === selectedWarehouse
       );
       setFilteredProducts(filtered);
     } else {
@@ -55,7 +60,14 @@ const SaleDetailCard = ({
   const handleCustomerChange = (value) => {
     selectedCustomer(value);
   };
-  
+
+  const handleSalespersonChange = (value) => {
+    const selected = salepersons.find((person) => person.id === parseInt(value));
+    if (selected) {
+      onSalespersonChange?.(selected);
+    }
+  };
+
   return (
     <Card title="Sale Details" style={{ marginBottom: 20, borderRadius: 0 }}>
       <Form form={form} layout="vertical">
@@ -65,7 +77,7 @@ const SaleDetailCard = ({
               <DatePicker
                 showTime
                 format="YYYY-MM-DD HH:mm:ss"
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 defaultValue={now}
               />
             </Form.Item>
@@ -82,22 +94,17 @@ const SaleDetailCard = ({
           </Col>
 
           <Col xs={24} sm={8} md={8} lg={8}>
-            <Form.Item label="Salesperson" name="salesperson_id" style={{ marginBottom: 0 }}>
-              <Select
-                placeholder="Select salesperson"
-                defaultValue={safeSalesperson.username}
-                showSearch
-                filterOption={(input, option) =>
-                  (option?.children || '')
-                    .toString()
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-              >
+            <Form.Item 
+              label="Salesperson" 
+              name="salesperson"  
+              style={{ marginBottom: 0 }}
+              initialValue={safeSalesperson.id}
+            >
+              <Select onChange={handleSalespersonChange}>
                 {salepersons.map((person) => (
-                  <Option key={person.id} value={person.username}>
-                    {person.name}
-                  </Option>
+                  <Select.Option key={person.id} value={person.id}>
+                    {person.name} {person.username}
+                  </Select.Option>
                 ))}
               </Select>
             </Form.Item>
@@ -108,7 +115,7 @@ const SaleDetailCard = ({
               <Form.Item
                 label="Warehouse"
                 name="warehouse_id"
-                rules={[{ required: true, message: 'Please select a warehouse' }]}
+                rules={[{ required: true, message: "Please select a warehouse" }]}
               >
                 <Select
                   placeholder="Select warehouse"
@@ -127,7 +134,7 @@ const SaleDetailCard = ({
               <Form.Item
                 label="Customer"
                 name="customer_id"
-                rules={[{ required: true, message: 'Please select a customer' }]}
+                rules={[{ required: true, message: "Please select a customer" }]}
               >
                 <Select
                   placeholder="Select customer"
@@ -135,7 +142,7 @@ const SaleDetailCard = ({
                   allowClear
                   showSearch
                   filterOption={(input, option) =>
-                    (option?.children || '')
+                    (option?.children || "")
                       .toString()
                       .toLowerCase()
                       .includes(input.toLowerCase())
@@ -144,8 +151,10 @@ const SaleDetailCard = ({
                   {customers?.length ? (
                     customers.map((customer) => (
                       <Option key={customer.id} value={customer.id}>
-                        {customer.username} ({customer.phone}){' '}
-                        <span style={{ color: 'green' }}>({customer.group_name})</span>
+                        {customer.username} ({customer.phone}){" "}
+                        <span style={{ color: "green" }}>
+                          ({customer.group_name})
+                        </span>
                       </Option>
                     ))
                   ) : (
