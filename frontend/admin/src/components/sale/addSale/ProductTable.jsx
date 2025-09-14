@@ -6,6 +6,7 @@ const { Text } = Typography;
 const { Option } = Select;
 
 const currencyFormatter = (value) => {
+  if (isNaN(value) || value === null || value === undefined) return '$ 0.00';
   return `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
@@ -45,39 +46,40 @@ const ProductsTable = ({
 
   const calculateTotals = () => {
     const results = selectedProducts.reduce((acc, item) => {
-      const itemSubtotal = item.price * item.quantity;
-      const itemDiscount = item.discountAmount || (itemSubtotal * (item.discountPercent || 0)) / 100;
+      const price = parseFloat(item.price) || 0;
+      const quantity = parseFloat(item.quantity) || 0;
+      const discountPercent = parseFloat(item.discountPercent) || 0;
+      const discountAmount = parseFloat(item.discountAmount) || 0;
+      
+      const itemSubtotal = price * quantity;
+      const itemDiscount = discountAmount > 0 ? discountAmount : (itemSubtotal * discountPercent) / 100;
       const itemTotal = itemSubtotal - itemDiscount;
       
       return {
         subtotal: acc.subtotal + itemSubtotal,
         itemDiscounts: acc.itemDiscounts + itemDiscount,
         totalBeforeInvoiceDiscount: acc.totalBeforeInvoiceDiscount + itemTotal,
-        totalQuantity: acc.totalQuantity + item.quantity
+        totalQuantity: acc.totalQuantity + quantity
       };
     }, { subtotal: 0, itemDiscounts: 0, totalBeforeInvoiceDiscount: 0, totalQuantity: 0 });
 
     const invoiceDiscountValue = invoiceDiscount.type === 'amount' 
-      ? invoiceDiscount.value 
-      : (results.totalBeforeInvoiceDiscount * invoiceDiscount.value) / 100;
+      ? parseFloat(invoiceDiscount.value) || 0
+      : (results.totalBeforeInvoiceDiscount * (parseFloat(invoiceDiscount.value) || 0)) / 100;
 
     return {
       ...results,
       invoiceDiscount: invoiceDiscountValue,
-      grandTotal: results.totalBeforeInvoiceDiscount - invoiceDiscountValue
+      grandTotal: Math.max(0, results.totalBeforeInvoiceDiscount - invoiceDiscountValue)
     };
   };
 
   const totals = calculateTotals();
 
-  const formatCurrency = (value, currencyCode) => {
+  const formatCurrency = (value, currencyCode = 'USD') => {
+    if (isNaN(value) || value === null || value === undefined) value = 0;
     const currency = currencies.find(c => c.code === currencyCode) || currencies[0];
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency.code,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value).replace(currency.code, currency.symbol);
+    return `${currency.symbol} ${value.toFixed(2)}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
   const handlePaymentMethodChange = (value, index) => {
@@ -93,25 +95,37 @@ const ProductsTable = ({
 
   const handlePaymentAmountChange = (value, index) => {
     const newPayments = [...paymentMethods];
-    newPayments[index].amount = value || 0;
+    newPayments[index].amount = parseFloat(value) || 0;
     onPaymentMethodsChange(newPayments);
   };
 
   const handlePaymentCurrencyChange = (value, index) => {
     const newPayments = [...paymentMethods];
     const selectedCurrency = currencies.find(c => c.code === value) || currencies[0];
+    const currentPayment = newPayments[index];
     
-    const currentCurrency = currencies.find(c => c.code === newPayments[index].currency) || currencies[0];
-    newPayments[index].amount = (newPayments[index].amount * currentCurrency.rate) / selectedCurrency.rate;
+    // Convert amount to new currency
+    if (currentPayment.currency && currentPayment.exchange_rate) {
+      const amountInUSD = currentPayment.amount / currentPayment.exchange_rate;
+      newPayments[index].amount = amountInUSD * selectedCurrency.rate;
+    }
     
     newPayments[index].currency = value;
-    newPayments[index].exchangeRate = selectedCurrency.rate;
+    newPayments[index].exchange_rate = selectedCurrency.rate;
     onPaymentMethodsChange(newPayments);
   };
 
   const handleExchangeRateChange = (value, index) => {
     const newPayments = [...paymentMethods];
-    newPayments[index].exchangeRate = value;
+    const currentPayment = newPayments[index];
+    
+    // Convert amount using new exchange rate
+    if (currentPayment.currency && currentPayment.exchange_rate) {
+      const amountInUSD = currentPayment.amount / currentPayment.exchange_rate;
+      newPayments[index].amount = amountInUSD * parseFloat(value);
+    }
+    
+    newPayments[index].exchange_rate = parseFloat(value) || 1;
     onPaymentMethodsChange(newPayments);
   };
 
@@ -124,7 +138,7 @@ const ProductsTable = ({
   const addPaymentMethod = () => {
     onPaymentMethodsChange([
       ...paymentMethods,
-      { method: 'cash', amount: 0, currency: 'USD', exchangeRate: 1 }
+      { method: 'cash', amount: 0, currency: 'USD', exchange_rate: 1 }
     ]);
   };
 
@@ -134,7 +148,8 @@ const ProductsTable = ({
       newPayments.splice(index, 1);
       
       // If removing the only payment with amount, set first payment to remaining balance
-      if (paymentMethods.reduce((sum, pm) => sum + pm.amount, 0) === totals.grandTotal) {
+      const totalPaid = paymentMethods.reduce((sum, pm) => sum + (parseFloat(pm.amount) || 0), 0);
+      if (totalPaid === totals.grandTotal) {
         newPayments[0].amount = totals.grandTotal;
       }
       
@@ -167,7 +182,7 @@ const ProductsTable = ({
           value={price}
           onChange={(value) => handlePriceChange(record.key, value)}
           formatter={currencyFormatter}
-          parser={value => parseFloat(value.replace(/\$\s?|(,*)/g, ''))}
+          parser={value => parseFloat(value.replace(/\$\s?|(,*)/g, '')) || 0}
           style={{ width: '100%' }}
         />
       ),
@@ -192,7 +207,9 @@ const ProductsTable = ({
       key: "discount",
       width: 200,
       render: (_, record) => {
-        const maxDiscount = record.price * record.quantity;
+        const price = parseFloat(record.price) || 0;
+        const quantity = parseFloat(record.quantity) || 0;
+        const maxDiscount = price * quantity;
         return (
           <div style={{ display: 'flex', gap: 8 }}>
             <InputNumber
@@ -201,7 +218,7 @@ const ProductsTable = ({
               value={record.discountAmount || 0}
               onChange={(value) => handleItemDiscountChange(record.key, value, 'amount')}
               formatter={currencyFormatter}
-              parser={value => parseFloat(value.replace(/\$\s?|(,*)/g, ''))}
+              parser={value => parseFloat(value.replace(/\$\s?|(,*)/g, '')) || 0}
               style={{ width: '60%' }}
             />
             <InputNumber
@@ -210,7 +227,7 @@ const ProductsTable = ({
               value={record.discountPercent || 0}
               onChange={(value) => handleItemDiscountChange(record.key, value, 'percent')}
               formatter={value => `${value}%`}
-              parser={value => parseFloat(value.replace('%', ''))}
+              parser={value => parseFloat(value.replace('%', '')) || 0}
               style={{ width: '40%' }}
             />
           </div>
@@ -223,8 +240,13 @@ const ProductsTable = ({
       key: "total",
       width: 120,
       render: (_, record) => {
-        const subtotal = record.price * record.quantity;
-        const discount = record.discountAmount || (subtotal * (record.discountPercent || 0)) / 100;
+        const price = parseFloat(record.price) || 0;
+        const quantity = parseFloat(record.quantity) || 0;
+        const discountAmount = parseFloat(record.discountAmount) || 0;
+        const discountPercent = parseFloat(record.discountPercent) || 0;
+        
+        const subtotal = price * quantity;
+        const discount = discountAmount > 0 ? discountAmount : (subtotal * discountPercent) / 100;
         return <Text strong>{currencyFormatter((subtotal - discount).toFixed(2))}</Text>;
       },
       align: 'right'
@@ -246,7 +268,12 @@ const ProductsTable = ({
   ];
 
   const tableFooter = () => {
-    const paidAmountUSD = paymentMethods.reduce((sum, pm) => sum + (pm.amount / pm.exchangeRate), 0);
+    const paidAmountUSD = paymentMethods.reduce((sum, pm) => {
+      const amount = parseFloat(pm.amount) || 0;
+      const exchangeRate = parseFloat(pm.exchange_rate) || 1;
+      return sum + (amount / exchangeRate);
+    }, 0);
+    
     const remainingAmount = totals.grandTotal - paidAmountUSD;
     
     return (
@@ -380,14 +407,13 @@ const ProductsTable = ({
                       <Col span={12}>
                         <Form.Item label="Amount">
                           <InputNumber
-                          min={0}
-                          value={payment.amount}
-                          onChange={(value) => handlePaymentAmountChange(value, index)}
-                          formatter={(value) => `${value}`}
-                          parser={(value) => parseFloat(value.replace(/[^\d.]/g, ''))}
-                          style={{ width: '100%' }}
-                        />
-
+                            min={0}
+                            value={payment.amount}
+                            onChange={(value) => handlePaymentAmountChange(value, index)}
+                            formatter={(value) => `${value}`}
+                            parser={(value) => parseFloat(value.replace(/[^\d.]/g, '')) || 0}
+                            style={{ width: '100%' }}
+                          />
                         </Form.Item>
                       </Col>
                     </Row>
@@ -395,7 +421,7 @@ const ProductsTable = ({
                       <Col span={12}>
                         <Form.Item label="Currency">
                           <Select
-                            value={payment.currency}
+                            value={payment.currency || 'USD'}
                             onChange={(value) => handlePaymentCurrencyChange(value, index)}
                             style={{ width: '100%' }}
                           >
@@ -410,9 +436,9 @@ const ProductsTable = ({
                       <Col span={12}>
                         <Form.Item label="Exchange Rate">
                           <InputNumber
-                            min={1}
-                            step={1}
-                            value={payment.exchangeRate}
+                            min={0.0001}
+                            step={0.0001}
+                            value={payment.exchange_rate || 1}
                             onChange={(value) => handleExchangeRateChange(value, index)}
                             style={{ width: '100%' }}
                           />

@@ -17,43 +17,31 @@ const AdjustmentTable = ({
   adjustments,
   handleEdit,
   handleDelete,
-  handleApprove,
   handleReject,
+  handleApproveAll,
+  handleApproveItem, 
+  handleRejectItem,
+  handleRejectAll,
   loading,
-  currentUser,
-  permissions
+  permissions,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAdjustment, setSelectedAdjustment] = useState(null);
-
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [rejectNote, setRejectNote] = useState("");
+  const [rejectNote, setRejectNote] = useState("");  
   const showModal = (adjustment) => {
     setSelectedAdjustment(adjustment);
     setIsModalOpen(true);
   };
-  const handleCancel = () => setIsModalOpen(false);
-  const handleRejectModalOpen = (adjustment) => {
-    setSelectedAdjustment(adjustment);
-    setRejectNote(""); 
-    setIsRejectModalOpen(true);
-  };
 
+  const handleCancel = () => setIsModalOpen(false);
   const handleRejectModalConfirm = async () => {
     if (rejectNote.trim() === "") {
-      return; 
+      message.error("Please provide a rejection note");
+      return;
     }
-
     await handleReject(selectedAdjustment.id, { note: rejectNote });
     setIsRejectModalOpen(false);
-  };
-
-  const hasPermission = (action) => {
-    if (!permissions || permissions.length === 0) return false;
-    return permissions.some(
-      (p) =>
-        p.name.toLowerCase() === `adjustment.${action}`.toLowerCase()
-    );
   };
 
   const items = (adjustment) => [
@@ -79,7 +67,7 @@ const AdjustmentTable = ({
       danger: true,
       onClick: () => handleDelete(adjustment.id),
     },
-  ];
+  ];  
 
   const renderStatus = (status) => {
     switch (status) {
@@ -87,10 +75,12 @@ const AdjustmentTable = ({
         return <Tag color="green">Approved</Tag>;
       case "rejected":
         return <Tag color="red">Rejected</Tag>;
+      case "partial":
+        return <Tag color="teal">Partial</Tag>;
       default:
         return <Tag color="orange">Pending</Tag>;
     }
-  };  
+  };
 
   const columns = [
     {
@@ -139,7 +129,6 @@ const AdjustmentTable = ({
       name: "Actions",
       cell: (row) => (
         <Space size="middle">
-          
           <Dropdown
             menu={{ items: items(row) }}
             trigger={["click"]}
@@ -147,30 +136,6 @@ const AdjustmentTable = ({
           >
             <Button type="text" icon={<MoreOutlined />} />
           </Dropdown>
-          {row.status === "pending" && (
-            <>
-              {hasPermission("approve") && (
-                <Popconfirm
-                  title="Approve this adjustment?"
-                  onConfirm={() => handleApprove(row.id)}
-                >
-                  <Button
-                    type="text"
-                    icon={<CheckOutlined style={{ color: "green" }} />}
-                  />
-                </Popconfirm>
-              )}
-
-              {hasPermission("reject") && (
-                <Button
-                  type="text"
-                  icon={<CloseOutlined style={{ color: "red" }} />}
-                  onClick={() => handleRejectModalOpen(row)}
-                />
-              )}
-            </>
-          )}
-
         </Space>
       ),
     },
@@ -189,14 +154,17 @@ const AdjustmentTable = ({
         onRowClicked={(row) => showModal(row)}
       />
 
-      {/* Adjustment Detail Modal */}
       <AdjustmentModalDetail
         open={isModalOpen}
         onCancel={handleCancel}
         adjustment={selectedAdjustment}
+        permissions={permissions}
+        onApproveAll={handleApproveAll}
+        onApproveItem={handleApproveItem} 
+        onRejectItem={handleRejectItem} 
+        onRejectAll={handleRejectAll} 
       />
 
-      {/* Reject Note Modal */}
       <Modal
         title="Reject Adjustment"
         open={isRejectModalOpen}

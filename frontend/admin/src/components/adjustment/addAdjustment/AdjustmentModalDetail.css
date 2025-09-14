@@ -1,318 +1,358 @@
 /* Base Styles */
 .adjustment-modal {
-    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  }
-  
-  .invoice-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-  }
-  
-  /* Header Styles */
-  .invoice-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 24px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .company-logo {
-    width: 60px;
-    height: 60px;
-    background: #1890ff;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 20px;
-  }
-  
-  .header-info {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .document-title {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 600;
-    color: #222;
-    letter-spacing: 0.5px;
-  }
-  
-  .document-reference {
-    margin: 4px 0 0;
-    font-size: 14px;
-    color: #666;
-  }
-  
-  .document-date {
-    font-size: 14px;
-    color: #666;
-    margin: 0;
-  }
-  
-  /* Body Styles */
-  .invoice-body {
-    flex: 1;
-  }
-  
-  .section-divider {
-    margin: 0 0 24px 0;
-    border-color: #f0f0f0;
-  }
-  
-  /* Summary Section */
-  .summary-section {
-    margin-bottom: 24px;
-  }
-  
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-  }
-  
-  .summary-card {
-    padding: 16px;
-    background: #fafafa;
-    border-radius: 4px;
-    border-left: 4px solid #e0e0e0;
-  }
-  
-  .summary-label {
-    display: block;
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 6px;
-    font-weight: 500;
-    text-transform: uppercase;
-  }
-  
-  .summary-value {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 500;
-    color: #333;
-  }
-  
-  /* Status Cards */
-  .status-card {
-    border-left-width: 4px;
-  }
-  
-  .status-completed {
-    border-left-color: #52c41a;
-  }
-  
-  .status-pending {
-    border-left-color: #faad14;
-  }
-  
-  .status-unknown, .status-cancelled {
-    border-left-color: #ff4d4f;
-  }
-  
-  .status-completed .status-value {
-    color: #52c41a;
-  }
-  
-  .status-pending .status-value {
-    color: #faad14;
-  }
-  
-  .status-unknown .status-value, .status-cancelled .status-value {
-    color: #ff4d4f;
-  }
-  
-  /* Notes Section */
-  .notes-section {
-    margin-bottom: 24px;
-  }
-  
-  .section-title.ant-divider {
-    font-size: 14px;
-    color: #666;
-    margin: 24px 0 12px;
-    font-weight: 500;
-  }
-  
-  .notes-content {
-    padding: 16px;
-    background: #f9f9f9;
-    border-radius: 4px;
-    border-left: 4px solid #1890ff;
-  }
-  
-  .note-text {
-    margin: 0;
-    font-size: 14px;
-    color: #444;
-    line-height: 1.5;
-  }
-  
-  /* Items Section */
-  .items-table .ant-table {
-    font-size: 14px;
-  }
-  
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  color: #2d3748;
+}
+
+/* Container */
+.invoice-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Header Styles */
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 12px;
+  background: linear-gradient(90deg, #f8fafc, #edf2f7);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.company-logo img {
+  width: 100px;
+  height: auto;
+  object-fit: contain;
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.document-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+  letter-spacing: -0.5px;
+}
+
+.document-reference {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.document-date {
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 500;
+  margin: 0;
+}
+
+
+.section-divider {
+  margin: 0 0 24px 0;
+  border-color: #edf2f7;
+}
+
+/* Notes Section */
+.notes-section {
+  margin-bottom: 24px;
+}
+
+.section-title.ant-divider {
+  font-size: 16px;
+  color: #2d3748;
+  margin: 24px 0 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.notes-content {
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 6px;
+  border-left: 4px solid #3182ce;
+  transition: all 0.2s ease;
+}
+
+.note-text {
+  margin: 0;
+  font-size: 14px;
+  color: #2d3748;
+  line-height: 1.6;
+}
+
 /* Table Styles */
 .items-table .ant-table {
-    font-size: 14px;
-    border-radius: 8px;
-    overflow: hidden;
+  font-size: 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.items-table .ant-table-container {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.items-table .ant-table-thead > tr > th {
+  background: #52c41a !important; /* Blue header for modern look */
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  /* padding: 12px 16px; */
+  border-bottom: none;
+  transition: background 0.3s ease;
+}
+
+.items-table .ant-table-thead > tr > th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.items-table .ant-table-thead > tr > th:last-child {
+  border-top-right-radius: 8px;
+}
+
+.items-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #edf2f7;
+  padding: 12px 16px;
+  color: #2d3748;
+}
+
+.items-table .ant-table-tbody > tr:last-child > td {
+  border-bottom: none;
+}
+
+.items-table .table-row:hover > td {
+  background: #f7fafc !important;
+  transition: background 0.2s ease;
+}
+
+/* Table Cell Styles */
+.product-name {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.product-code, .unit-value {
+  color: #4a5568;
+  font-weight: 400;
+}
+
+.quantity-value {
+  font-weight: 500;
+  font-family: 'Roboto Mono', monospace;
+  color: #2d3748;
+}
+
+.adjustment-type {
+  font-weight: 600;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.add-type {
+  color: #38a169;
+  background: #f0fff4;
+}
+
+.remove-type {
+  color: #e53e3e;
+  background: #fff5f5;
+}
+
+.status {
+  font-weight: 600;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  /* text-transform: uppercase; */
+}
+
+.status.approved {
+  color: #38a169;
+  background: #f0fff4;
+}
+
+.status.rejected {
+  color: #e53e3e;
+  background: #fff5f5;
+}
+
+.status.pending {
+  color: #d69e2e;
+  background: #fefcbf;
+}
+
+/* Action Buttons in Table */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.action-buttons .ant-btn {
+  padding: 4px 12px;
+  font-size: 13px;
+  height: 32px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.action-buttons .ant-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.action-buttons .ant-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Footer Styles */
+.invoice-footer {
+  /* padding: 16px 32px; */
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+}
+/* .action-buttons-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+} */
+
+.close-button, .image-button, .excel-button, .edit-button, .approve-all-button, .reject-all-button {
+  flex: 0 1 auto;
+  height: 40px;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 0 16px;
+  transition: all 0.2s ease;
+}
+
+.close-button {
+  border-color: #e53e3e;
+  color: #e53e3e;
+}
+
+.close-button:hover {
+  background: #fff5f5;
+  border-color: #c53030;
+  color: #c53030;
+}
+
+.image-button, .excel-button {
+  border-color: #718096;
+  color: #2d3748;
+}
+
+.image-button:hover, .excel-button:hover {
+  background: #edf2f7;
+  border-color: #4a5568;
+  color: #2d3748;
+}
+
+.edit-button, .approve-all-button {
+  background: green;
+  border-color: green;
+}
+
+.edit-button:hover, .approve-all-button:hover {
+  background: green;
+  border-color: #2b6cb0;
+}
+
+.reject-all-button {
+  background: #e53e3e;
+  border-color: #e53e3e;
+}
+
+.reject-all-button:hover {
+  background: #c53030;
+  border-color: #c53030;
+}
+
+/* Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
   }
-  
-  .items-table .ant-table-container {
-    border-radius: 8px;
+
+  .adjustment-modal,
+  .adjustment-modal * {
+    visibility: visible;
   }
-  
-  .items-table .ant-table-thead > tr > th {
-    background-color: #52c41a !important; /* Green color */
-    color: white !important;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 13px;
-    border-bottom: none;
+
+  .adjustment-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
   }
-  
-  .items-table .ant-table-thead > tr > th:first-child {
-    border-top-left-radius: 8px;
-  }
-  
-  .items-table .ant-table-thead > tr > th:last-child {
-    border-top-right-radius: 8px;
-  }
-  
-  .items-table .ant-table-tbody > tr > td {
-    border-bottom: 1px solid #e2e8f0;
-    padding: 12px 16px;
-  }
-  
-  .items-table .ant-table-tbody > tr:last-child > td {
-    border-bottom: none;
-  }
-  
-  .items-table .table-row:hover > td {
-    background-color: #f7fafc !important;
-  }
-  
-  /* Ensure print styles also show the green header */
-  @media print {
-    .items-table .ant-table-thead > tr > th {
-      background-color: #52c41a !important;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      color: white !important;
-    }
-  }
-  
-  /* Table Cell Styles */
-  .product-name {
-    font-weight: 500;
-  }
-  
-  .quantity-value, .stock-value {
-    font-weight: 500;
-    font-family: 'Roboto Mono', monospace;
-  }
-  
-  .adjustment-type {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 13px;
-  }
-  
-  .add-type {
-    color: #52c41a;
-  }
-  
-  .remove-type {
-    color: #ff4d4f;
-  }
-  
-  .unit-value {
-    color: #666;
-  }
-  
-  /* Footer Styles */
+
   .invoice-footer {
-    padding: 16px 24px;
-    background-color: #f8f9fa;
-    border-top: 1px solid #e0e0e0;
+    display: none;
   }
-  
+
+  .ant-modal-close {
+    display: none;
+  }
+
+  .invoice-header {
+    background: transparent !important;
+    border-bottom: 2px solid green !important;
+  }
+
+  .items-table .ant-table {
+    border: 1px solid green;
+  }
+
+  .items-table .ant-table-thead > tr > th {
+    background: green !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .action-buttons {
-    display: flex;
-    gap: 12px;
+    display: none;
   }
-  
-  .print-button, .close-button, .edit-button,.excel-button,.image-button {
-    flex: 1;
-    height: 40px;
-    font-weight: 500;
-  }
-  
-  .print-button {
-    border-color: #52c41a;
-  }
-  
-  .close-button {
-    border-color: #d9d9d9;
-  }
-  
-  .edit-button {
-    background: #52c41a;
-    border: none;
-  }
-  
-  /* Print Styles */
-  @media print {
-    body * {
-      visibility: hidden;
-    }
-    
-    .adjustment-modal,
-    .adjustment-modal * {
-      visibility: visible;
-    }
-    
-    .adjustment-modal {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    
-    .invoice-footer {
-      display: none;
-    }
-    
-    .ant-modal-close {
-      display: none;
-    }
-    
-    .invoice-header {
-      background-color: transparent !important;
-      border-bottom: 2px solid #000 !important;
-    }
-    
-    .items-table .ant-table-thead > tr > th {
-      background-color: #f0f0f0 !important;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-  }
+}

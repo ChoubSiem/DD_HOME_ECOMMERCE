@@ -3,7 +3,6 @@ import { Card, Button, Input, Select, message, Spin } from "antd";
 import { PlusOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import AdjustmentTable from "../../../components/adjustment/AdjustmentTable";
-import AdjustmentModal from "../../../components/adjustment/AdjustmentModal";
 import { useStock } from "../../../hooks/UseStock";
 import { usePolicy } from "../../../hooks/usePolicy";
 const { Option } = Select;
@@ -17,7 +16,7 @@ const Adjustment = () => {
   const [currentAdjustment, setCurrentAdjustment] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { handleAdjustments, handleDeleteAdjustment,handleApproveAdjustment,handleRejectAdjustment } = useStock();
+  const { handleAdjustments, handleDeleteAdjustment,handleApproveAdjustment,handleRejectAdjustment,handleApproveAdjustmentItem,handleRejectAdjustmentItem } = useStock();
   const { handleRolePermission } = usePolicy();
   const token = localStorage.getItem("token");
   const user = JSON.parse(Cookies.get("user"));
@@ -35,31 +34,43 @@ const Adjustment = () => {
       setLoading(false);
     }
   };
-  const handleApprove = async (adjustmentId) => {
+const handleApproveAll = async (adjustmentId) => {
   setLoading(true);
   try {
     const result = await handleApproveAdjustment(adjustmentId, token);
     if (result && result.success) {
-      setAdjustments((prev) =>
-        prev.map((a) =>
-          a.id === adjustmentId ? { ...a, status: "approved" } : a
-        )
-      );
+      await fetchAdjustments(); // Refresh data
       message.success("Adjustment approved successfully");
     } else {
-      message.error("Failed to approve adjustment");
+      message.error(result.message || "Failed to approve adjustment");
     }
   } catch (error) {
-    message.error("Error approving adjustment");
+    message.error(error.message || "Error approving adjustment");
   } finally {
     setLoading(false);
   }
 };
+const handleApproveItem = async (adjustmentId,itemId) => {
+  setLoading(true);
+  try {
+    const result = await handleApproveAdjustmentItem(adjustmentId,itemId, token);
+    if (result && result.success) {
+      await fetchAdjustments(); 
+    } else {
+      message.error(result.message || "Failed to approve adjustment");
+    }
+  } catch (error) {
+    message.error(error.message || "Error approving adjustment");
+  } finally {
+    setLoading(false);
+  }
+};
+
 const handleReject = async (adjustmentId, values) => {
   setLoading(true);
   try {
     const result = await handleRejectAdjustment(adjustmentId, values, token);
-    if (result && result.data) {
+    if (result.success) {
       setAdjustments((prev) =>
         prev.map((a) =>
           a.id === adjustmentId ? { ...a, status: "rejected" } : a
@@ -70,7 +81,25 @@ const handleReject = async (adjustmentId, values) => {
       message.error("Failed to reject adjustment");
     }
   } catch (error) {
-    console.error(error);
+    message.error("Error rejecting adjustment");
+  } finally {
+    setLoading(false);
+  }
+};
+const handleRejectItem = async (adjustId, itemId, note) => {
+  setLoading(true);
+  try {
+    const result = await handleRejectAdjustmentItem(adjustId, itemId, note, token);                
+    if (result.success) {
+      setAdjustments((prev) =>
+        prev.map((a) =>
+          a.id === adjustId ? { ...a, status: "rejected" } : a
+        )
+      );
+    } else {
+      message.error( "Failed to reject adjustment");
+    }
+  } catch (error) {
     message.error("Error rejecting adjustment");
   } finally {
     setLoading(false);
@@ -127,23 +156,6 @@ const handleReject = async (adjustmentId, values) => {
       setLoading(false);
     }
   };
-
-  const handleSave = async (values) => {
-    setLoading(true);
-    try {
-      const updatedAdjustments = adjustments.map(a =>
-        a.id === currentAdjustment.id ? { ...a, ...values } : a
-      );
-      setAdjustments(updatedAdjustments);
-      setIsModalVisible(false);
-      message.success("Adjustment updated successfully");
-    } catch (error) {
-      message.error("Failed to update adjustment");
-    } finally {
-      setLoading(false);
-    }
-  };
-
 
   return (
     <div className="product-management">
@@ -202,21 +214,14 @@ const handleReject = async (adjustmentId, values) => {
           handleEdit={handleEdit}
           handleDelete={handleDelete}
           handleDetail={handleDetail}
-          handleApprove={handleApprove}
-          handleReject={handleReject}
+          handleApproveAll={handleApproveAll}
+          handleApproveItem={handleApproveItem}
+          handleRejectAll={handleReject}
+          handleRejectItem={handleRejectItem}
           loading={loading}
           currentUser={user}
-          permissions = {permissions} 
-        />
-
-        {currentAdjustment && (
-          <AdjustmentModal
-            isModalVisible={isModalVisible}
-            currentAdjustment={currentAdjustment}
-            setIsModalVisible={setIsModalVisible}
-            handleSave={handleSave}
+          permissions = {permissions}
           />
-        )}
       </Spin>
     </div>
   );
