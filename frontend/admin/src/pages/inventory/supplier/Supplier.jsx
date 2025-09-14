@@ -10,6 +10,7 @@ import CreateSupplier from '../../../components/supplier/create/SupplierCreate';
 import SupplierTable from '../../../components/supplier/SupplierTable';
 import { useUser } from '../../../hooks/UserUser';
 import './Supplier.css';
+import { usePolicy } from '../../../hooks/usePolicy';
 
 const { Title, Text } = Typography;
 
@@ -23,6 +24,10 @@ const Supplier = () => {
   const { handleSuppliers,handleDeleteSupplier } = useUser();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const userData = JSON.parse(Cookies.get("user"));
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();
+
 
   const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,9 +52,22 @@ const Supplier = () => {
     }
   };
 
+  const fetchPermisson = async () => {
+    let result = await handleRolePermission(userData.role_id);
+      
+    if (result.success) {
+      setPermission(result.rolePermissions);
+    }
+  }  
+
   useEffect(() => {
     fetchSuppliersData();
+    fetchPermisson();
   }, []);
+
+  const hasSupplierPermission = permissions.some(
+    (p) => p.name === "Supplier.create"
+  );
 
   const handleAddSupplier = () => {
     setSelectedSupplier(null);
@@ -123,6 +141,7 @@ const Supplier = () => {
               </motion.div>
             </Col>
             <Col>
+              { hasSupplierPermission && (
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -132,6 +151,7 @@ const Supplier = () => {
               >
                 Add New Supplier
               </Button>
+              )}
             </Col>
           </Row>
         </Card>
@@ -162,6 +182,7 @@ const Supplier = () => {
               suppliers={filteredSuppliers}
               onEdit={handleEditSupplier}
               onDelete={handleDeleteSupplierData}
+              permissions={permissions}
             />
           </Space>
         </Card>

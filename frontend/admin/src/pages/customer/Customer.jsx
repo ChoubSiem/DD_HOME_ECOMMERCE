@@ -8,6 +8,8 @@ import CreateCustomer from '../../components/customer/CreateCustomer';
 import CustomerTable from '../../components/customer/CustomerTable';
 import { useUser } from '../../hooks/UserUser';
 import CustomerImport from "../../components/customer/ImportCustomer";
+import Cookies from 'js-cookie';
+import { usePolicy } from '../../hooks/usePolicy';
 
 const { Title, Text } = Typography;
 
@@ -20,6 +22,9 @@ const Customer = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [customerGroups, setCustomerGroups] = useState([]);
   const [isCustomerModalImportVisible, setIsCustomerModalImportVisible] = useState(false);
+  const userData = JSON.parse(Cookies.get("user"));
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();
   
   const { 
     handleCustomerCreate, 
@@ -77,6 +82,25 @@ const Customer = () => {
       setSelectedCustomer(null);
     };
   }, []);
+
+  const fetchPermisson = async () => {
+    let result = await handleRolePermission(userData.role_id);
+      
+    if (result.success) {
+      setPermission(result.rolePermissions);
+    }
+  }  
+
+  useEffect(() => {
+    fetchPermisson();
+  }, []);
+
+  const hasCustomerPermission = permissions.some(
+    (p) => p.name === "Customer.create"
+  );
+  const hasCustomerImportPermission = permissions.some(
+    (p) => p.name === "Customer.import"
+  );
 
   const handleAddCustomer = () => {
     setSelectedCustomer(null);
@@ -180,6 +204,7 @@ const Customer = () => {
             </motion.div>
           </Col>
           <Col>
+            {hasCustomerImportPermission && (
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -189,6 +214,8 @@ const Customer = () => {
             >
               Import Customer
             </Button>
+            )}
+            { hasCustomerPermission && (
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -198,6 +225,7 @@ const Customer = () => {
             >
               Add New Customer
             </Button>
+            )}
           </Col>
         </Row>
       </Card>
@@ -208,6 +236,7 @@ const Customer = () => {
         customerGroups={customerGroups}
         onSave={handleSaveCustomer}  // Pass the save handler
         style = {{marginTop:'10px'}}
+        permissions={permissions}
       />
 
       <CreateCustomer

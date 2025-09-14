@@ -4,7 +4,13 @@ import { Button, Space, Popconfirm, Tag } from "antd";
 import { EditOutlined, DeleteOutlined, MoreOutlined } from "@ant-design/icons";
 import { formatDateTime } from "../../util/helper";
 
-const RegionalTable = ({ units, setCurrentUnit, setIsModalVisible, handleDelete }) => {
+const RegionalTable = ({ units, setCurrentUnit, setIsModalVisible, handleDelete, permissions }) => {
+  const hasUnitEditPermission = permissions.some(
+    (p) => p.name === "Unit.edit"
+  );
+  const hasUnitDeletePermission = permissions.some(
+    (p) => p.name === "Unit.delete"
+  );
   const columns = [
     {
       name: "No",
@@ -28,6 +34,7 @@ const RegionalTable = ({ units, setCurrentUnit, setIsModalVisible, handleDelete 
       name: "Actions",
       cell: (row) => (
         <Space size="middle">
+          {hasUnitEditPermission && (
           <Button
             type="text"
             icon={<EditOutlined />}
@@ -36,6 +43,8 @@ const RegionalTable = ({ units, setCurrentUnit, setIsModalVisible, handleDelete 
               setIsModalVisible(true);
             }}
           />
+          )}
+          {hasUnitDeletePermission && (
           <Popconfirm
             title= "Are you sure to delete this unit?" 
             onConfirm={() => handleDelete(row.id)}
@@ -44,6 +53,7 @@ const RegionalTable = ({ units, setCurrentUnit, setIsModalVisible, handleDelete 
           >
             <Button type="text" danger icon={<DeleteOutlined />} />
           </Popconfirm>
+          )}
         </Space>
       ),
       ignoreRowClick: true,

@@ -7,17 +7,21 @@ import "./Unit.css";
 import {useProductTerm} from "../../../hooks/UserProductTerm";
 import { PlusOutlined } from "@ant-design/icons";
 import Cookies from "js-cookie";
+import { usePolicy } from "../../../hooks/usePolicy";
 
 const UnitManagement = () => {
   const token = localStorage.getItem("token");
   const [units, setUnits] = useState([]);
   const [loading , setLoading] = useState(false);
+  const userData = JSON.parse(Cookies.get("user"));
 
   const [currentUnit, setCurrentUnit] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const {handleUnits ,handleUnitCreate ,handleUnitDelete,handleUnitUpdate} = useProductTerm();
 
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();   
 
   const handleCreate = () =>{
     setIsModalVisible(true);
@@ -38,12 +42,24 @@ const UnitManagement = () => {
     }finally {
       setLoading(false); 
     }
-  };  
+  };
+  
+  const fetchPermisson = async () => {
+    let result = await handleRolePermission(userData.role_id);
+      
+    if (result.success) {
+      setPermission(result.rolePermissions);
+    }
+  }  
 
   useEffect(() => {
-
     fetchUnit();
+    fetchPermisson();
   }, []);
+
+  const hasUnitPermission = permissions.some(
+    (p) => p.name === "Unit.create"
+  );
 
   const handleSave = async (values) => {
     const isUpdate = currentUnit !== null;
@@ -100,7 +116,9 @@ const UnitManagement = () => {
               Manage your unit information
             </p>
           </div>
+          {hasUnitPermission && (
           <Button onClick={handleCreate} type="primary"> <PlusOutlined/> Add Unit</Button>
+          )}
         </div>
       </Card>
 
@@ -113,6 +131,7 @@ const UnitManagement = () => {
           setCurrentUnit={setCurrentUnit}
           setIsModalVisible={setIsModalVisible}
           handleDelete={handleDelete}
+          permissions={permissions}
         />
 
       <UnitModal

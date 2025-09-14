@@ -1,31 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  Input,
-  Button,
-  Tag,
-  Select,
-  Space,
-  Popconfirm,
-  message,
-  Modal,
-  Divider,
-  Spin,
-} from "antd";
-import {
-  SearchOutlined,
-  FilterOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import {  Card,  Input,  Button,  Tag,  Select,  Space,  Popconfirm,  message,  Modal,  Divider,  Spin,} from "antd";
+import {  SearchOutlined,  FilterOutlined,  EditOutlined,  DeleteOutlined,  EyeOutlined,  PlusOutlined,} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useStock } from "../../hooks/UseStock";
 const { Search } = Input;
 const { Option } = Select;
 import Cookies from "js-cookie";
 import PurchaseTable from "../../components/purchase/PurchaseTable";
+import { usePolicy } from "../../hooks/usePolicy";
+
 
 function Purchases() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,6 +22,8 @@ function Purchases() {
   const token = localStorage.getItem("token");
   const userData = JSON.parse(Cookies.get("user"));
   const [purchases, setPurchases] = useState([]);
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();
 
   const handlePurchases = async () => {
     try {
@@ -67,10 +52,24 @@ function Purchases() {
       setTableLoading(false);
     }
   };
+
+  const fetchPermisson = async () => {
+    let result = await handleRolePermission(userData.role_id);
+      
+    if (result.success) {
+      setPermission(result.rolePermissions);
+    }
+  }  
   
   useEffect(() => {
     handlePurchases();
+    fetchPermisson();
   }, []);
+
+  const hasPurchasePermission = permissions.some(
+    (p) => p.name === "Purchase.create"
+  );
+
   const filteredPurchases = purchases.filter(purchase => {
     const matchesSearch = 
       purchase.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -138,6 +137,7 @@ function Purchases() {
               <h2>Purchase Management</h2>
               <p>Track and manage all purchase orders</p>
             </div>
+            { hasPurchasePermission && (
             <Button 
               type="primary" 
               icon={<PlusOutlined />}
@@ -145,6 +145,7 @@ function Purchases() {
             >
               Add Purchase
             </Button>
+            )}
           </div>
         </Card>
 
@@ -180,6 +181,7 @@ function Purchases() {
             loading={loading}
             handleEdit={handleEdit}
             handleDelete={handleDelete}
+            permissions={permissions}
           />
       </div>
     </Spin>

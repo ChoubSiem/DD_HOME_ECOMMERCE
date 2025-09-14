@@ -6,10 +6,17 @@ import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import SupplierModal from './EditSupplierModal';
 
-const SupplierTable = ({ suppliers, onEdit, onDelete, onCreate, loading }) => {
+const SupplierTable = ({ suppliers, onEdit, onDelete, onCreate, loading, permissions }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+
+  const hasSupplierEditPermission = permissions.some(
+    (p) => p.name === "Supplier.edit"
+  );
+  const hasSupplierDeletePermission = permissions.some(
+    (p) => p.name === "Supplier.delete"
+  );
 
   const getRoleTag = (role) => {
     return (
@@ -61,18 +68,22 @@ const SupplierTable = ({ suppliers, onEdit, onDelete, onCreate, loading }) => {
       name: 'Actions',
       cell: (row) => (
         <div>
+          { hasSupplierEditPermission && (
           <Button
             size="small"
             icon={<EditOutlined style={{ color: '#52c41a' }} />}
             onClick={() => handleEdit(row)}
             style={{ marginRight: '8px', border: 'none' }}
           />
+          )}
+          { hasSupplierDeletePermission && (
           <Button
             size="small"
             icon={<DeleteOutlined style={{ color: '#ff4d4f' }} />}
             onClick={() => onDelete(row.id)}
             style={{ border: 'none' }}
           />
+          )}
         </div>
       ),
       ignoreRowClick: true,

@@ -63,7 +63,8 @@ const SalesTable = ({
   onPrint,
   totalSales,
   averageSale,
-  handleAddSaleReturn
+  handleAddSaleReturn,
+  permissions
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
@@ -76,6 +77,10 @@ const SalesTable = ({
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
+  const hasSaleDeletePermission = permissions.some(
+    (p) => p.name === "Sale.delete"
+  );
 
   const statusTag = (status) => {
     const statusMap = {
@@ -271,6 +276,7 @@ const SalesTable = ({
               },
             ]
             : []),
+          ...(hasSaleDeletePermission ? [
           {
             key: 'delete',
             label: (
@@ -279,6 +285,7 @@ const SalesTable = ({
               </Space>
             ),
           },
+          ] : []),
           {
             key: 'add-sale-return',
             icon: <RollbackOutlined />,

@@ -6,6 +6,8 @@ import BrandToolbar from "../../components/brand/BrandToolbar";
 // import "./Unit.css";
 import {useProductTerm} from "../../hooks/UserProductTerm";
 import { PlusOutlined } from "@ant-design/icons";
+import Cookies from "js-cookie";
+import { usePolicy } from "../../hooks/usePolicy";
 
 const BrandManagement = () => {
   const token = localStorage.getItem('token');
@@ -16,12 +18,13 @@ const BrandManagement = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const {handleBrands ,handleBrandCreate ,handleBrandDelete,handleBrandUpdate} = useProductTerm();
-
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();  
+  const user = JSON.parse(Cookies.get("user"));
 
   const handleCreate = () =>{
     setIsModalVisible(true);
   }
-
 
   const fetchUnit = async () => {
     setLoading(true); 
@@ -38,12 +41,22 @@ const BrandManagement = () => {
     }finally {
       setLoading(false); 
     }
-  };  
-
+  };
+  
+  const fetchPermisson = async () => {
+    let result = await handleRolePermission(user.role_id);
+      
+    if (result.success) {
+      setPermission(result.rolePermissions);
+    }
+  }
   useEffect(() => {
-
     fetchUnit();
+    fetchPermisson();
   }, []);
+  const hasBrandPermission = permissions.some(
+    (p) => p.name === "Brand.add"
+  );
 
   const handleSave = async (values) => {
     const isUpdate = currentBrand !== null;
@@ -99,7 +112,9 @@ const BrandManagement = () => {
               Manage your brand information
             </p>
           </div>
+          {hasBrandPermission && (
           <Button onClick={handleCreate} type="primary"> <PlusOutlined/> Add Brand</Button>
+          )}
         </div>
       </Card>
 
@@ -112,6 +127,7 @@ const BrandManagement = () => {
           setCurrentBrand={setCurrentBrand}
           setIsModalVisible={setIsModalVisible}
           handleDelete={handleDelete}
+          permissions={permissions}
         />
 
       <BrandModle

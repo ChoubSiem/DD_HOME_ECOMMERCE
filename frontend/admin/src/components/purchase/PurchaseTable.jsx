@@ -15,7 +15,7 @@ import AddPaymentModal from '../../components/purchase/payment/AddPayment';
 import EditPaymentModal from '../../components/purchase/payment/EditPayment';
 import { usePayment } from '../../hooks/UsePayment';
 // import Cookies from 'js-cookie';
-const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
+const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete, permissions }) => {
 
   // Modal states
   const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
@@ -52,6 +52,10 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
     setSelectedPurchase(transformedPurchase);
     setPurchaseModalVisible(true);
   };
+
+  const hasPurchaseDeletePermission = permissions.some(
+    (p) => p.name === "Purchase.delete"
+  );
 
   const handleViewPayment = async(purchase) => {
     const payments = await handleGetPurchasePayment(purchase.id,token);    
@@ -115,6 +119,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       onClick: () => handleAddPayment(purchase),
     },
     { type: "divider" },
+    ...(hasPurchaseDeletePermission ? [
     {
       key: "delete",
       icon: <DeleteOutlined />,
@@ -122,6 +127,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete }) => {
       danger: true,
       onClick: () => handleDelete(purchase.id),
     },
+    ]  : []),
   ];
 
   // Table columns

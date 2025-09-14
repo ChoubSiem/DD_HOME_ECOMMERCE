@@ -25,6 +25,7 @@ import "./Sale.css";
 import { useStock } from "../../hooks/UseStock";
 import { useSale } from "../../hooks/UseSale";
 import Cookies from "js-cookie"
+import { usePolicy } from "../../hooks/usePolicy";
 const { Search } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -47,6 +48,24 @@ const StockTransferPage = () => {
   const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
   const [isViewPaymentModalVisible, setIsViewPaymentModalVisible] = useState(false);
   const [currentSale, setCurrentSale] = useState(null);
+  const [permissions, setPermission] = useState([]);
+  const { handleRolePermission } = usePolicy();  
+
+  const fetchPermisson = async () => {
+    let result = await handleRolePermission(user.role_id);
+      
+    if (result.success) {
+      setPermission(result.rolePermissions);
+    }
+  }
+  useEffect(() => {
+    fetchPermisson();
+  }, []);
+
+  const hasSalePermission = permissions.some(
+    (p) => p.name === "Sale.create"
+  );
+
   const handleSearchChange = (value) => {
     setSearchTerm(value);
   };
@@ -157,6 +176,7 @@ const StockTransferPage = () => {
               <h1 style={{ color: '#52c41a' }}>Sales Inventory</h1>
               <p>Manage your sales and transactions</p>
             </div>
+            {hasSalePermission && (
             <Button 
               onClick={handleAdd} 
               type="primary" 
@@ -165,6 +185,7 @@ const StockTransferPage = () => {
             >
               Add Sale
             </Button>
+            )}
           </div>
         </Card>
 
@@ -259,6 +280,7 @@ const StockTransferPage = () => {
         onViewPayment = {handleViewPayment}
         onAddPayment = {handleAddPayment }
         handleAddSaleReturn = {handleAddSaleReturn }
+        permissions = {permissions}
       />
 
         <Modal

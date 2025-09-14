@@ -1,34 +1,11 @@
 import React, { useState } from "react";
-import {
-  Form,
-  Input,
-  InputNumber,
-  Switch,
-  Select,
-  Button,
-  Card,
-  Divider,
-  Space,
-  message,
-  Row,
-  Col,
-  Typography,
-  Tabs,
-  Badge,
-  Avatar,
-  Upload
-} from "antd";
-import {
-  SaveOutlined,
-  CloseOutlined,
-  SettingOutlined,
-  UserOutlined,
-  BellOutlined,
-  GlobalOutlined,
-  EyeOutlined,
-  CloudUploadOutlined
-} from "@ant-design/icons";
+import {  Form,  Input,  InputNumber,  Switch,  Select,  Button,  Card,  Divider,  Space,  message,  Row,  Col,  Typography,
+          Tabs,    Badge,  Avatar,  Upload} from "antd";
+import {  SaveOutlined,  CloseOutlined,  SettingOutlined,  UserOutlined,  BellOutlined,  GlobalOutlined,  EyeOutlined,
+          CloudUploadOutlined} from "@ant-design/icons";
 import { useTheme } from "antd-style";
+import Cookies from "js-cookie";
+import { usePolicy } from "../../hooks/usePolicy";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;

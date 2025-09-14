@@ -15,7 +15,7 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "./CustomerTable.css";
 
-const CustomerTable = ({ customers: allCustomers, onEdit, onDelete, customerGroups, onSave }) => {
+const CustomerTable = ({ customers: allCustomers, onEdit, onDelete, customerGroups, onSave, permissions }) => {
     const [loading, setLoading] = useState(false);
     const [currentData, setCurrentData] = useState([]);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -25,6 +25,13 @@ const CustomerTable = ({ customers: allCustomers, onEdit, onDelete, customerGrou
     const [rows, setRows] = useState(10);
     const toast = useRef(null);
     const dt = useRef(null);
+
+  const hasCustomerEditPermission = permissions.some(
+    (p) => p.name === "Customer.edit"
+  );
+  const hasCustomerDeletePermission = permissions.some(
+    (p) => p.name === "Customer.delete"
+  );
 
     useEffect(() => {
         setCurrentData(allCustomers);
@@ -118,6 +125,7 @@ const getRoleTag = (role) => (
                 className="action-buttons d-flex justify-content-center gap-1"
                 style={{padding:0}}
             >
+                {hasCustomerEditPermission && (
                 <Button 
                     icon="pi pi-pencil" 
                     text
@@ -127,6 +135,8 @@ const getRoleTag = (role) => (
                     tooltip="Edit"
                     tooltipOptions={{ position: 'top' }}
                 />
+                )}
+                {hasCustomerDeletePermission && (
                 <Button 
                     icon="pi pi-trash" 
                     text
@@ -136,6 +146,7 @@ const getRoleTag = (role) => (
                     tooltip="Delete"
                     tooltipOptions={{ position: 'top' }}
                 />
+                )}
             </motion.div>
         );
     };
