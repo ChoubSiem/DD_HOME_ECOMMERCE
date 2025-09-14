@@ -21,6 +21,7 @@ const Adjustment = () => {
   const token = localStorage.getItem("token");
   const user = JSON.parse(Cookies.get("user"));
   const [permissions, setPermission] = useState([]);
+
   const fetchAdjustments = async () => {
     setLoading(true);
     try {
@@ -119,6 +120,7 @@ const handleRejectItem = async (adjustId, itemId, note) => {
   const hasAdjustmentPermission = permissions.some(
     (p) => p.name === "Adjustment.create"
   );
+  
   const handleSearchChange = (e) => setSearchTerm(e.target.value);
 
   const filteredAdjustments = (adjustments || []).filter((adjustment) => {

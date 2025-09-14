@@ -9,10 +9,17 @@ import {
 } from "@ant-design/icons";
 import StockModalDetail from "./StockModalDetails"; 
 
-const StockTable = ({ data, onEdit, onDelete, loading }) => {
+const StockTable = ({ data, onEdit, onDelete, loading, permissions }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStock, setSelectedStock] = useState(null);
-  
+
+  const hasStockTransferEditPermission = permissions.some(
+    (p) => p.name === "StockTransfer.edit"
+  );
+  const hasStockTransferDeletePermission = permissions.some(
+    (p) => p.name === "StockTransfer.delete"
+  );
+
   const showModal = (stock) => {    
     setSelectedStock(stock);
     setIsModalOpen(true);
@@ -67,6 +74,7 @@ const StockTable = ({ data, onEdit, onDelete, loading }) => {
                   </Space>
                 ),
               },
+              ...(hasStockTransferEditPermission ? [
               {
                 key: 'edit',
                 label: (
@@ -75,6 +83,8 @@ const StockTable = ({ data, onEdit, onDelete, loading }) => {
                   </Space>
                 ),
               },
+              ] : []),
+              ...(hasStockTransferDeletePermission ? [
               {
                 key: 'delete',
                 label: (
@@ -84,6 +94,7 @@ const StockTable = ({ data, onEdit, onDelete, loading }) => {
                 ),
                 danger: true,
               },
+              ] : []),
             ],
           }}
           trigger={['click']}

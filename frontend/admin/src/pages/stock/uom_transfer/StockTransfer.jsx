@@ -1,26 +1,13 @@
 import React, { useState ,useEffect, use} from "react";
-import {
-  Card,
-  Input,
-  Button,
-  Select,
-  Modal,
-  Form,
-  InputNumber,
-  Spin,
-  Menu ,
-  message
-} from "antd";
-import {
-  SearchOutlined,
-  PlusOutlined,
-  FilterOutlined
-} from "@ant-design/icons";
+import {  Card,  Input,  Button,  Select,  Modal,  Form,  InputNumber,  Spin,  Menu ,  message} from "antd";
+import {  SearchOutlined,  PlusOutlined,  FilterOutlined} from "@ant-design/icons";
 import StockTransferTable from "../../../components/stock_transfer/StockTransferTable";
 import { useNavigate } from "react-router-dom";
 import "./StockTransfer.css";
 import { useStock } from "../../../hooks/UseStock";
 import Cookies from "js-cookie"
+import { usePolicy } from "../../../hooks/usePolicy";
+
 const { Search } = Input;
 const { Option } = Select;
 
@@ -38,6 +25,22 @@ const StockTransferPage = () => {
   const [transfers , setTransfers] = useState([]);
   const token = localStorage.getItem("token");
   const user = JSON.parse(Cookies.get("user"));
+  const { handleRolePermission } = usePolicy();
+  const [permissions, setPermission] = useState([]);
+
+  const fetchPermisson = async () => {
+    let result = await handleRolePermission(user.role_id);
+    if (result.success) {
+      setPermission(result.rolePermissions);
+    }
+  }
+  useEffect(() => {
+    fetchPermisson();
+  }, []);
+  const hasUOMTransferPermission = permissions.some(
+    (p) => p.name === "UomTranser.add"
+  );
+
   const handleSearchChange = (value) => {
     setSearchTerm(value);
   };
@@ -117,6 +120,7 @@ const StockTransferPage = () => {
             <h1 style={{ color: '#52c41a' }}>UOM Transfer</h1>
             <p>Manage your UOM transfer</p>
           </div>
+          {hasUOMTransferPermission &&
           <Button 
             onClick={handleAdd} 
             type="primary" 
@@ -125,6 +129,7 @@ const StockTransferPage = () => {
           >
             Add Transfer
           </Button>
+          }
         </div>
       </Card>
 
@@ -183,6 +188,7 @@ const StockTransferPage = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onDetail={handleDetail}
+          permissions={permissions}
         />
 
       {/* Edit Modal */}

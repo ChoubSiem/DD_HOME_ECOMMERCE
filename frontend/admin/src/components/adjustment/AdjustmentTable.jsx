@@ -28,7 +28,15 @@ const AdjustmentTable = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAdjustment, setSelectedAdjustment] = useState(null);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [rejectNote, setRejectNote] = useState("");  
+  const [rejectNote, setRejectNote] = useState("");
+
+  const hasAdjustmentEditPermission = permissions.some(
+    (p) => p.name === "Adjustment.edit"
+  );
+  const hasAdjustmentDeletePermission = permissions.some(
+    (p) => p.name === "Adjustment.delete"
+  );
+
   const showModal = (adjustment) => {
     setSelectedAdjustment(adjustment);
     setIsModalOpen(true);
@@ -51,12 +59,15 @@ const AdjustmentTable = ({
       label: "View Details",
       onClick: () => showModal(adjustment),
     },
+    ...(hasAdjustmentEditPermission ? [
     {
       key: "edit",
       icon: <EditOutlined />,
       label: "Edit",
       onClick: () => handleEdit(adjustment),
     },
+    ] : []),
+        ...(hasAdjustmentDeletePermission ? [
     {
       type: "divider",
     },
@@ -67,6 +78,7 @@ const AdjustmentTable = ({
       danger: true,
       onClick: () => handleDelete(adjustment.id),
     },
+    ] : []),
   ];  
 
   const renderStatus = (status) => {

@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import DataTable from "react-data-table-component";
 import { Button, Dropdown, Space } from "antd";
-import { 
-  EditOutlined, 
-  MoreOutlined, 
-  DeleteOutlined, 
-  EyeOutlined 
-} from "@ant-design/icons";
+import {   EditOutlined,   MoreOutlined,   DeleteOutlined,  EyeOutlined } from "@ant-design/icons";
 import StockModalDetail from "./StockModalDetails"; 
 
-const AdjustmentTable = ({ data, onEdit, onDelete, loading }) => {
+const AdjustmentTable = ({ data, onEdit, onDelete, loading, permissions }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStock, setSelectedStock] = useState(null);
+
+  const hasUOMTransferEditPermission = permissions.some(
+    (p) => p.name === "UomTranser.edit"
+  );
+  const hasUOMTransferDeletePermission = permissions.some(
+    (p) => p.name === "UomTranser.delete"
+  );  
 
   const showModal = (stock) => {    
     setSelectedStock(stock);
@@ -61,6 +63,7 @@ const AdjustmentTable = ({ data, onEdit, onDelete, loading }) => {
                   </Space>
                 ),
               },
+              ...(hasUOMTransferEditPermission ? [
               {
                 key: 'edit',
                 label: (
@@ -69,6 +72,8 @@ const AdjustmentTable = ({ data, onEdit, onDelete, loading }) => {
                   </Space>
                 ),
               },
+              ] : []),
+              ...(hasUOMTransferDeletePermission ? [
               {
                 key: 'delete',
                 label: (
@@ -78,6 +83,7 @@ const AdjustmentTable = ({ data, onEdit, onDelete, loading }) => {
                 ),
                 danger: true,
               },
+              ] : []),
             ],
           }}
           trigger={['click']}
