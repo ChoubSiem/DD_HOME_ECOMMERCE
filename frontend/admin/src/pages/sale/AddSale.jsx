@@ -37,6 +37,7 @@ const AddSale = () => {
   const [toWarehouseId, setToWarehouseId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [rawTotal, setRawTotal] = useState(0);
+  const [currencies, setCurrencies] = useState(null);
   const [invoiceDiscount, setInvoiceDiscount] = useState({
     value: 0,
     type: 'amount',
@@ -222,7 +223,7 @@ const AddSale = () => {
       });
       return updatedProducts;
     });
-  };
+  };  
 
   const handleRemoveProduct = (key) => {
     const updatedProducts = selectedProducts.filter((p) => p.key !== key);
