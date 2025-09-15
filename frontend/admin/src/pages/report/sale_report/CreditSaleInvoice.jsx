@@ -163,8 +163,7 @@ const CreditInvoice = () => {
   useEffect(() => {
     return () => debouncedSetPendingSearch.cancel();
   }, [debouncedSetPendingSearch]);
-
-  // Columns configuration for the table
+  
   const columns = useMemo(
     () => [
       {
