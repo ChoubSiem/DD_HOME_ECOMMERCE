@@ -271,7 +271,7 @@ const AddSale = () => {
     const saleData = {
       date: values.date || dayjs().format('YYYY-MM-DD HH:mm:ss'),
       reference: reference,
-      sale_person: selectedSalesperson.id, // Use the selected salesperson
+      sale_person: selectedSalesperson?.id??null, 
       warehouse_id: warehouse_id ?? null,
       from_warehouse_id: fromWarehouseId == 'company' ? null : fromWarehouseId,
       to_warehouse_id: toWarehouseId ?? null,
@@ -297,7 +297,8 @@ const AddSale = () => {
       }))
     };
 
-    console.log('Sale Data:', saleData);
+    // console.log('Sale Data:', saleData);
+    // return;
 
     try {
       const result = await handlePosSaleCreate(saleData, token);
