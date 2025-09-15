@@ -277,7 +277,7 @@ const AddSale = () => {
       to_warehouse_id: toWarehouseId ?? null,
       note: note ?? null,
       payments: paymentMethods,
-      discount: invoiceDiscount.value ?? 0,
+      inv_discount: invoiceDiscount.value ?? 0,
       discount_type: invoiceDiscount.type ?? 'amount',
       credit_amount: creditAmount != null ? (amount - creditAmount) : null,
       sale_type: 'sale_inventory',
@@ -297,7 +297,7 @@ const AddSale = () => {
       }))
     };
 
-    // console.log('Sale Data:', saleData);
+    console.log('Sale Data:', saleData);
     // return;
 
     try {
