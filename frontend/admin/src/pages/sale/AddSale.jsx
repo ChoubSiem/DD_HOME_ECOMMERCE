@@ -298,7 +298,7 @@ const AddSale = () => {
       }))
     };
 
-    // console.log('Sale Data:', saleData);
+    console.log('Sale Data:', saleData);
     // return;
 
     try {
