@@ -37,6 +37,7 @@ const AddSale = () => {
   const [toWarehouseId, setToWarehouseId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [rawTotal, setRawTotal] = useState(0);
+  const [currencies, setCurrencies] = useState(null);
   const [invoiceDiscount, setInvoiceDiscount] = useState({
     value: 0,
     type: 'amount',
@@ -222,7 +223,7 @@ const AddSale = () => {
       });
       return updatedProducts;
     });
-  };
+  };  
 
   const handleRemoveProduct = (key) => {
     const updatedProducts = selectedProducts.filter((p) => p.key !== key);
@@ -271,13 +272,13 @@ const AddSale = () => {
     const saleData = {
       date: values.date || dayjs().format('YYYY-MM-DD HH:mm:ss'),
       reference: reference,
-      sale_person: selectedSalesperson.id, // Use the selected salesperson
+      sale_person: selectedSalesperson?.id??null, 
       warehouse_id: warehouse_id ?? null,
       from_warehouse_id: fromWarehouseId == 'company' ? null : fromWarehouseId,
       to_warehouse_id: toWarehouseId ?? null,
       note: note ?? null,
       payments: paymentMethods,
-      discount: invoiceDiscount.value ?? 0,
+      inv_discount: invoiceDiscount.value ?? 0,
       discount_type: invoiceDiscount.type ?? 'amount',
       credit_amount: creditAmount != null ? (amount - creditAmount) : null,
       sale_type: 'sale_inventory',
@@ -298,6 +299,7 @@ const AddSale = () => {
     };
 
     console.log('Sale Data:', saleData);
+    // return;
 
     try {
       const result = await handlePosSaleCreate(saleData, token);
