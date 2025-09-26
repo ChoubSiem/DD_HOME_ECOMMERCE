@@ -695,7 +695,7 @@ const SalesReports = () => {
           <Row align="middle" justify="space-between">
             <Col>
               <Title level={3} style={{ margin: 0, color: '#389e0d' }}>
-                Sales Reports
+                Fast and Slow Moving Product Reports
               </Title>
               <Text type="secondary">Analyze product sales performance</Text>
               <div style={{ marginTop: 8 }}>

@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { Button, Dropdown, Space, Tag, Modal, message } from 'antd';
-import {
-  EditOutlined,
-  MoreOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  DollarOutlined,
-  PlusCircleOutlined
+import {  EditOutlined,  MoreOutlined,  DeleteOutlined,  EyeOutlined,  DollarOutlined,  PlusCircleOutlined
 } from '@ant-design/icons';
 import PurchaseModalDetail from '../../components/purchase/PurchaseModalDetail';
 import ViewPaymentModal from '../../components/purchase/payment/ViewPayment';
 import AddPaymentModal from '../../components/purchase/payment/AddPayment';
 import EditPaymentModal from '../../components/purchase/payment/EditPayment';
 import { usePayment } from '../../hooks/UsePayment';
+import dayjs from 'dayjs';
+
 // import Cookies from 'js-cookie';
 const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete, permissions }) => {
 
@@ -118,8 +114,8 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete, permissio
       label: "Add Payment",
       onClick: () => handleAddPayment(purchase),
     },
-    { type: "divider" },
     ...(hasPurchaseDeletePermission ? [
+    { type: "divider" },
     {
       key: "delete",
       icon: <DeleteOutlined />,
@@ -143,7 +139,7 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete, permissio
       name: "Date",
       selector: (row) => new Date(row.date).getTime(),
       sortable: true,
-      cell: (row) => <span>{new Date(row.date).toLocaleDateString()}</span>,
+      cell: (row) => (<span>{row.date ? dayjs(row.date).format("DD-MM-YYYY HH:mm:ss") : "N/A"}</span>),
       width: "10%",
     },
     {
@@ -307,8 +303,8 @@ const PurchaseTable = ({ purchases, loading, handleEdit, handleDelete, permissio
         data={purchases}
         progressPending={loading}
         pagination
-        paginationPerPage={10}
-        paginationRowsPerPageOptions={[10, 20, 50, 100]}
+        paginationPerPage={15}
+        paginationRowsPerPageOptions={[15, 20, 50, 100]}
         customStyles={customStyles}
         highlightOnHover
         onRowClicked={(row) => showPurchaseModal(row)}

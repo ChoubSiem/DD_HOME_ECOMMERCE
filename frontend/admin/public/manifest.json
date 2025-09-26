@@ -3,8 +3,8 @@
   "name": "DD HOME SYSTEM",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFA500",
-  "theme_color": "#FFA500",
+  "background_color": "#001529",
+  "theme_color": "#001529",
   "icons": [
     { "src": "./icons/DD_Home_Logo 2.jpg", "sizes": "192x192", "type": "image/png" },
     { "src": "icons/DD_Home_Logo 2.jpg", "sizes": "512x512", "type": "image/png" }

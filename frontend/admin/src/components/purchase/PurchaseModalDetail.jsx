@@ -1,4 +1,4 @@
-import React, { useRef, useState,useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import DataTable from 'react-data-table-component';
 import { Modal, Button } from 'antd';
 import { PrinterOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons';
@@ -18,7 +18,21 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
     if (result.success) {
       setCompany(result.companies);
     }
-  }  
+  }
+  const formatDate = useMemo(() => {
+    return (dateString) => {
+      if (!dateString) return '';
+      const options = { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      };
+      return new Date(dateString).toLocaleString('en-GB', options);
+    };
+  }, []);  
 
   useEffect(()=>{
     handleWarehouse();
@@ -57,6 +71,9 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
       console.error('Error generating PDF:', error);
     }
   };
+
+  console.log('Purchase Data:', purchase);
+  
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -124,45 +141,65 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={800}
+      width="80%"
+      style={{ maxWidth: '900px' }}
       className="purchase-modal"
       destroyOnClose
     >
       <div ref={printRef} className="invoice-container">
-        <table className="invoice-headers" style={{alignItems:'center'}}>
-          <tbody style={{width:'100%',padding:0}}>
-            <tr style={{width:'100%',display:'flex',justifyContent:'space-between'}}>
-              <td className="company-info" style={{display:'flex',justifyContent:'space-between'}}>
-                <img src={logo} alt="Company Logo" className="company-logo" style={{width:'80px',height:'80px'}}/>
-              <div>
-                <h1>{company?.[0]?.name}</h1>
-                <p>Address: {company?.[0]?.location}</p>
-                <p>Phone: {company?.[0]?.phone}</p>
-              </div>
+        <header className="invoice-headers">
+                    <div className="logo">
+                      <img src={logo} alt="DD Home Logo" />
+                    </div>
+                    <div className="header-title">
+                      <h1><strong>PURCHASE INVOICE</strong></h1>
+                    </div>
+                    <div className="invoice-id">
+                      <p><strong>{purchase?.reference || 'N/A'}</strong></p>
+                    </div>
+                    {/* <div className="company-details">
+                      <h1 className="company-name">DD Home</h1>
+                      <div className="company-info">
+                        <h1>Purchase Invoice</h1>
+                        <p><strong>Invoice Date: </strong>{formatDate(purchase?.date)}</p>
+                        <p><strong>From: </strong>{purchase?.supplier_comapny}</p>
+                        <p><strong>To: </strong>{purchase?.supplier_comapny}</p>
+                        
+                        <p><strong>Address:</strong> #114, St 20MC, Mean Chey, Phnom Penh, Cambodia</p>
+                        <p><strong>Phone:</strong> 081 90 50 50 / 078 90 50 50</p>
+                        <p><strong>Email:</strong> ddhomekh@gmail.com</p>
+                        <p><strong>Website:</strong> www.ddhomekh.com</p>
+                      </div>
+                    </div> */}
+        </header>
 
-              </td>
-              <td className="document-info">
-                <h2>PURCHASE</h2>
-                <table className="meta-table">
-                  <tbody>
-                    <tr>
-                      <td>FEF #:</td>
-                      <td>{purchase?.reference || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <td>Date:</td>
-                      <td>{purchase?.date ? new Date(purchase.date).toLocaleDateString() : 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <td>Vendor:</td>
-                      <td>{purchase?.supplier_comapny}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {/* <section className="invoice-title-section">
+            <h2 className="invoice-title">PURCHASE INVOICE</h2>
+            <div className="invoice-meta">
+              <span className="invoice-number">{purchase?.reference || 'N/A'}</span>
+            </div>
+        </section> */}
+        
+        <section className="invoice-details">
+          <div className="detail-row">
+            <span className="detail-label">Invoice Date:</span>
+            <span className="detail-value">{formatDate(purchase?.date)}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">From:</span>
+            <span className="detail-value">{purchase?.supplier}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">To:</span>
+            <span className="detail-value">{purchase?.status}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Phone:</span>
+            <span className="detail-value">{purchase?.supplier_comapny}</span>
+          </div>
+        </section>
+
+        <div className="divider" />
 
         {/* Items Table */}
         {/* <div className="items-section"> */}
@@ -175,6 +212,8 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
                 style: {
                   border: '1px solid #e0e0e0',
                   borderRadius: '4px',
+                  borderCollapse: 'collapse',
+                  width: '100%',
                 },
               },
               head: {
@@ -224,6 +263,31 @@ const PurchaseModalDetail = ({ open, onCancel, onEdit, purchase }) => {
             </tr>
           </tbody>
         </table>
+
+          <div className="divider" />
+
+          {/* Signatures Section */}
+          <section className="signatures-section">
+            <div className="signature-grid">
+              <div className="signature-box">
+                <div className="signature-line"></div>
+                <div className="signature-label">Authorized Signature</div>
+              </div>
+              <div className="signature-box">
+                <div className="signature-line"></div>
+                <div className="signature-label">Receiver signature</div>
+              </div>
+              <div className="signature-box">
+                {/* <div className="signature-text">{sale.customerName || 'Customer Name'}</div>
+                <div className="signature-label">Customer Name</div> */}
+              </div>
+              <div className="signature-box">
+                {/* <div className="signature-text">{formatDate(new Date())}</div>
+                <div className="signature-label">Date</div> */}
+              </div>
+            </div>
+          </section>
+
         <div className="action-buttons" style={{  display: 'flex' }}>
           <Button 
             type="danger" 

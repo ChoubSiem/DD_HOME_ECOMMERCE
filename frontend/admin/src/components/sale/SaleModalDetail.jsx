@@ -178,9 +178,9 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
             <div className="company-details">
               <h1 className="company-name">DD Home</h1>
               <div className="company-info">
-                <p><strong>Address:</strong> N°26, St.6, Dangkor, Phnom Penh, Cambodia</p>
+                <p><strong>Address:</strong> #114, St 20MC, Mean Chey, Phnom Penh, Cambodia</p>
                 <p><strong>Phone:</strong> 081 90 50 50 / 078 90 50 50</p>
-                <p><strong>Email:</strong> dd.home81@gmail.com</p>
+                <p><strong>Email:</strong> ddhomekh@gmail.com</p>
                 <p><strong>Website:</strong> www.ddhomekh.com</p>
               </div>
             </div>
