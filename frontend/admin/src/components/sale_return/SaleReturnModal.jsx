@@ -4,7 +4,6 @@ import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Chip } from "primereact/chip";
 import dayjs from "dayjs";
 import {
   PrinterOutlined,
@@ -65,10 +64,7 @@ const SaleReturnModalDetail = ({ returnData, visible, onHide }) => {
   };
 
   const exportToPDF = async () => {
-    if (!modalRef.current) {
-      console.warn("Return document content not ready for export");
-      return;
-    }
+    if (!modalRef.current) return;
 
     setIsExporting(true);
     setLoading(true);
@@ -99,10 +95,7 @@ const SaleReturnModalDetail = ({ returnData, visible, onHide }) => {
   };
 
   const exportToImage = async () => {
-    if (!modalRef.current) {
-      console.warn("Return document content not ready for export");
-      return;
-    }
+    if (!modalRef.current) return;
 
     setIsExporting(true);
     setLoading(true);
@@ -129,55 +122,42 @@ const SaleReturnModalDetail = ({ returnData, visible, onHide }) => {
     }
   };
 
-const handlePrint = async () => {
-  if (!modalRef.current) {
-    console.warn("Return document content not ready for printing");
-    return;
-  }
+  const handlePrint = async () => {
+    if (!modalRef.current) return;
 
-  setLoading(true);
-  try {
-    // Step 1: Convert the content to canvas
-    const canvas = await html2canvas(modalRef.current, {
-      scale: 2,
-      logging: false,
-      useCORS: true,
-      backgroundColor: '#ffffff'
-    });
+    setLoading(true);
+    try {
+      const canvas = await html2canvas(modalRef.current, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
 
-    // Step 2: Convert canvas to PDF
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgProps = pdf.getImageProperties(canvas);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    
-    pdf.addImage(canvas, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgProps = pdf.getImageProperties(canvas);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-    // Step 3: Open PDF in new window and trigger print
-    const pdfBlob = pdf.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    
-    const printWindow = window.open(pdfUrl, '_blank');
-    if (!printWindow) {
-      throw new Error("Popup blocked. Please allow popups for this site.");
+      pdf.addImage(canvas, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+      const pdfBlob = pdf.output("blob");
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const printWindow = window.open(pdfUrl, "_blank");
+      if (!printWindow) throw new Error("Popup blocked.");
+
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+          URL.revokeObjectURL(pdfUrl);
+        }, 500);
+      };
+    } catch (error) {
+      console.error("Printing failed:", error);
+    } finally {
+      setLoading(false);
     }
-
-    // Wait for the PDF to load before printing
-    printWindow.onload = () => {
-      setTimeout(() => {
-        printWindow.print();
-        // Clean up the object URL after printing
-        URL.revokeObjectURL(pdfUrl);
-      }, 500);
-    };
-
-  } catch (error) {
-    console.error("Printing failed:", error);
-    message.error("Failed to generate printable document");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   if (!returnData) {
     return (
@@ -193,6 +173,7 @@ const handlePrint = async () => {
   }
 
   const { subTotal, discount, grandTotal } = calculateTotals(returnData.items);
+  const balance = grandTotal - (parseFloat(returnData.refund_amount) || 0);
 
   const footer = (
     <div className="footer-container">
@@ -226,26 +207,29 @@ const handlePrint = async () => {
     </div>
   );
 
-  const balance = grandTotal - (parseFloat(returnData.refund_amount) || 0);
   return (
     <Dialog
       visible={visible}
       onHide={onHide}
       footer={footer}
+      header="Return Details"
       style={{ width: "80vw", maxWidth: "1000px" }}
-      className="p-dialog-detail return-modal"
+      breakpoints={{ "960px": "95vw", "640px": "100vw" }}
+      draggable
+      resizable
       closable={!loading}
-      blockScroll
-      showHeader={false}
+      blockScroll={false}
+      scrollable
+      className="p-dialog-detail return-modal"
     >
       <div ref={modalRef} className="return-document-container">
-        {/* Header Section */}
         <header className="return-header">
-          <div className="logo-container">
+          <div className="logo-container" style={{display:"block"}}>
             <img src={logo} alt="DD Home Logo" className="logo" />
+                        <h1 className="company-name">DD Home</h1>
+
           </div>
           <div className="company-details">
-            <h1 className="company-name">DD Home</h1>
             <div className="company-info">
               <p>
                 <strong>Address:</strong> N°26, St.6, Dangkor, Phnom Penh,
@@ -253,9 +237,6 @@ const handlePrint = async () => {
               </p>
               <p>
                 <strong>Phone:</strong> 081 90 50 50 / 078 90 50 50
-              </p>
-              <p>
-                <strong>Email:</strong> dd.home81@gmail.com
               </p>
               <p>
                 <strong>Website:</strong> www.ddhomekh.com
@@ -326,9 +307,7 @@ const handlePrint = async () => {
               field="discount"
               header="Discount ($)"
               body={(rowData) =>
-                rowData.discount
-                  ? parseFloat(rowData.discount).toFixed(2)
-                  : "0.00"
+                rowData.discount ? parseFloat(rowData.discount).toFixed(2) : "0.00"
               }
               className="p-text-right"
             />
@@ -343,7 +322,7 @@ const handlePrint = async () => {
 
         <div className="divider" />
 
-        {/* Totals Section */}
+        {/* Totals */}
         <section className="totals-section">
           <div className="total-row">
             <span className="total-label">Sub Total:</span>
@@ -369,7 +348,7 @@ const handlePrint = async () => {
 
         <div className="divider" />
 
-        {/* Notes Section */}
+        {/* Notes */}
         {returnData.notes && (
           <section className="notes-section">
             <h4>Notes</h4>
@@ -377,7 +356,7 @@ const handlePrint = async () => {
           </section>
         )}
 
-        {/* Signatures Section */}
+        {/* Signatures */}
         <section className="signatures-section">
           <div className="signature-grid">
             <div className="signature-box">
