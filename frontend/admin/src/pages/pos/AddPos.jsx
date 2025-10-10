@@ -1177,6 +1177,8 @@ function PosAdd() {
         amount: total,
         sale_person: selectedSalesperson?.id ?? null
       };
+      // console.log(paymentData);
+      // return;
 
       const response = await handlePosSaleCreate(paymentData, token);
 

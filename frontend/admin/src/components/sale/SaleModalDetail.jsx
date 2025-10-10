@@ -1,35 +1,47 @@
-import React, { useRef, useState, useMemo } from 'react';
-import { Modal, Button, message, Spin } from 'antd';
-import { PrinterOutlined, CloseOutlined, FilePdfOutlined, DownloadOutlined } from '@ant-design/icons';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import logo from '../../assets/logo/DD_Home_Logo 2.jpg';
+import React, { useRef, useState, useMemo } from "react";
+import { Modal, Button, message, Spin } from "antd";
+import {
+  PrinterOutlined,
+  CloseOutlined,
+  FilePdfOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import logo from "../../assets/logo/DD_Home_Logo 2.jpg";
 import "./SaleModalDetail.css";
 
-const SaleModalDetail = ({ open, onCancel, sale }) => {    
+const SaleModalDetail = ({ open, onCancel, sale }) => {
   const invoiceRef = useRef();
   const [isExporting, setIsExporting] = useState(false);
-  const [loading, setLoading] = useState(false);  
+  const [loading, setLoading] = useState(false);
   const formatDate = useMemo(() => {
     return (dateString) => {
-      if (!dateString) return '';
-      const options = { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
+      if (!dateString) return "";
+      const options = {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
       };
-      return new Date(dateString).toLocaleString('en-GB', options);
+      return new Date(dateString).toLocaleString("en-GB", options);
     };
   }, []);
 
   const { subTotal, discount, grandTotal } = useMemo(() => {
-    if (!sale?.items) return { subTotal: '0.00', discount: '0.00', grandTotal: '0.00' };
-    
-    const subTotal = sale.items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
-    const discount = sale.items.reduce((sum, item) => sum + (parseFloat(item.discount) || 0), 0);
+    if (!sale?.items)
+      return { subTotal: "0.00", discount: "0.00", grandTotal: "0.00" };
+
+    const subTotal = sale.items.reduce(
+      (sum, item) => sum + (parseFloat(item.total) || 0),
+      0
+    );
+    const discount = sale.items.reduce(
+      (sum, item) => sum + (parseFloat(item.discount) || 0),
+      0
+    );
     // const payment = (sale.payments || []).reduce((total, payment) => {
     //   const amount = Number(payment.paid) || 0;
     //   return total + amount;
@@ -40,66 +52,70 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
       grandTotal: (subTotal - discount).toFixed(2),
     };
   }, [sale]);
-  
+
   const exportToPDF = async () => {
     if (!invoiceRef.current) {
-      message.warning('Invoice content not ready for export');
+      message.warning("Invoice content not ready for export");
       return;
     }
-    
+
     setIsExporting(true);
     setLoading(true);
-    
+
     try {
-      const canvas = await html2canvas(invoiceRef.current, { 
+      const canvas = await html2canvas(invoiceRef.current, {
         scale: 3,
         logging: false,
         useCORS: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: "#ffffff",
       });
-      
-      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      const pdf = new jsPDF("p", "mm", "a4");
       const imgProps = pdf.getImageProperties(canvas);
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      
-      pdf.addImage(canvas, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      pdf.addImage(canvas, "PNG", 0, 0, pdfWidth, pdfHeight);
       pdf.save(`DDHome_Invoice_${sale?.reference || new Date().getTime()}.pdf`);
-      
-      message.success('PDF exported successfully');
+
+      message.success("PDF exported successfully");
     } catch (error) {
-      message.error('Failed to export PDF');
+      message.error("Failed to export PDF");
     } finally {
       setIsExporting(false);
       setLoading(false);
     }
   };
 
+  console.log(sale);
+
   const exportToImage = async () => {
     if (!invoiceRef.current) {
-      message.warning('Invoice content not ready for export');
+      message.warning("Invoice content not ready for export");
       return;
     }
-    
+
     setIsExporting(true);
     setLoading(true);
-    
+
     try {
       const canvas = await html2canvas(invoiceRef.current, {
         scale: 2,
         logging: false,
         useCORS: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: "#ffffff",
       });
-      
-      const link = document.createElement('a');
-      link.download = `DDHome_Invoice_${sale?.reference || new Date().getTime()}.png`;
-      link.href = canvas.toDataURL('image/png');
+
+      const link = document.createElement("a");
+      link.download = `DDHome_Invoice_${
+        sale?.reference || new Date().getTime()
+      }.png`;
+      link.href = canvas.toDataURL("image/png");
       link.click();
-      
-      message.success('Image downloaded successfully');
+
+      message.success("Image downloaded successfully");
     } catch (error) {
-      message.error('Failed to export image');
+      message.error("Failed to export image");
     } finally {
       setIsExporting(false);
       setLoading(false);
@@ -108,22 +124,22 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
 
   const handlePrint = async () => {
     if (!invoiceRef.current) {
-      message.warning('Invoice content not ready for printing');
+      message.warning("Invoice content not ready for printing");
       return;
     }
-    
+
     setLoading(true);
     try {
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open("", "_blank");
       if (!printWindow) {
-        throw new Error('Popup blocked. Please allow popups for this site.');
+        throw new Error("Popup blocked. Please allow popups for this site.");
       }
-      
+
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
           <head>
-            <title>DD Home Invoice - ${sale?.reference || ''}</title>
+            <title>DD Home Invoice - ${sale?.reference || ""}</title>
             <style>
               body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
               @page { size: auto; margin: 0mm; }
@@ -140,10 +156,10 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
           </body>
         </html>
       `);
-      
+
       printWindow.document.close();
     } catch (error) {
-      message.error('Printing failed: ' + error.message);
+      message.error("Printing failed: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -155,7 +171,7 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
         <div className="empty-state">No invoice data available</div>
       </Modal>
     );
-  }    
+  }
 
   return (
     <Modal
@@ -163,12 +179,15 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
       onCancel={onCancel}
       footer={null}
       width="80%"
-      style={{ maxWidth: '900px' }}
+      style={{ maxWidth: "900px" }}
       className="invoice-modal"
       destroyOnClose
       closable={!loading}
     >
-      <Spin spinning={loading} tip={isExporting ? "Exporting..." : "Preparing..."}>
+      <Spin
+        spinning={loading}
+        tip={isExporting ? "Exporting..." : "Preparing..."}
+      >
         <div ref={invoiceRef} className="invoice-container">
           {/* Header Section */}
           <header className="invoice-header">
@@ -192,27 +211,27 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
           <section className="invoice-title-section">
             <h2 className="invoice-title">INVOICE</h2>
             <div className="invoice-meta">
-              <span className="invoice-number">{sale.reference || 'N/A'}</span>
+              <span className="invoice-number">{sale.reference || "N/A"}</span>
             </div>
           </section>
 
           {/* Invoice Details */}
-      <section className="invoice-details">
-        <div className="detail-row">
-          <span className="detail-label">Invoice Date:</span>
-          <span className="detail-value">{formatDate(sale.saleDate)}</span>
-        </div>
-        <div className="detail-row">
-          <span className="detail-label">Customer:</span>
-          <span className="detail-value">{sale.customerName || 'N/A'}</span>
-        </div>
-        <div className="detail-row">
-          <span className="detail-label">Phone:</span>
-          <span className="detail-value">{sale.customerPhone || 'N/A'}</span>
-
-        </div>
-      </section>
-
+          <section className="invoice-details">
+            <div className="detail-row">
+              <span className="detail-label">Invoice Date:</span>
+              <span className="detail-value">{formatDate(sale.saleDate)}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Customer:</span>
+              <span className="detail-value">{sale.customerName || "N/A"}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">Phone:</span>
+              <span className="detail-value">
+                {sale.customerPhone || "N/A"}
+              </span>
+            </div>
+          </section>
 
           <div className="divider" />
 
@@ -234,15 +253,25 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
                   <tr key={index}>
                     <td className="col-no">{index + 1}</td>
                     <td className="col-desc">
-                      <div className="product-code">{item.productCode || ''}</div>
-                      <div className="product-name">{item.productName || ''}</div>
+                      <div className="product-code">
+                        {item.productCode || ""}
+                      </div>
+                      <div className="product-name">
+                        {item.productName || ""}
+                      </div>
                     </td>
-                    <td className="col-price">{parseFloat(item.price || 0).toFixed(2)}</td>
+                    <td className="col-price">
+                      {parseFloat(item.price || 0).toFixed(2)}
+                    </td>
                     <td className="col-qty">
-                      {item.quantity} {item.unit || ''}
+                      {item.quantity} {item.unit || ""}
                     </td>
-                    <td className="col-discount">{parseFloat(item.discount || 0).toFixed(2)}</td>
-                    <td className="col-total">{parseFloat(item.total || 0).toFixed(2)}</td>
+                    <td className="col-discount">
+                      {parseFloat(item.discount || 0).toFixed(2)}
+                    </td>
+                    <td className="col-total">
+                      {parseFloat(item.total || 0).toFixed(2)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -259,22 +288,26 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
             </div>
             <div className="total-row">
               <span className="total-label">Discount:</span>
-              <span className="total-value">${discount}</span>
+              <span className="total-value">${sale.discount}</span>
             </div>
             <div className="total-row grand-total">
-              <span className="total-label">Grand Total:</span>
-              <span className="total-value">${grandTotal}</span>
+              <span className="total-label">Total:</span>
+              <span className="total-value">${sale.totalPrice}</span>
             </div>
             <div className="total-row">
               <span className="total-label">Payment:</span>
               <span className="total-value">${sale.payment}</span>
             </div>
-            <div className="total-row">
-              <span className="total-label">Balance:</span>
-              <span className="total-value">
-                {(grandTotal - (Number(sale.payment) || 0)).toFixed(2)}
-              </span>
-            </div>
+            {Number(sale.totalPrice) - (Number(sale.payment) || 0) !== 0 && (
+              <div className="total-row">
+                <span className="total-label">Balance:</span>
+                <span className="total-value">
+                  {(
+                    Number(sale.totalPrice) - (Number(sale.payment) || 0)
+                  ).toFixed(2)}
+                </span>
+              </div>
+            )}
           </section>
 
           <div className="divider" />
@@ -304,7 +337,8 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
           {/* Footer */}
           <footer className="invoice-footer">
             <div className="footer-text">
-              Printed by {sale.createdBy || 'System'}, {formatDate(new Date())} • Page 1 of 1
+              Printed by {sale.createdBy || "System"}, {formatDate(new Date())}{" "}
+              • Page 1 of 1
             </div>
           </footer>
         </div>
@@ -312,33 +346,33 @@ const SaleModalDetail = ({ open, onCancel, sale }) => {
 
       {/* Action Buttons */}
       <div className="action-buttons">
-        <Button 
-          onClick={onCancel} 
-          icon={<CloseOutlined />} 
+        <Button
+          onClick={onCancel}
+          icon={<CloseOutlined />}
           disabled={loading}
           className="cancel-btn"
         >
           Close
         </Button>
-        <Button 
-          onClick={exportToPDF} 
-          icon={<FilePdfOutlined />} 
+        <Button
+          onClick={exportToPDF}
+          icon={<FilePdfOutlined />}
           loading={isExporting}
           type="primary"
           className="export-btn"
         >
           Export PDF
         </Button>
-        <Button 
-          onClick={exportToImage} 
-          icon={<DownloadOutlined />} 
+        <Button
+          onClick={exportToImage}
+          icon={<DownloadOutlined />}
           loading={isExporting}
           className="download-btn"
         >
           Save as Image
         </Button>
-        <Button 
-          onClick={handlePrint} 
+        <Button
+          onClick={handlePrint}
           icon={<PrinterOutlined />}
           disabled={loading}
           className="print-btn"

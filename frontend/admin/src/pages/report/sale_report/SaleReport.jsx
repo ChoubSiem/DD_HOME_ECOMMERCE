@@ -1,6 +1,34 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { Card, Input, Button, Select, Space, DatePicker, Row, Col, Statistic, Progress, Spin, message, Typography } from "antd";
-import { SearchOutlined, FilterOutlined, FileExcelOutlined, FilePdfOutlined, FileImageOutlined, ShoppingCartOutlined, ClearOutlined } from "@ant-design/icons";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
+import {
+  Card,
+  Input,
+  Button,
+  Select,
+  Space,
+  DatePicker,
+  Row,
+  Col,
+  Statistic,
+  Progress,
+  Spin,
+  message,
+  Typography,
+} from "antd";
+import {
+  SearchOutlined,
+  FilterOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
+  FileImageOutlined,
+  ShoppingCartOutlined,
+  ClearOutlined,
+} from "@ant-design/icons";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import Cookies from "js-cookie";
@@ -29,8 +57,8 @@ const { Text, Title } = Typography;
 const SalesReports = () => {
   // Get today's date for default filter
   const today = dayjs();
-  const todayStart = today.startOf('day');
-  const todayEnd = today.endOf('day');
+  const todayStart = today.startOf("day");
+  const todayEnd = today.endOf("day");
 
   // Filter states - Set default date range to today
   const [appliedFilters, setAppliedFilters] = useState({
@@ -56,7 +84,7 @@ const SalesReports = () => {
     salesPerson: "all",
     customerGroup: "all",
   });
-  
+
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
@@ -77,16 +105,34 @@ const SalesReports = () => {
 
       const filters = {
         warehouse_id: userData.warehouse_id,
-        sale_type: appliedFilters.saleType !== "all" ? appliedFilters.saleType : undefined,
+        sale_type:
+          appliedFilters.saleType !== "all"
+            ? appliedFilters.saleType
+            : undefined,
         group_by: appliedFilters.groupBy,
-        start_date: appliedFilters.dateRange?.[0]?.format("YYYY-MM-DD HH:mm:ss"),
+        start_date: appliedFilters.dateRange?.[0]?.format(
+          "YYYY-MM-DD HH:mm:ss"
+        ),
         end_date: appliedFilters.dateRange?.[1]?.format("YYYY-MM-DD HH:mm:ss"),
-        status: appliedFilters.status !== "all" ? appliedFilters.status : undefined,
-        customer: appliedFilters.customer !== "all" ? appliedFilters.customer : undefined,
+        status:
+          appliedFilters.status !== "all" ? appliedFilters.status : undefined,
+        customer:
+          appliedFilters.customer !== "all"
+            ? appliedFilters.customer
+            : undefined,
         search_term: appliedFilters.searchTerm || undefined,
-        report_type: appliedFilters.reportType !== "all" ? appliedFilters.reportType : undefined,
-        sales_person: appliedFilters.salesPerson !== "all" ? appliedFilters.salesPerson : undefined,
-        customer_group: appliedFilters.customerGroup !== "all" ? appliedFilters.customerGroup : undefined,
+        report_type:
+          appliedFilters.reportType !== "all"
+            ? appliedFilters.reportType
+            : undefined,
+        sales_person:
+          appliedFilters.salesPerson !== "all"
+            ? appliedFilters.salesPerson
+            : undefined,
+        customer_group:
+          appliedFilters.customerGroup !== "all"
+            ? appliedFilters.customerGroup
+            : undefined,
       };
 
       const cleanedFilters = Object.fromEntries(
@@ -139,7 +185,7 @@ const SalesReports = () => {
       await fetchCustomerGroups();
       setHasInitialLoad(true);
     };
-    
+
     fetchInitialData();
   }, []);
 
@@ -170,11 +216,13 @@ const SalesReports = () => {
     const hasDateGroup = appliedFilters.groupBy?.includes("date");
     const hasCustomerGroup = appliedFilters.groupBy?.includes("customer");
     const hasInvoiceGroup = appliedFilters.groupBy?.includes("invoice");
-    const hasSalesPersonGroup = appliedFilters.groupBy?.includes("sales_person");
-    const hasCustomerGroupGroup = appliedFilters.groupBy?.includes("customer_group");
+    const hasSalesPersonGroup =
+      appliedFilters.groupBy?.includes("sales_person");
+    const hasCustomerGroupGroup =
+      appliedFilters.groupBy?.includes("customer_group");
     const hasCategoryGroup = appliedFilters.groupBy?.includes("category");
     const baseColumns = [];
-    
+
     if (hasProductGroup) {
       baseColumns.push({
         field: "code",
@@ -395,7 +443,6 @@ const SalesReports = () => {
         message.warning("No data available to export");
         return;
       }
-
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Sales Report");
       worksheet.addRow(["DD Home Sales Report"]).font = {
@@ -403,12 +450,14 @@ const SalesReports = () => {
         bold: true,
       };
       worksheet.addRow([
-        `Date Range: ${appliedFilters.dateRange?.[0]
-          ? dayjs(appliedFilters.dateRange[0]).format("YYYY-MM-DD")
-          : "All Dates"
-        } to ${appliedFilters.dateRange?.[1]
-          ? dayjs(appliedFilters.dateRange[1]).format("YYYY-MM-DD")
-          : "All Dates"
+        `Date Range: ${
+          appliedFilters.dateRange?.[0]
+            ? dayjs(appliedFilters.dateRange[0]).format("YYYY-MM-DD")
+            : "All Dates"
+        } to ${
+          appliedFilters.dateRange?.[1]
+            ? dayjs(appliedFilters.dateRange[1]).format("YYYY-MM-DD")
+            : "All Dates"
         }`,
       ]);
       worksheet.addRow([
@@ -421,8 +470,10 @@ const SalesReports = () => {
       const hasDateGroup = appliedFilters.groupBy.includes("date");
       const hasCustomerGroup = appliedFilters.groupBy.includes("customer");
       const hasInvoiceGroup = appliedFilters.groupBy.includes("invoice");
-      const hasSalesPersonGroup = appliedFilters.groupBy.includes("sales_person");
-      const hasCustomerGroupGroup = appliedFilters.groupBy.includes("customer_group");
+      const hasSalesPersonGroup =
+        appliedFilters.groupBy.includes("sales_person");
+      const hasCustomerGroupGroup =
+        appliedFilters.groupBy.includes("customer_group");
       const hasCategoryGroup = appliedFilters.groupBy.includes("category");
       const headers = [];
 
@@ -467,6 +518,9 @@ const SalesReports = () => {
         cell.alignment = { vertical: "middle", horizontal: "center" };
       });
 
+      let totalUnitCost = 0;
+      let totalUnitPrice = 0;
+
       sales.forEach((sale) => {
         const rowData = [];
 
@@ -486,9 +540,16 @@ const SalesReports = () => {
         if (hasCategoryGroup) rowData.push(sale.product_category || "N/A");
         if (!hasCustomerGroup) rowData.push(sale.customer_count || 0);
 
-        const unitPrice = sale.quantity ? sale.subtotal / sale.quantity : 0;
-        const unitCost = sale.quantity ? sale.total_cost / sale.quantity : 0;
+        const unitPrice = sale.quantity
+          ? Math.sign(sale.quantity) * Math.abs(sale.subtotal / sale.quantity)
+          : 0;
 
+        const unitCost = sale.quantity
+          ? Math.sign(sale.quantity) * Math.abs(sale.total_cost / sale.quantity)
+          : 0;
+
+        totalUnitCost += unitCost;
+        totalUnitPrice += unitPrice;
         rowData.push(
           Number(sale.quantity || 0),
           Number(unitPrice.toFixed(2)),
@@ -564,12 +625,12 @@ const SalesReports = () => {
 
       totalRowData.push(
         totals.totalQuantity,
-        Number(avgUnitPrice.toFixed(2)),
+        Number(totalUnitPrice.toFixed(2)),
         totals.totalSubtotal,
         totals.totalInvDiscount,
         totals.totalItemDiscount,
         totals.totalSale,
-        Number(avgUnitCost.toFixed(2)),
+        Number(totalUnitCost.toFixed(2)),
         totals.totalCost,
         totals.totalProfit
       );
@@ -775,7 +836,10 @@ const SalesReports = () => {
                 placeholder="Filter by customer group"
                 value={pendingFilters.customerGroup}
                 onChange={(value) =>
-                  setPendingFilters((prev) => ({ ...prev, customerGroup: value }))
+                  setPendingFilters((prev) => ({
+                    ...prev,
+                    customerGroup: value,
+                  }))
                 }
                 allowClear
                 size="large"

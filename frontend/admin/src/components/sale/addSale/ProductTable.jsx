@@ -32,8 +32,9 @@ const ProductsTable = ({
     const totals = calculateTotals();
     onAmountChange(totals.grandTotal);
     onTotalChange(totals.subtotal);
+    // console.log(paymentMethods.length === 0 && totals.grandTotal > 0);
     
-    if (paymentMethods.length === 0 && totals.grandTotal > 0) {
+    if ( totals.grandTotal >= 0) {
       const initialPayment = { 
         method: 'cash', 
         amount: totals.grandTotal,
@@ -43,6 +44,7 @@ const ProductsTable = ({
       onPaymentMethodsChange([initialPayment]);
     }
   }, [selectedProducts, invoiceDiscount]);
+// console.log(paymentMethods);
 
   const calculateTotals = () => {
     const results = selectedProducts.reduce((acc, item) => {
@@ -104,10 +106,10 @@ const ProductsTable = ({
     const selectedCurrency = currencies.find(c => c.code === value) || currencies[0];
     const currentPayment = newPayments[index];
     
-    // Convert amount to new currency
     if (currentPayment.currency && currentPayment.exchange_rate) {
       const amountInUSD = currentPayment.amount / currentPayment.exchange_rate;
       newPayments[index].amount = amountInUSD * selectedCurrency.rate;
+      newPayments[index].currencies = amountInUSD * selectedCurrency.rate;
     }
     
     newPayments[index].currency = value;
@@ -119,7 +121,6 @@ const ProductsTable = ({
     const newPayments = [...paymentMethods];
     const currentPayment = newPayments[index];
     
-    // Convert amount using new exchange rate
     if (currentPayment.currency && currentPayment.exchange_rate) {
       const amountInUSD = currentPayment.amount / currentPayment.exchange_rate;
       newPayments[index].amount = amountInUSD * parseFloat(value);
@@ -147,7 +148,6 @@ const ProductsTable = ({
       const newPayments = [...paymentMethods];
       newPayments.splice(index, 1);
       
-      // If removing the only payment with amount, set first payment to remaining balance
       const totalPaid = paymentMethods.reduce((sum, pm) => sum + (parseFloat(pm.amount) || 0), 0);
       if (totalPaid === totals.grandTotal) {
         newPayments[0].amount = totals.grandTotal;
