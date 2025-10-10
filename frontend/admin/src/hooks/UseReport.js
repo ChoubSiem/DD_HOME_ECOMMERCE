@@ -1,5 +1,5 @@
 import { message } from 'antd';
-import {getPurchaseReports , getSaleReports ,getShiftReports ,getStockReports ,getProductReports ,getPaymentReport,getStockTransitionReport ,getCreditSales} from "../services/reoportService";
+import {getPurchaseReports , getSaleReports ,getShiftReports ,getStockReports ,getProductReports ,getPaymentReport,getStockTransitionReport ,getCreditSales, getFastandSlowMovingProducts} from "../services/reoportService";
 
 export const useReport = () => {
   const getPurchaseReportData = async(values , token ) =>{
@@ -83,5 +83,18 @@ export const useReport = () => {
     }
   }
   
-  return { getPurchaseReportData ,getSaleReportsData , getShiftReportData ,getStockReportsData ,getProductReportsData,getPaymentReportsData,getStockTransitionReportData,getCreditSalesData};
+  const getFastandSlowMoving = async(values , token ) =>{
+    console.log(values);
+    
+    const response = await getFastandSlowMovingProducts(values,token);
+    if (response) {
+        return {
+            success: true,
+            FastSlow: response,
+            message: response.message
+        };
+    }
+  }
+
+  return { getPurchaseReportData ,getSaleReportsData , getShiftReportData ,getStockReportsData ,getProductReportsData,getPaymentReportsData,getStockTransitionReportData,getCreditSalesData,getFastandSlowMoving};
 };

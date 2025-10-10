@@ -1,27 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import {
-  Card,
-  Input,
-  Button,
-  Select,
-  Space,
-  DatePicker,
-  Row,
-  Col,
-  Statistic,
-  Progress,
-  Spin,
-  message,
-  Typography,
-} from 'antd';
-import {
-  SearchOutlined,
-  FilterOutlined,
-  FileExcelOutlined,
-  FilePdfOutlined,
-  FileImageOutlined,
-  ShoppingCartOutlined,
-  ClearOutlined,
+import { Card, Input, Button, Select, Space, DatePicker, Row, Col, Statistic, Progress, Spin, message, Typography,} from 'antd';
+import { SearchOutlined, FilterOutlined, FileExcelOutlined, FilePdfOutlined, FileImageOutlined, ShoppingCartOutlined, ClearOutlined,
 } from '@ant-design/icons';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -39,6 +18,7 @@ import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import './FastSlow.css';
+import  {useProductTerm}  from '../../../hooks/UserProductTerm';
 
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
@@ -52,24 +32,20 @@ const SalesReports = () => {
   // Filter states
   const [appliedFilters, setAppliedFilters] = useState({
     searchTerm: '',
-    status: 'all',
     dateRange: null,
-    customer: 'all',
-    reportType: 'all',
-    saleType: 'all',
+    category_id: 'all',
     groupBy: ['product'],
-    salesPerson: 'all'
+    saleType: 'all',
+    limit: 'all'
   });
 
   const [pendingFilters, setPendingFilters] = useState({
     searchTerm: '',
-    status: 'all',
     dateRange: null,
-    customer: 'all',
-    reportType: 'all',
-    saleType: 'all',
+    category_id: 'all',
     groupBy: ['product'],
-    salesPerson: 'all'
+    saleType: 'all',
+    limit: 'all'
   });
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -78,56 +54,55 @@ const SalesReports = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const tableRef = useRef();
-  const { getSaleReportsData } = useReport();
+
+  const { getFastandSlowMoving } = useReport();
+  const { handleCategories } = useProductTerm();
   const userData = useMemo(() => JSON.parse(Cookies.get('user') || '{}'), []);
   const token = localStorage.getItem('token');
-  const { handleEmployee } = useUser();
-  const [employees, setEmployees] = useState();
-  const fetchSalesReportData = async () => {
+  const [categories, setCategories] = useState([]);
+
+  const fetchFastSlowReport = async () => {
     try {
       setIsLoading(true);
 
       const filters = {
         warehouse_id: userData.warehouse_id,
-        sale_type: appliedFilters.saleType,
-        group_by: appliedFilters.groupBy,
         start_date: appliedFilters.dateRange?.[0]?.format('YYYY-MM-DD HH:mm:ss'),
         end_date: appliedFilters.dateRange?.[1]?.format('YYYY-MM-DD HH:mm:ss'),
-        status: appliedFilters.status !== 'all' ? appliedFilters.status : undefined,
-        customer: appliedFilters.customer !== 'all' ? appliedFilters.customer : undefined,
-        search_term: appliedFilters.searchTerm || undefined,
-        report_type: appliedFilters.reportType !== 'all' ? appliedFilters.reportType : undefined,
-        sales_person: appliedFilters.salesPerson !== 'all' ? appliedFilters.salesPerson : undefined
+        category_id: appliedFilters.category_id !== 'all' ? appliedFilters.category_id : undefined,
+        saleType: appliedFilters.saleType !== 'all' ? appliedFilters.saleType : undefined,
+        limit: appliedFilters.limit !== 'all' ? appliedFilters.limit : undefined
       };
 
       const cleanedFilters = Object.fromEntries(
         Object.entries(filters).filter(([_, value]) => value !== undefined)
       );
 
-      const response = await getSaleReportsData(cleanedFilters, token);
+      const response = await getFastandSlowMoving(cleanedFilters, token);
 
       if (response.success) {
-        setSales(response.sales || []);
+        setSales(response.FastSlow || []);
         setError(null);
       }
     } catch (err) {
-      console.error('Error fetching sales data:', err);
-      message.error('Failed to load sales data');
+      console.error('Error fetching fast & slow report:', err);
+      message.error('Failed to load fast & slow moving report');
       setError(err);
     } finally {
       setIsLoading(false);
     }
   };
-  const fectchEmployees = async () => {
-    let result = await handleEmployee(token);
+
+  const fetchCategories = async () => {
+    let result = await handleCategories(token);
     if (result.success) {
-      setEmployees(result.employees);
+      setCategories(result.categories);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchSalesReportData();
-    fectchEmployees();
+    fetchFastSlowReport();
+    fetchCategories();
   }, [appliedFilters]);
 
   const debouncedSetPendingSearch = useMemo(
@@ -142,11 +117,6 @@ const SalesReports = () => {
   const columns = useMemo(() => {
     const hasGrouping = appliedFilters.groupBy?.length > 0;
     const hasProductGroup = appliedFilters.groupBy?.includes('product');
-    const hasDateGroup = appliedFilters.groupBy?.includes('date');
-    const hasCustomerGroup = appliedFilters.groupBy?.includes('customer');
-    const hasInvoiceGroup = appliedFilters.groupBy?.includes('invoice');
-    const hasSalesPersonGroup = appliedFilters.groupBy?.includes('sales_person');
-    const hasCustomerGroupGroup = appliedFilters.groupBy?.includes('customer_group');
     const hasCategoryGroup = appliedFilters.groupBy?.includes('category');
     const baseColumns = [];
     if (hasProductGroup) {
@@ -174,58 +144,6 @@ const SalesReports = () => {
       });
     }
 
-    if (hasDateGroup) {
-      baseColumns.push({
-        field: 'date',
-        header: 'Date',
-        sortable: true,
-        style: { minWidth: '120px' },
-        body: (rowData) => (
-          <Text>{rowData.date ? dayjs(rowData.date).format('YYYY-MM-DD') : 'N/A'}</Text>
-        ),
-      });
-    }
-
-    if (hasCustomerGroup) {
-      baseColumns.push({
-        field: 'customer_name',
-        header: 'Customer',
-        sortable: true,
-        style: { minWidth: '180px' },
-        body: (rowData) => <Text>{rowData.customer_name || 'Walk-in'}</Text>,
-      });
-    }
-
-    if (hasInvoiceGroup) {
-      baseColumns.push({
-        field: 'invoice_no',
-        header: 'Invoice',
-        sortable: true,
-        style: { minWidth: '150px' },
-        body: (rowData) => <Text>{rowData.invoice_no || 'N/A'}</Text>,
-      });
-    }
-
-    if (hasSalesPersonGroup) {
-      baseColumns.push({
-        field: 'sales_person',
-        header: 'Sales Person',
-        sortable: true,
-        style: { minWidth: '150px' },
-        body: (rowData) => <Text>{rowData.sales_person || ''}</Text>,
-      });
-    }
-
-    if (hasCustomerGroupGroup) {
-      baseColumns.push({
-        field: 'customer_group_name',
-        header: 'Customer Group',
-        sortable: true,
-        style: { minWidth: '150px' },
-        body: (rowData) => <Text>{rowData.customer_group_name || 'Walk-In Customer'}</Text>,
-      });
-    }
-
     if (hasCategoryGroup) {
       baseColumns.push({
         field: 'product_category',
@@ -236,70 +154,48 @@ const SalesReports = () => {
       });
     }
 
-    // Add metrics columns
-    if (!hasCustomerGroup) {
-      baseColumns.push({
-        field: 'customer_count',
-        header: 'Customers',
-        sortable: true,
-        style: { minWidth: '100px', textAlign: 'center' },
-        body: (rowData) => <Text>{rowData.customer_count || 0}</Text>,
-      });
-    }
-
     baseColumns.push(
+      // {
+      //   field: 'opening_stock',
+      //   header: 'Opening Stock',
+      //   sortable: true,
+      //   style: { minWidth: '80px', textAlign: 'right' },
+      //   body: (rowData) => <Text>{Number(rowData.TotalQty || 0).toLocaleString()}</Text>,
+      // },
+      // {
+      //   field: 'closing_stock',
+      //   header: 'Closing Stock',
+      //   sortable: true,
+      //   style: { minWidth: '80px', textAlign: 'right' },
+      //   body: (rowData) => <Text>{Number(rowData.TotalQty || 0).toLocaleString()}</Text>,
+      // },
       {
-        field: 'quantity',
-        header: 'Qty',
+        field: 'total_sale_qty',
+        header: 'Total Sale Qty',
         sortable: true,
         style: { minWidth: '80px', textAlign: 'right' },
-        body: (rowData) => <Text>{Number(rowData.quantity || 0).toLocaleString()}</Text>,
+        body: (rowData) => <Text>{Number(rowData.TotalQty || 0).toLocaleString()}</Text>,
       },
       {
-        field: 'subtotal',
-        header: 'Subtotal',
+        field: 'total_sale_value',
+        header: 'Total Sale Value',
         sortable: true,
-        style: { minWidth: '120px', textAlign: 'right' },
-        body: (rowData) => <Text>${Number(rowData.subtotal || 0).toFixed(2)}</Text>,
+        style: { minWidth: '80px', textAlign: 'right' },
+        body: (rowData) => <Text>${Number(rowData.TotalSaleValue || 0).toLocaleString()}</Text>,
       },
+      // {
+      //   field: 'turnover_rate',
+      //   header: 'Turnover Rate',
+      //   sortable: true,
+      //   style: { minWidth: '40px', textAlign: 'right' },
+      //   body: (rowData) => <Text>{Number(rowData.TotalQty || 0).toLocaleString()}</Text>,
+      // },
       {
-        field: 'inv_discount',
-        header: 'Inv Disc',
+        field: 'movement_status',
+        header: 'Movement Status',
         sortable: true,
-        style: { minWidth: '100px', textAlign: 'right' },
-        body: (rowData) => <Text>${Number(rowData.inv_discount || 0).toFixed(2)}</Text>,
-      },
-      {
-        field: 'item_discount',
-        header: 'Item Disc',
-        sortable: true,
-        style: { minWidth: '100px', textAlign: 'right' },
-        body: (rowData) => <Text>${Number(rowData.item_discount || 0).toFixed(2)}</Text>,
-      },
-      {
-        field: 'total_sale',
-        header: 'Total Sale',
-        sortable: true,
-        style: { minWidth: '120px', textAlign: 'right' },
-        body: (rowData) => <Text>${Number(rowData.total_sale || 0).toFixed(2)}</Text>,
-      },
-      {
-        field: 'total_cost',
-        header: 'Cost',
-        sortable: true,
-        style: { minWidth: '120px', textAlign: 'right' },
-        body: (rowData) => <Text>${Number(rowData.total_cost || 0).toFixed(2)}</Text>,
-      },
-      {
-        field: 'profit',
-        header: 'Profit',
-        sortable: true,
-        style: { minWidth: '120px', textAlign: 'right' },
-        body: (rowData) => (
-          <Text style={{ color: (rowData.profit || 0) >= 0 ? '#52c41a' : '#f5222d' }}>
-            ${Number(rowData.profit || 0).toFixed(2)}
-          </Text>
-        ),
+        style: { minWidth: '40px', textAlign: 'right' },
+        body: (rowData) => <Text>{(rowData.Speed)}</Text>,
       }
     );
 
@@ -309,129 +205,18 @@ const SalesReports = () => {
   // Calculate totals for footer
   const calculateTotals = useCallback(() => {
     return sales.reduce(
-      (acc, sale) => {
-        acc.totalQuantity += Number(sale.quantity) || 0;
-        acc.totalSubtotal += Number(sale.subtotal) || 0;
-        acc.totalInvoiceDiscount += Number(sale.inv_discount) || 0;
-        acc.totalItemDiscount += Number(sale.item_discount) || 0;
-        acc.totalSale += Number(sale.total_sale) || 0;
-        acc.totalCost += Number(sale.total_cost) || 0;
-        acc.totalProfit += Number(sale.profit) || 0;
+      (acc, item) => {
+        acc.totalQty += Number(item.TotalQty) || 0;
         return acc;
       },
       {
-        totalQuantity: 0,
-        totalSubtotal: 0,
-        totalInvoiceDiscount: 0,
-        totalItemDiscount: 0,
-        totalSale: 0,
-        totalCost: 0,
-        totalProfit: 0,
+        totalQty: 0,
       }
     );
   }, [sales]);
 
-  // const CustomFooter = useMemo(() => {
-  //   const totals = calculateTotals();
-  //   const hasGrouping = appliedFilters.groupBy?.length > 0;
+  const totals = calculateTotals();
 
-  //   return (
-  //     <div style={{ 
-  //       display: 'flex',
-  //       width: '100%',
-  //       background: '#f8f9fa',
-  //       padding: '8px',
-  //       borderTop: '1px solid #dee2e6'
-  //     }}>
-  //       {/* Left-aligned "Total" label */}
-  //       <div style={{ 
-  //         flex: hasGrouping ? '0 0 200px' : '0 0 150px',
-  //         fontWeight: 'bold',
-  //         paddingLeft: '8px'
-  //       }}>
-  //         Total:
-  //       </div>
-
-  //       {/* Dynamic columns */}
-  //       <div style={{ 
-  //         display: 'flex',
-  //         flex: 1,
-  //         justifyContent: 'flex-end'
-  //       }}>
-  //         {/* Quantity */}
-  //         <div style={{ 
-  //           flex: '0 0 80px',
-  //           textAlign: 'right',
-  //           fontWeight: 'bold',
-  //           paddingRight: '8px'
-  //         }}>
-  //           {totals.totalQuantity.toLocaleString()}
-  //         </div>
-
-  //         {/* Subtotal */}
-  //         <div style={{ 
-  //           flex: '0 0 120px',
-  //           textAlign: 'right',
-  //           fontWeight: 'bold',
-  //           paddingRight: '8px'
-  //         }}>
-  //           ${totals.totalSubtotal.toFixed(2)}
-  //         </div>
-
-  //         {/* Invoice Discount */}
-  //         <div style={{ 
-  //           flex: '0 0 100px',
-  //           textAlign: 'right',
-  //           fontWeight: 'bold',
-  //           paddingRight: '8px'
-  //         }}>
-  //           ${totals.totalInvoiceDiscount.toFixed(2)}
-  //         </div>
-
-  //         {/* Item Discount */}
-  //         <div style={{ 
-  //           flex: '0 0 100px',
-  //           textAlign: 'right',
-  //           fontWeight: 'bold',
-  //           paddingRight: '8px'
-  //         }}>
-  //           ${totals.totalItemDiscount.toFixed(2)}
-  //         </div>
-
-  //         {/* Total Sale */}
-  //         <div style={{ 
-  //           flex: '0 0 120px',
-  //           textAlign: 'right',
-  //           fontWeight: 'bold',
-  //           paddingRight: '8px'
-  //         }}>
-  //           ${totals.totalSale.toFixed(2)}
-  //         </div>
-
-  //         {/* Cost */}
-  //         <div style={{ 
-  //           flex: '0 0 120px',
-  //           textAlign: 'right',
-  //           fontWeight: 'bold',
-  //           paddingRight: '8px'
-  //         }}>
-  //           ${totals.totalCost.toFixed(2)}
-  //         </div>
-
-  //         {/* Profit */}
-  //         <div style={{ 
-  //           flex: '0 0 120px',
-  //           textAlign: 'right',
-  //           fontWeight: 'bold',
-  //           paddingRight: '8px',
-  //           color: totals.totalProfit >= 0 ? '#52c41a' : '#f5222d'
-  //         }}>
-  //           ${totals.totalProfit.toFixed(2)}
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }, [sales, appliedFilters.groupBy]);
   const handleExportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
@@ -441,8 +226,8 @@ const SalesReports = () => {
       }
 
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Sales Report');
-      worksheet.addRow(['DD Home Sales Report']).font = { size: 16, bold: true };
+      const worksheet = workbook.addWorksheet('Fast & Slow Moving');
+      worksheet.addRow(['Fast & Slow Moving Product Report']).font = { size: 16, bold: true };
       worksheet.addRow([
         `Date Range: ${appliedFilters.dateRange?.[0]
           ? dayjs(appliedFilters.dateRange[0]).format('YYYY-MM-DD')
@@ -452,42 +237,20 @@ const SalesReports = () => {
           : 'All Dates'
         }`
       ]);
-      worksheet.addRow([`Grouped By: ${appliedFilters.groupBy.join(', ') || 'None'}`]);
       worksheet.addRow([`Warehouse: ${userData.warehouse_name || 'All'}`]);
+      worksheet.addRow([`Category: ${appliedFilters.category_id === 'all' ? 'All Categories' : categories.find(c => c.id === appliedFilters.category_id)?.name || ''}`]);
+      worksheet.addRow([`Speed: ${appliedFilters.saleType === 'all' ? 'All' : appliedFilters.saleType}`]);
+      worksheet.addRow([`Top: ${appliedFilters.limit === 'all' ? 'All' : appliedFilters.limit}`]);
       worksheet.addRow([]);
 
-      const hasProductGroup = appliedFilters.groupBy.includes('product');
-      const hasDateGroup = appliedFilters.groupBy.includes('date');
-      const hasCustomerGroup = appliedFilters.groupBy.includes('customer');
-      const hasInvoiceGroup = appliedFilters.groupBy.includes('invoice');
-      const hasSalesPersonGroup = appliedFilters.groupBy.includes('sales_person');
-      const hasCustomerGroupGroup = appliedFilters.groupBy.includes('customer_group');
-      const hasCategoryGroup = appliedFilters.groupBy.includes('category');
-      const headers = [];
-
-      if (hasProductGroup) {
-        headers.push('Product Code');
-        headers.push('Product');
-      }
-      if (hasDateGroup) headers.push('Date');
-      if (hasCustomerGroup) headers.push('Customer');
-      if (hasInvoiceGroup) headers.push('Invoice No');
-      if (hasSalesPersonGroup) headers.push('Sales Person');
-      if (hasCustomerGroupGroup) headers.push('Customer Group');
-      if (hasCategoryGroup) headers.push('Category');
-      if (!hasCustomerGroup) headers.push('Customer Count');
-
-      headers.push(
-        'Quantity',
-        'Unit Price',
-        'Subtotal',
-        'Invoice Discount',
-        'Item Discount',
-        'Total Sale',
-        'Unit Cost',
-        'Total Cost',
-        'Profit'
-      );
+      const headers = [
+      'Product Code',
+      'Product Name',
+      'Category',
+      'Quantity Sold',
+      'Total Sale',
+      'Speed'
+      ];
 
       const headerRow = worksheet.addRow(headers);
       headerRow.eachCell((cell) => {
@@ -506,141 +269,61 @@ const SalesReports = () => {
         cell.alignment = { vertical: 'middle', horizontal: 'center' };
       });
 
-      sales.forEach((sale) => {
-        const rowData = [];
+      // 🟡 Table Rows
+      sales.forEach((item, index) => {
+        const row = worksheet.addRow([
+          item.product_code || 'N/A',
+          item.product_name || 'N/A',
+          item.product_category || 'N/A',
+          Number(item.TotalQty || 0),
+          Number(item.TotalSaleValue || 0),
+          item.Speed || ''
+        ]);
 
-        if (hasProductGroup) {
-          rowData.push(sale.product_code || 'N/A');
-          rowData.push(sale.product_name || 'N/A');
-        }
-        if (hasDateGroup) rowData.push(sale.date ? dayjs(sale.date).format('YYYY-MM-DD') : 'N/A');
-        if (hasCustomerGroup) rowData.push(sale.customer_name || 'Walk-in');
-        if (hasInvoiceGroup) rowData.push(sale.invoice_no || 'N/A');
-        if (hasSalesPersonGroup) rowData.push(sale.sales_person || '');
-        if (hasCustomerGroupGroup) rowData.push(sale.customer_group_name || 'Walk-In Customer');
-        if (hasCategoryGroup) rowData.push(sale.product_category || 'N/A');
-        if (!hasCustomerGroup) rowData.push(sale.customer_count || 0);
-
-        const unitPrice = sale.quantity ? (sale.subtotal / sale.quantity) : 0;
-        const unitCost = sale.quantity ? (sale.total_cost / sale.quantity) : 0;
-
-        rowData.push(
-          Number(sale.quantity || 0),
-          Number(unitPrice.toFixed(2)),
-          Number(sale.subtotal || 0),
-          Number(sale.inv_discount || 0),
-          Number(sale.item_discount || 0),
-          Number(sale.total_sale || 0),
-          Number(unitCost.toFixed(2)),
-          Number(sale.total_cost || 0),
-          Number(sale.profit || 0)
-        );
-
-        const row = worksheet.addRow(rowData);
-
-        row.eachCell((cell, colNumber) => {
-          const firstMetricCol = headers.length - 9 + 1;
-
-          if (colNumber >= firstMetricCol) {
-            cell.numFmt = colNumber === firstMetricCol ? '0' : '#,##0.00';
-            cell.alignment = { horizontal: 'right' };
-
-            if (colNumber === headers.length) {
-              cell.font = {
-                color: { argb: cell.value >= 0 ? 'FF52C41A' : 'FFF5222D' }
-              };
-            }
-          }
-        });
+        row.getCell(5).numFmt = '#,##0.00';
+        row.getCell(6).numFmt = '#,##0.00';
+        row.getCell(5).alignment = { horizontal: 'right' };
+        row.getCell(6).alignment = { horizontal: 'right' };
       });
 
-      const totals = sales.reduce((acc, sale) => {
-        acc.totalQuantity += Number(sale.quantity) || 0;
-        acc.totalSubtotal += Number(sale.subtotal) || 0;
-        acc.totalInvDiscount += Number(sale.inv_discount) || 0;
-        acc.totalItemDiscount += Number(sale.item_discount) || 0;
-        acc.totalSale += Number(sale.total_sale) || 0;
-        acc.totalCost += Number(sale.total_cost) || 0;
-        acc.totalProfit += Number(sale.profit) || 0;
-        return acc;
-      }, {
-        totalQuantity: 0,
-        totalSubtotal: 0,
-        totalInvDiscount: 0,
-        totalItemDiscount: 0,
-        totalSale: 0,
-        totalCost: 0,
-        totalProfit: 0
-      });
+      // 🟡 Totals Row
+      const totalQty = sales.reduce((acc, cur) => acc + Number(cur.TotalQty || 0), 0);
+      const totalValue = sales.reduce((acc, cur) => acc + Number(cur.TotalSaleValue || 0), 0);
 
-      const totalRowData = [];
-
-      if (hasProductGroup) {
-        totalRowData.push('');
-        totalRowData.push('TOTAL');
-      }
-      if (hasDateGroup) totalRowData.push('');
-      if (hasCustomerGroup) totalRowData.push('');
-      if (hasInvoiceGroup) totalRowData.push('');
-      if (hasSalesPersonGroup) totalRowData.push('');
-      if (hasCustomerGroupGroup) totalRowData.push('');
-      if (hasCategoryGroup) totalRowData.push('');
-      if (!hasCustomerGroup) totalRowData.push('');
-
-      const avgUnitPrice = totals.totalQuantity ? (totals.totalSubtotal / totals.totalQuantity) : 0;
-      const avgUnitCost = totals.totalQuantity ? (totals.totalCost / totals.totalQuantity) : 0;
-
-      totalRowData.push(
-        totals.totalQuantity,
-        Number(avgUnitPrice.toFixed(2)),
-        totals.totalSubtotal,
-        totals.totalInvDiscount,
-        totals.totalItemDiscount,
-        totals.totalSale,
-        Number(avgUnitCost.toFixed(2)),
-        totals.totalCost,
-        totals.totalProfit
-      );
-
-      const totalRow = worksheet.addRow(totalRowData);
+      const totalRow = worksheet.addRow([
+        '',
+        'TOTAL',
+        '',
+        totalQty,
+        totalValue,
+        ''
+      ]);
       totalRow.eachCell((cell, colNumber) => {
-        const firstMetricCol = headers.length - 9 + 1;
-
-        if (colNumber >= firstMetricCol) {
-          cell.font = { bold: true };
-          cell.numFmt = colNumber === firstMetricCol ? '0' : '#,##0.00';
+        cell.font = { bold: true };
+        if (colNumber === 5) { // 5 = Total Sale
+          cell.numFmt = '"$"#,##0.00'; // Formats as $ currency
           cell.alignment = { horizontal: 'right' };
-          cell.border = { top: { style: 'thin' } };
-
-          if (colNumber === headers.length) {
-            cell.font = {
-              bold: true,
-              color: { argb: cell.value >= 0 ? 'FF52C41A' : 'FFF5222D' }
-            };
-          }
         }
+        if (colNumber === 6) cell.numFmt = '#,##0.00';
       });
 
+      // 🟡 Auto column width
       worksheet.columns.forEach((column) => {
         let maxLength = 0;
         column.eachCell({ includeEmpty: true }, (cell) => {
-          const columnLength = cell.value ? cell.value.toString().length : 0;
-          if (columnLength > maxLength) {
-            maxLength = columnLength;
+          const length = cell.value ? cell.value.toString().length : 0;
+          if (length > maxLength) {
+            maxLength = length;
           }
         });
         column.width = Math.min(Math.max(maxLength + 2, 10), 30);
       });
 
-      worksheet.views = [
-        { state: 'frozen', ySplit: 1 }
-      ];
+      worksheet.views = [{ state: 'frozen', ySplit: 8 }];
 
+      // 🟡 Download File
       const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(
-        new Blob([buffer]),
-        `sales-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`
-      );
+      saveAs(new Blob([buffer]), `fast-slow-moving-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`);
       message.success('Excel file exported successfully');
     } catch (error) {
       console.error('Export error:', error);
@@ -648,10 +331,12 @@ const SalesReports = () => {
     } finally {
       setExportLoading(false);
     }
-  }, [sales, appliedFilters, userData.warehouse_name]);
+  }, [sales, appliedFilters, userData.warehouse_name, categories]);
 
   const handleApplyFilters = useCallback(() => {
     setAppliedFilters(pendingFilters);
+    console.log(pendingFilters);
+    
   }, [pendingFilters]);
 
   const handleClearFilters = useCallback(() => {
@@ -688,7 +373,7 @@ const SalesReports = () => {
   }
 
   return (
-    <Spin spinning={isLoading || exportLoading} tip={exportLoading ? 'Exporting...' : 'Loading sales data...'} size="large">
+    <Spin spinning={isLoading || exportLoading} tip={exportLoading ? 'Exporting...' : 'Loading data...'} size="large">
       <div>
         {/* Header Section */}
         <Card style={{ marginBottom: 24, background: '#f6ffed' }} hoverable>
@@ -713,27 +398,13 @@ const SalesReports = () => {
           <Row gutter={[16, 16]} align="middle">
             <Col xs={24} sm={12} md={6}>
               <Search
-                placeholder="Search invoice or customer"
+                placeholder="Search Product by name or code"
                 prefix={<SearchOutlined style={{ color: '#52c41a' }} />}
                 onChange={(e) => debouncedSetPendingSearch(e.target.value)}
                 value={pendingFilters.searchTerm}
                 allowClear
                 size="large"
               />
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Filter by sale type"
-                value={pendingFilters.saleType}
-                onChange={(value) => setPendingFilters(prev => ({ ...prev, saleType: value }))}
-                allowClear
-                size="large"
-              >
-                <Option value="all">All Sale Types</Option>
-                <Option value="pos">POS</Option>
-                <Option value="inventory">Inventory</Option>
-              </Select>
             </Col>
             <Col xs={24} sm={12} md={6}>
               <RangePicker
@@ -758,33 +429,62 @@ const SalesReports = () => {
                 size="large"
               >
                 <Option value="product">Product</Option>
-                <Option value="date">Date</Option>
-                <Option value="customer">Customer</Option>
-                <Option value="invoice">Invoice</Option>
-                <Option value="sales_person">Sales Person</Option>
-                <Option value="customer_group">Customer Group</Option>
                 <Option value="category">Category</Option>
               </Select>
             </Col>
+
             <Col xs={24} sm={12} md={6}>
               <Select
                 style={{ width: '100%' }}
-                placeholder="Filter by sales person"
-                value={pendingFilters.salesPerson}
-                onChange={(value) => setPendingFilters(prev => ({ ...prev, salesPerson: value }))}
+                placeholder="Filter by Category"
+                value={pendingFilters.category_id}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, category_id: value }))}
                 allowClear
                 size="large"
               >
-                <Option value="all">All Sales Persons</Option>
-                {(employees || []).map(emp => (
-                  <Option key={emp.id} value={emp.id}>
-                    {emp.username}
+                <Option value="all">All Categories</Option>
+                {(categories || []).map((cat) => (
+                  <Option key={cat.id} value={cat.id}>
+                    {cat.name}
                   </Option>
                 ))}
               </Select>
             </Col>
 
-          </Row>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Filter by Movement Status"
+                value={pendingFilters.saleType}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, saleType: value }))}
+                allowClear
+                size="large"
+              >
+                <Option value="all">All Speed</Option>
+                <Option value="Fast">Fast</Option>
+                <Option value="Normal">Normal</Option>
+                <Option value="Slow">Slow</Option>
+              </Select>
+            </Col>
+            
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Filter by Top Sale Type"
+                value={pendingFilters.limit}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, limit: value }))}
+                allowClear
+                size="large"
+              >
+                <Option value="all">All Product</Option>
+                <Option value="20">Top 20</Option>
+                <Option value="30">Top 30</Option>
+                <Option value="50">Top 50</Option>
+              </Select>
+            </Col>
+            
+        </Row>
+
           <Row style={{ marginTop: '20px', gap: '10px' }}>
             <Col xs={24} sm={12} md={3}>
               <Button
@@ -813,7 +513,7 @@ const SalesReports = () => {
 
         <div ref={tableRef}>
           <Card
-            title={<Text strong style={{ fontSize: 18 }}>Sales Report Details</Text>}
+            title={<Text strong style={{ fontSize: 18 }}>Product Report Details</Text>}
             extra={
               <Space>
                 <Button

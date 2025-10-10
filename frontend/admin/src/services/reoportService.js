@@ -65,3 +65,12 @@ export const getCreditSales = async (values, token) => {
   });
   return response;
 };
+
+export const getFastandSlowMovingProducts = async (values, token) => {
+  const response = await api.get('/report/fast-slow-moving', {
+    headers: { Authorization: `Bearer ${token}` },
+    params: values
+  });
+    
+  return response;
+};
