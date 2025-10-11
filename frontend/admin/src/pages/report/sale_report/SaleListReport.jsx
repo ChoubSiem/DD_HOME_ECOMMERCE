@@ -10,7 +10,8 @@ import {
   FileTextOutlined,
   TeamOutlined,
   CalendarOutlined,
-  DashboardOutlined
+  DashboardOutlined,
+  ExceptionOutlined
 } from '@ant-design/icons';
 
 const { Meta } = Card;
@@ -91,6 +92,13 @@ const ReportCards = () => {
       path: '/reports/monthly-product',
       color: colors.black,
       type: 'periodic'
+    },
+    {
+      title: 'Fast And Slow Moving Product',
+      icon: <ExceptionOutlined />,
+      path: '/reports/fast-slow-moving',
+      color: colors.black,
+      type: 'fast-slow-moving'
     }
   ];
 

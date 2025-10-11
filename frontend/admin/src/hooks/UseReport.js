@@ -84,8 +84,6 @@ export const useReport = () => {
   }
   
   const getFastandSlowMoving = async(values , token ) =>{
-    console.log(values);
-    
     const response = await getFastandSlowMovingProducts(values,token);
     if (response) {
         return {

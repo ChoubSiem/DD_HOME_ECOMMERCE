@@ -11,7 +11,7 @@ import "./AddAdjustment.css";
 import Cookies from "js-cookie";
 import { useStock } from "../../../hooks/UseStock";
 import {useNavigate} from "react-router-dom"
-
+import BarcodeScanner from "../../../components/BarcodeScanner/BarcodeScanner";
 
 const AddAdjustment = () => {
   const { handleProducts } = useProductTerm();
@@ -156,6 +156,48 @@ const AddAdjustment = () => {
     }));
   };
 
+  const handleScan = (code) => {
+    // Find the product in your loaded product list
+    const scannedProduct = products.find((product) => product.code === code);
+
+    if (!scannedProduct) {
+      message.error(`No product found for code: ${code}`);
+      return;
+    }
+
+    // Check if product is already in the list
+    const isAlreadyAdded = selectedProducts.some(
+      (p) => p.productId === scannedProduct.id
+    );
+
+    if (isAlreadyAdded) {
+      // If it already exists, just increase quantity by 1
+      setSelectedProducts((prev) =>
+        prev.map((p) =>
+          p.productId === scannedProduct.id
+            ? { ...p, quantity: (p.quantity || 0) + 1 }
+            : p
+        )
+      );
+      message.info(`${scannedProduct.name} quantity increased`);
+      return;
+    }
+
+    // If it's new, add it to the list
+    const newProduct = {
+      key: Date.now(),
+      productId: scannedProduct.id,
+      productName: scannedProduct.name,
+      qoh: scannedProduct.stock,
+      quantity: 1,
+      adjustmentType: "subtract",
+      unit: scannedProduct.unit_code,
+    };
+
+    setSelectedProducts((prev) => [...prev, newProduct]);
+    message.success(`${scannedProduct.name} added by scanning`);
+  };
+
   const handleSubmit = async (values) => {
     setLoading(true);    
     const adjustmentData = {
@@ -214,6 +256,11 @@ const AddAdjustment = () => {
         handleSearchChange={handleSearchChange}
         handleProductSelect={handleProductSelect}
       />
+
+      <div style={{ margin: "20px 0" }}>
+        <h3>Scan Product Barcode</h3>
+        <BarcodeScanner onScan={handleScan} />
+      </div>
 
       <ProductsTable
         selectedProducts={selectedProducts}

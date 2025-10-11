@@ -108,13 +108,6 @@ const StockReports = () => {
       color: colors.black,
       type: 'shelf'
     },
-    {
-      title: 'Fast And Slow Moving Product',
-      icon: <ExceptionOutlined />,
-      path: '/reports/fast-slow-moving',
-      color: colors.black,
-      type: 'fast-slow-moving'
-    }
   ];
 
   const handleCardClick = (path) => {

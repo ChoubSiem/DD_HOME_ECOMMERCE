@@ -36,7 +36,8 @@ const SalesReports = () => {
     category_id: 'all',
     groupBy: ['product'],
     saleType: 'all',
-    limit: 'all'
+    limit: 'all',
+    sort_by: 'qty_desc'
   });
 
   const [pendingFilters, setPendingFilters] = useState({
@@ -45,7 +46,8 @@ const SalesReports = () => {
     category_id: 'all',
     groupBy: ['product'],
     saleType: 'all',
-    limit: 'all'
+    limit: 'all',
+    sort_by: 'qty_desc'
   });
 
   const [selectedRows, setSelectedRows] = useState([]);
@@ -71,7 +73,8 @@ const SalesReports = () => {
         end_date: appliedFilters.dateRange?.[1]?.format('YYYY-MM-DD HH:mm:ss'),
         category_id: appliedFilters.category_id !== 'all' ? appliedFilters.category_id : undefined,
         saleType: appliedFilters.saleType !== 'all' ? appliedFilters.saleType : undefined,
-        limit: appliedFilters.limit !== 'all' ? appliedFilters.limit : undefined
+        limit: appliedFilters.limit !== 'all' ? appliedFilters.limit : undefined,
+        sort_by: appliedFilters.sort_by,
       };
 
       const cleanedFilters = Object.fromEntries(
@@ -121,7 +124,7 @@ const SalesReports = () => {
     const baseColumns = [];
     if (hasProductGroup) {
       baseColumns.push({
-        field: 'code',
+        field: 'product_code',
         header: 'Code',
         sortable: true,
         style: { minWidth: '100px' },
@@ -170,14 +173,14 @@ const SalesReports = () => {
       //   body: (rowData) => <Text>{Number(rowData.TotalQty || 0).toLocaleString()}</Text>,
       // },
       {
-        field: 'total_sale_qty',
+        field: 'TotalQty',
         header: 'Total Sale Qty',
         sortable: true,
         style: { minWidth: '80px', textAlign: 'right' },
         body: (rowData) => <Text>{Number(rowData.TotalQty || 0).toLocaleString()}</Text>,
       },
       {
-        field: 'total_sale_value',
+        field: 'TotalSaleValue',
         header: 'Total Sale Value',
         sortable: true,
         style: { minWidth: '80px', textAlign: 'right' },
@@ -335,8 +338,6 @@ const SalesReports = () => {
 
   const handleApplyFilters = useCallback(() => {
     setAppliedFilters(pendingFilters);
-    console.log(pendingFilters);
-    
   }, [pendingFilters]);
 
   const handleClearFilters = useCallback(() => {
@@ -413,7 +414,13 @@ const SalesReports = () => {
                 value={pendingFilters.dateRange}
                 onChange={(dates) => setPendingFilters(prev => ({ ...prev, dateRange: dates }))}
                 size="large"
-                showTime={{ format: 'HH:mm' }}
+                showTime={{
+                  format: 'HH:mm',
+                  defaultValue: [
+                    dayjs('00:00:00', 'HH:mm:ss'), // ⏰ Start time defaults to 00:00
+                    dayjs('23:59:59', 'HH:mm:ss')  // ⏰ End time defaults to 23:59
+                  ]
+                }}
                 format="YYYY-MM-DD HH:mm"
               />
             </Col>
@@ -466,6 +473,22 @@ const SalesReports = () => {
                 <Option value="Slow">Slow</Option>
               </Select>
             </Col>
+
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Sort by"
+                value={pendingFilters.sort_by}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, sort_by: value }))}
+                allowClear
+                size="large"
+              >
+                <Option value="qty_desc">Most Sold (Quantity)</Option>
+                <Option value="qty_asc">Least Sold (Quantity)</Option>
+                <Option value="value_desc">Most Sale Value</Option>
+                <Option value="value_asc">Least Sale Value</Option>
+              </Select>
+            </Col>
             
             <Col xs={24} sm={12} md={6}>
               <Select
@@ -477,9 +500,9 @@ const SalesReports = () => {
                 size="large"
               >
                 <Option value="all">All Product</Option>
-                <Option value="20">Top 20</Option>
-                <Option value="30">Top 30</Option>
-                <Option value="50">Top 50</Option>
+                <Option value="20">Top 20 Product</Option>
+                <Option value="30">Top 30 Product</Option>
+                <Option value="50">Top 50 Product</Option>
               </Select>
             </Col>
             
