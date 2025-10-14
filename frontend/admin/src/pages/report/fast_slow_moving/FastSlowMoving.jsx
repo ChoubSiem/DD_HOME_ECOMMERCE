@@ -75,8 +75,8 @@ const end_date = appliedFilters.dateRange?.[1]
 
       const filters = {
         warehouse_id: userData.warehouse_id,
-        start_date: appliedFilters.dateRange?.[0]?.format('YYYY-MM-DD HH:mm:ss'),
-        end_date: appliedFilters.dateRange?.[1]?.format('YYYY-MM-DD HH:mm:ss'),
+        start_date: start_date,
+        end_date: end_date,
         category_id: appliedFilters.category_id !== 'all' ? appliedFilters.category_id : undefined,
         saleType: appliedFilters.saleType !== 'all' ? appliedFilters.saleType : undefined,
         limit: appliedFilters.limit !== 'all' ? appliedFilters.limit : undefined,
@@ -101,9 +101,7 @@ const end_date = appliedFilters.dateRange?.[1]
     } finally {
       setIsLoading(false);
     }
-  };
-      console.log(cleanedFilters);
-  
+  };  
 
   const fetchCategories = async () => {
     let result = await handleCategories(token);
