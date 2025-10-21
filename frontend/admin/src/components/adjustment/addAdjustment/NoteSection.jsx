@@ -11,7 +11,7 @@ const NoteSection = ({ note = "", setNote }) => {  // Added default value
   };
 
   return (
-    <div className="note-section" style={{ marginTop: "20px" }}>
+    <div className="note-section" style={{ marginTop: "0px" }}>
       <h3 style={{ marginBottom: "12px" }}>Note</h3>
       <TextArea
         value={note || ""}  // Double safety

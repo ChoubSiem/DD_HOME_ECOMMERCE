@@ -13,7 +13,8 @@ const ProductSearchBar = ({
         className="search-product"
         options={products
           .filter((product) =>
-            product.name.toLowerCase().includes(searchTerm.toLowerCase())
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.code.toLowerCase().includes(searchTerm.toLowerCase())
           )
           .map((product) => ({
             value: product.name,
