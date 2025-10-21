@@ -62,15 +62,21 @@ const SalesReports = () => {
   const userData = useMemo(() => JSON.parse(Cookies.get('user') || '{}'), []);
   const token = localStorage.getItem('token');
   const [categories, setCategories] = useState([]);
+  const start_date = appliedFilters.dateRange?.[0]
+  ? appliedFilters.dateRange[0].format('YYYY-MM-DD HH:mm:ss')
+  : dayjs().format('YYYY-MM-DD HH:mm:ss');
 
+const end_date = appliedFilters.dateRange?.[1]
+  ? appliedFilters.dateRange[1].format('YYYY-MM-DD HH:mm:ss')
+  : dayjs().format('YYYY-MM-DD HH:mm:ss'); 
   const fetchFastSlowReport = async () => {
     try {
       setIsLoading(true);
 
       const filters = {
         warehouse_id: userData.warehouse_id,
-        start_date: appliedFilters.dateRange?.[0]?.format('YYYY-MM-DD HH:mm:ss'),
-        end_date: appliedFilters.dateRange?.[1]?.format('YYYY-MM-DD HH:mm:ss'),
+        start_date: start_date,
+        end_date: end_date,
         category_id: appliedFilters.category_id !== 'all' ? appliedFilters.category_id : undefined,
         saleType: appliedFilters.saleType !== 'all' ? appliedFilters.saleType : undefined,
         limit: appliedFilters.limit !== 'all' ? appliedFilters.limit : undefined,
@@ -80,6 +86,7 @@ const SalesReports = () => {
       const cleanedFilters = Object.fromEntries(
         Object.entries(filters).filter(([_, value]) => value !== undefined)
       );
+      
 
       const response = await getFastandSlowMoving(cleanedFilters, token);
 
@@ -94,7 +101,7 @@ const SalesReports = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   const fetchCategories = async () => {
     let result = await handleCategories(token);
@@ -363,7 +370,7 @@ const SalesReports = () => {
           <Text type="danger">Error: {error.message || 'Failed to load sales data'}</Text>
           <Button
             type="primary"
-            onClick={fetchSalesReportData}
+            // onClick={fetchSalesReportData}
             style={{ marginLeft: 16 }}
           >
             Retry
