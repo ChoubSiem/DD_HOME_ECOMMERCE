@@ -8,7 +8,7 @@ export default function BarcodeScanner({ onScan }) {
       "reader",
       {
         fps: 10, // scan 10 frames per second
-        qrbox: 250 // scanning box size
+        qrbox: 500 // scanning box size
       },
       false
     );

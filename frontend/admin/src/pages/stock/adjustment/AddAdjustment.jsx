@@ -259,7 +259,7 @@ const AddAdjustment = () => {
 
       <div style={{ margin: "20px 0" }}>
         <h3>Scan Product Barcode</h3>
-        <BarcodeScanner onScan={handleScan} />
+        <BarcodeScanner onScan={handleScan} paused={false} />
       </div>
 
       <ProductsTable
