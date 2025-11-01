@@ -51,7 +51,7 @@ const AddAdjustment = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const result = await handleProducts(token);
+      const result = await handleProducts(token , userData.warehouse_id);
       if (result) {
         setProducts(result.products);
       } else {
@@ -75,7 +75,8 @@ const AddAdjustment = () => {
   
   const handleProductSelect = (value) => {
     const selectedProduct = products.find((product) => product.name === value);
-
+    console.log(selectedProduct);
+    
     if (!selectedProduct) {
       message.error("Product not found.");
       return;

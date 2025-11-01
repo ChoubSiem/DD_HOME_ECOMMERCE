@@ -214,6 +214,19 @@ const getRoleTag = (role) => (
             </motion.span>
         );
     };
+    const jobBodyTemplate = (rowData) => {
+        return (
+            <motion.span
+                className="khmer-text customer-address d-flex justify-content-center align-items-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                style={{ height: '40px' }}
+            >
+                {rowData.job}
+            </motion.span>
+        );
+    };
 
     const header = (
       <div className="table-header-custom">
@@ -314,6 +327,15 @@ const getRoleTag = (role) => (
                     header="Address" 
                     sortable 
                     body={addressBodyTemplate}
+                    className="address-column text-center"
+                    headerClassName="text-center"
+                    bodyStyle={{ textAlign: 'center' }}
+                />
+                <Column 
+                    field="job" 
+                    header="Job" 
+                    sortable 
+                    body={jobBodyTemplate}
                     className="address-column text-center"
                     headerClassName="text-center"
                     bodyStyle={{ textAlign: 'center' }}
