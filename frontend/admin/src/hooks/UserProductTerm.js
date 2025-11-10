@@ -205,6 +205,8 @@ export const useProductTerm = () => {
 
     const handleProducts = async (token , warehouseId) => {
       try {
+        console.log(warehouseId);
+        
         const productData = await fetchProduct(token , warehouseId);                        
         return {
           success: true,
