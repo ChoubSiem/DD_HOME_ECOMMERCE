@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Card, Input, Button, Select, Space, DatePicker, Row, Col, Statistic, Progress, Spin, message, Typography,} from 'antd';
+import { Card, Input, Button, Select, Space, DatePicker, Row, Col, Statistic, Progress, Spin, message, Typography, InputNumber,} from 'antd';
 import { SearchOutlined, FilterOutlined, FileExcelOutlined, FilePdfOutlined, FileImageOutlined, ShoppingCartOutlined, ClearOutlined,
 } from '@ant-design/icons';
 import ExcelJS from 'exceljs';
@@ -134,7 +134,7 @@ const end_date = appliedFilters.dateRange?.[1]
         field: 'product_code',
         header: 'Code',
         sortable: true,
-        style: { minWidth: '100px' },
+        style: { minWidth: '100px', textAlign: 'center' },
         body: (rowData) => (
           <Text strong style={{ fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif" }}>
             {rowData.product_code || 'N/A'}
@@ -145,7 +145,7 @@ const end_date = appliedFilters.dateRange?.[1]
         field: 'product_name',
         header: 'Product',
         sortable: true,
-        style: { minWidth: '200px' },
+        style: { minWidth: '200px', textAlign: 'center' },
         body: (rowData) => (
           <Text strong style={{ fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif" }}>
             {rowData.product_name || 'N/A'}
@@ -159,7 +159,7 @@ const end_date = appliedFilters.dateRange?.[1]
         field: 'product_category',
         header: 'Category',
         sortable: true,
-        style: { minWidth: '150px' },
+        style: { minWidth: '150px', textAlign: 'center' },
         body: (rowData) => <Text>{rowData.product_category || 'N/A'}</Text>,
       });
     }
@@ -183,14 +183,14 @@ const end_date = appliedFilters.dateRange?.[1]
         field: 'TotalQty',
         header: 'Total Sale Qty',
         sortable: true,
-        style: { minWidth: '80px', textAlign: 'right' },
+        style: { minWidth: '80px', textAlign: 'center' },
         body: (rowData) => <Text>{Number(rowData.TotalQty || 0).toLocaleString()}</Text>,
       },
       {
         field: 'TotalSaleValue',
         header: 'Total Sale Value',
         sortable: true,
-        style: { minWidth: '80px', textAlign: 'right' },
+        style: { minWidth: '80px', textAlign: 'center' },
         body: (rowData) => <Text>${Number(rowData.TotalSaleValue || 0).toLocaleString()}</Text>,
       },
       // {
@@ -200,13 +200,13 @@ const end_date = appliedFilters.dateRange?.[1]
       //   style: { minWidth: '40px', textAlign: 'right' },
       //   body: (rowData) => <Text>{Number(rowData.TotalQty || 0).toLocaleString()}</Text>,
       // },
-      {
-        field: 'movement_status',
-        header: 'Movement Status',
-        sortable: true,
-        style: { minWidth: '40px', textAlign: 'right' },
-        body: (rowData) => <Text>{(rowData.Speed)}</Text>,
-      }
+      // {
+      //   field: 'movement_status',
+      //   header: 'Movement Status',
+      //   sortable: true,
+      //   style: { minWidth: '40px', textAlign: 'right' },
+      //   body: (rowData) => <Text>{(rowData.Speed)}</Text>,
+      // }
     );
 
     return baseColumns;
@@ -465,20 +465,26 @@ const end_date = appliedFilters.dateRange?.[1]
               </Select>
             </Col>
 
-            <Col xs={24} sm={12} md={6}>
-              <Select
+            <Col xs={12} sm={6} md={3}>
+              <InputNumber
                 style={{ width: '100%' }}
                 placeholder="Filter by Movement Status"
                 value={pendingFilters.saleType}
-                onChange={(value) => setPendingFilters(prev => ({ ...prev, saleType: value }))}
-                allowClear
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, saleType: value ?? undefined }))}
+                min={0}
                 size="large"
-              >
-                <Option value="all">All Speed</Option>
-                <Option value="Fast">Fast</Option>
-                <Option value="Normal">Normal</Option>
-                <Option value="Slow">Slow</Option>
-              </Select>
+              />
+            </Col>
+
+            <Col xs={12} sm={6} md={3}>
+              <InputNumber
+                style={{ width: '100%' }}
+                placeholder="Filter by Movement Status"
+                value={pendingFilters.saleType}
+                onChange={(value) => setPendingFilters(prev => ({ ...prev, saleType: value ?? undefined }))}
+                min={0}
+                size="large"
+              />
             </Col>
 
             <Col xs={24} sm={12} md={6}>
