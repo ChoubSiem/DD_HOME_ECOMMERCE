@@ -31,12 +31,13 @@ const ProductsTable = ({
     {
       title: "QOH",
       key: "qoh",
+      width: 50,
       render: (_, record) => record.qoh,
     },
     {
         title: "Type",
         key: "adjustment",
-        width: 200,
+        width: 150,
         render: (_, record) => (
           <Select
             value={record.adjustmentType}
@@ -51,7 +52,7 @@ const ProductsTable = ({
       {
         title: "Quantity",
         key: "quantity",
-        width: 200,
+        width: 95,
         render: (_, record) => (
           <InputNumber
             min={0}
@@ -64,7 +65,7 @@ const ProductsTable = ({
     {
       title: "Unit",
       key: "unit",
-      width: 150,
+      //width: 150,
       render: (_, record) => (
         <Select
           value={record.unit}
@@ -82,7 +83,7 @@ const ProductsTable = ({
     {
         title: "New QOH",
         key: "newQoh",
-        width: 150,
+        width: 100,
         render: (_, record) => {
           const calculatedQoh = record.adjustmentType === "add"
             ? (Number(record.qoh) || 0) + (Number(record.quantity) || 0)
@@ -106,7 +107,7 @@ const ProductsTable = ({
     {
       title: "Remove",
       key: "remove",
-      width: 80,
+      width: 50,
       render: (_, record) => (
         <Popconfirm
           title="Are you sure to delete this product?"

@@ -15,7 +15,7 @@ const AdjustmentDetailsCard = ({
   };
 
   return (
-    <Card title="Adjustment Details" style={{ marginBottom: 20, borderRadius: 0 }}>
+    <Card title="Adjustment Details" style={{ marginBottom: 10, borderRadius: 0 }}>
       <Form layout="vertical">
         <Row gutter={16} align="bottom">
           <Col xs={24} sm={8} md={8} lg={8}>

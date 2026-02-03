@@ -213,23 +213,57 @@ const handleExportExcel = useCallback(async () => {
     const worksheet = workbook.addWorksheet('Purchases Report');
 
     // Header
-    worksheet.addRow(['DD Home']).font = { size: 16, bold: true };
-    worksheet.addRow(['Address: Nº25, St.5, Dangkor, Phnom Penh, Cambodia']);
-    worksheet.addRow(['Phone: 081 90 50 50']);
+    worksheet.mergeCells('A1:L1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = 'Purchase Report';
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: 'center' };
+
+    worksheet.mergeCells('A2:L2');
+    const nameCell = worksheet.getCell('A2');
+    nameCell.value = 'DD Home';
+    nameCell.font = { size: 14, bold: true };
+    nameCell.alignment = { horizontal: 'center' };
+
+    worksheet.mergeCells('A3:G3');
+    const addrCell = worksheet.getCell('A3');
+    addrCell.value = 'Address: Nº114, St.20MC, Chamroeun Phal, Phnom Penh, Cambodia';
+    addrCell.alignment = { horizontal: 'left' };
+
+    worksheet.mergeCells('H3:L3');
+    const phoneCell = worksheet.getCell('H3');
+    phoneCell.value = 'Phone: 081 90 50 50';
+    phoneCell.alignment = { horizontal: 'right' };
+
     worksheet.addRow([`View By Outlet: ${filters.warehouse !== 'all' ? 
-      warehouses.find(w => w.id === filters.warehouse)?.name || 'N/A' : 
+      warehouses.find(w => w.id === filters.warehouse)?.name || 'Company' : 
       'All Warehouses'}`]);
-    worksheet.addRow(['View As: Detail']);
-    worksheet.addRow([
-      `From ${filters.dateRange?.[0] ? filters.dateRange[0].format('YYYY-MM-DD') : 'N/A'}`,
-      `To ${filters.dateRange?.[1] ? filters.dateRange[1].format('YYYY-MM-DD') : 'N/A'}`,
-    ]);
-    worksheet.addRow([]);
+    worksheet.mergeCells('A5:D5');
+
+    worksheet.getCell('A5').value = 'View As: Detail';
+
+    worksheet.mergeCells('E5:G5');
+    worksheet.getCell('E5').value =
+      `From ${filters.dateRange?.[0] ? filters.dateRange[0].format('YYYY-MM-DD') : 'N/A'}`;
+
+    worksheet.mergeCells('H5 :L5');
+    worksheet.getCell('H5').value =
+      `To ${filters.dateRange?.[1] ? filters.dateRange[1].format('YYYY-MM-DD') : 'N/A'}`;
 
     // Table headers
     const headers = [
-      'No.', 'Code', 'Barcode', 'Description', 'QTY', 'UOM', 
-      'Unit Cost', 'Total Cost', 'Received By', 'Supplier', 'Warehouse', 'Date'
+      'No.',
+      'Date',
+      'Warehouse',
+      'Supplier',
+      'Code',
+      'Barcode',
+      'Description',
+      'UOM',
+      'QTY',
+      'Unit Cost',
+      'Total Cost',
+      'Received By'
     ];
 
     const headerRow = worksheet.addRow(headers);
@@ -244,7 +278,11 @@ const handleExportExcel = useCallback(async () => {
     let totalQty = 0;
     let totalCost = 0;
 
+    console.log('Warehouse filter value:', filters.warehouse);
+    console.log('Sample purchase:', filteredPurchases[0]);
+
     filteredPurchases.forEach((purchase, index) => {
+
       const rowQty = purchase.qty || 0;
       const rowCost = purchase.total_cost || 0;
       
@@ -253,62 +291,85 @@ const handleExportExcel = useCallback(async () => {
 
       const row = worksheet.addRow([
         index + 1,
+        purchase.date ? dayjs(purchase.date).format('YYYY-MM-DD') : 'N/A',
+        purchase.warehouse_name || 'N/A',
+        purchase.supplier || 'N/A',
         purchase.product_code || 'N/A',
         purchase.barcode || 'N/A',
         purchase.product_name || 'N/A',
-        rowQty,
         purchase.uom || 'N/A',
+        rowQty,
         purchase.cost || 0,
         rowCost,
         purchase.receivedBy || 'N/A',
-        purchase.supplier || 'N/A',
-        purchase.warehouse_name || 'N/A',
-        purchase.date ? dayjs(purchase.date).format('YYYY-MM-DD') : 'N/A'
       ]);
 
       // Format numeric cells
       row.eachCell((cell, colNumber) => {
-        if ([5, 7, 8].includes(colNumber)) { // QTY, Unit Cost, Total Cost
-          cell.numFmt = colNumber === 5 ? '#,##0' : '#,##0.00'; // QTY without decimals
-          cell.alignment = { horizontal: 'right' };
-        } else if (colNumber === 1) { // Row number
+        // QTY
+        if (colNumber === 9) {
+          cell.numFmt = '#,##0';
           cell.alignment = { horizontal: 'center' };
-        } else {
-          cell.alignment = { horizontal: 'left' };
         }
-        if (colNumber === 4) { // Description
-          cell.alignment = { ...cell.alignment, wrapText: true };
+
+        // Unit Cost & Total Cost
+        else if (colNumber === 10 || colNumber === 11) {
+          cell.numFmt = '#,##0.00';
+          cell.alignment = { horizontal: 'center' };
+        }
+
+        // Row number & Date
+        else if (colNumber === 1 || colNumber === 2) {
+          cell.alignment = { horizontal: 'center' };
+        }
+
+        else if (colNumber === 5 || colNumber === 6) {
+          cell.alignment = { horizontal: 'center'};
+        }
+
+        // Description
+        else if (colNumber === 7) {
+          cell.alignment = { horizontal: 'left'};
+        }
+
+        else if (colNumber === 8) {
+          cell.alignment = { horizontal: 'center'};
+        }
+
+        // Everything else
+        else {
+          cell.alignment = { horizontal: 'left' };
         }
       });
     });
 
     // Add total row
     const totalRow = worksheet.addRow([
-      '', '', '', 'TOTAL:', 
-      totalQty, 
-      '', 
+      '', '', '', '', '', '', 'TOTAL:',
+      '',
+      totalQty,
       '', 
       totalCost,
-      '', '', '', ''
+      ''
     ]);
 
     // Format total row
     totalRow.eachCell((cell, colNumber) => {
-      if (colNumber === 4) { // "TOTAL" label
+      if (colNumber === 7) { // "TOTAL" label
         cell.font = { bold: true };
       }
-      if ([5, 8].includes(colNumber)) { // QTY and Total Cost columns
+      if ([9, 11].includes(colNumber)) { // QTY and Total Cost columns
         cell.font = { bold: true };
-        cell.numFmt = colNumber === 5 ? '#,##0' : '#,##0.00'; // QTY without decimals
-        cell.alignment = { horizontal: 'right' };
+        cell.numFmt = colNumber === 9 ? '#,##0' : '#,##0.00'; // QTY without decimals
+        cell.alignment = { horizontal: 'center' };
       }
     });
 
     // Set column widths
     worksheet.columns = [
-      { width: 5 }, { width: 12 }, { width: 15 }, { width: 30 }, 
-      { width: 8 }, { width: 8 }, { width: 12 }, { width: 12 },
-      { width: 20 }, { width: 20 }, { width: 15 }, { width: 12 }
+      { width: 5 }, { width: 12 }, { width: 20 }, { width: 18 }, 
+      { width: 9 }, { width: 9 }, { width: 48 }, { width: 10 },
+      { width: 10 }, { width: 10 }, { width: 12 }, { width: 18 }
     ];
 
     // Generate and download

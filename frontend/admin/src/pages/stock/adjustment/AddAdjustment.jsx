@@ -28,6 +28,7 @@ const AddAdjustment = () => {
   const [adjuster, setAdjuster] = useState([]);
   const token = localStorage.getItem("token");
   const userData = JSON.parse(Cookies.get("user"));
+  const [scannerKey, setScannerKey] = useState(0);
   
   const {handleCreateAdjustment} = useStock();
   useEffect(() => {
@@ -60,6 +61,8 @@ const AddAdjustment = () => {
   };
 
   const handleSearchChange = (value) => setSearchTerm(value);
+  console.log(searchTerm);
+  
   
   const handleProductSelect = (value) => {
     const selectedProduct = products.find((product) => product.name === value);
@@ -157,45 +160,8 @@ const AddAdjustment = () => {
   };
 
   const handleScan = (code) => {
-    // Find the product in your loaded product list
-    const scannedProduct = products.find((product) => product.code === code);
-
-    if (!scannedProduct) {
-      message.error(`No product found for code: ${code}`);
-      return;
-    }
-
-    // Check if product is already in the list
-    const isAlreadyAdded = selectedProducts.some(
-      (p) => p.productId === scannedProduct.id
-    );
-
-    if (isAlreadyAdded) {
-      // If it already exists, just increase quantity by 1
-      setSelectedProducts((prev) =>
-        prev.map((p) =>
-          p.productId === scannedProduct.id
-            ? { ...p, quantity: (p.quantity || 0) + 1 }
-            : p
-        )
-      );
-      message.info(`${scannedProduct.name} quantity increased`);
-      return;
-    }
-
-    // If it's new, add it to the list
-    const newProduct = {
-      key: Date.now(),
-      productId: scannedProduct.id,
-      productName: scannedProduct.name,
-      qoh: scannedProduct.stock,
-      quantity: 1,
-      adjustmentType: "subtract",
-      unit: scannedProduct.unit_code,
-    };
-
-    setSelectedProducts((prev) => [...prev, newProduct]);
-    message.success(`${scannedProduct.name} added by scanning`);
+    // 👇 Set the scanned code as the search term
+    setSearchTerm(code);
   };
 
   const handleSubmit = async (values) => {
@@ -237,7 +203,7 @@ const AddAdjustment = () => {
   return (
     <div className="add-purchase-container">
       
-      <Card style={{border:'none',borderBottom:'1px solid #52c41a',borderRadius:0,marginBottom:'50px'}}>
+      <Card style={{border:'none',borderBottom:'1px solid #52c41a',borderRadius:0,marginBottom:'10px'}}>
         <div className="header">
           <h2 style={{ color: "#52c41a" }}>Add Adjustment</h2>
           <p>Select products and manage their quantities</p>
@@ -257,27 +223,27 @@ const AddAdjustment = () => {
         handleProductSelect={handleProductSelect}
       />
 
-      <div style={{ margin: "20px 0" }}>
+      <div>
         <h3>Scan Product Barcode</h3>
-        <BarcodeScanner onScan={handleScan} />
+        <BarcodeScanner key={scannerKey} onScan={handleScan} />
       </div>
 
-      <ProductsTable
-        selectedProducts={selectedProducts}
-        units={units}
-        handleQuantityChange={handleQuantityChange}
-        handleAdjustmentTypeChange={handleAdjustmentTypeChange}
-        handleUnitChange={handleUnitChange}
-        handleRemoveProduct={handleRemoveProduct}
-        handleNewQohChange={(key, value, qoh, adjustmentType) => 
-          handleNewQohChange(key, value, qoh, adjustmentType)
-        }
+        <ProductsTable
+          selectedProducts={selectedProducts}
+          units={units}
+          handleQuantityChange={handleQuantityChange}
+          handleAdjustmentTypeChange={handleAdjustmentTypeChange}
+          handleUnitChange={handleUnitChange}
+          handleRemoveProduct={handleRemoveProduct}
+          handleNewQohChange={(key, value, qoh, adjustmentType) => 
+            handleNewQohChange(key, value, qoh, adjustmentType)
+          }
 
-      />
+        />
 
       <NoteSection note={note} setNote={setNote} />
 
-      <ActionButtons 
+      <ActionButtons className="action-buttons"
         setSelectedProducts={setSelectedProducts}
         handleSubmit={handleSubmit}
         loading={loading}
