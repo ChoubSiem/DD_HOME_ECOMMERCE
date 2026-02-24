@@ -349,6 +349,7 @@ const priceTypes = [
                 icon={<DeleteOutlined />} 
                 onClick={handleDelete}
                 style={{ width: '30%' }}
+                disabled
               >
                 Delete
               </Button>
