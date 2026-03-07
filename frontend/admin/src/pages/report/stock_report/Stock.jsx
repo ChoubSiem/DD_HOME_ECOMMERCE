@@ -211,8 +211,8 @@ const handleExportExcel = useCallback(async () => {
       'Product Name',
       'Category',
       'UOM',
-      'Cost ($)',
       'Stock',
+      'Cost ($)',
       'Total Cost ($)',
     ];
 
@@ -243,17 +243,17 @@ const handleExportExcel = useCallback(async () => {
         product.name || 'N/A',
         product.category || 'N/A',
         product.unit || 'N/A',
-        (product.cost || 0).toFixed(2),
         product.stock || 0,
+        (product.cost || 0).toFixed(2),
         totalCost.toFixed(2),
       ]);
 
       // Format numeric cells
       row.eachCell((cell, colNumber) => {
-        if (colNumber === 6 || colNumber === 8) { // Cost and Total Cost columns (1-based index)
+        if (colNumber === 7 || colNumber === 8) { // Cost and Total Cost columns (1-based index)
           cell.numFmt = '$#,##0.00';
           cell.alignment = { horizontal: 'right' };
-        } else if (colNumber === 7) { // Stock column (1-based index)
+        } else if (colNumber === 6) { // Stock column (1-based index)
           cell.numFmt = '#,##0';
           cell.alignment = { horizontal: 'right' };
         } else if (colNumber === 1) { // Row number column
@@ -300,8 +300,8 @@ const handleExportExcel = useCallback(async () => {
       { key: 'name', width: 40 },       // Product 
       { key: 'category', width: 20 },   // Category
       { key: 'uom', width: 8 },         // UOM
-      { key: 'cost', width: 12 },       // Cost
       { key: 'stock', width: 12 },      // Current Stock
+      { key: 'cost', width: 12 },       // Cost
       { key: 'total_cost', width: 15 }, // Total Cost
     ];
 
@@ -473,23 +473,7 @@ const handleExportExcel = useCallback(async () => {
         ),
         style: { width: '8%' },
       },
-      // Cost column
-      {
-        field: 'cost',
-        header: 'Cost ($)',
-        sortable: true,
-        body: (rowData) => (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '16px' }}
-          >
-            <Text>${(rowData.cost || 0).toFixed(2)}</Text>
-          </motion.div>
-        ),
-        style: { width: '10%' },
-      },
+
       {
         field: 'stock',
         header: 'Stock',
@@ -510,6 +494,23 @@ const handleExportExcel = useCallback(async () => {
               
             </motion.div>
         )},
+        style: { width: '10%' },
+      },
+            // Cost column
+      {
+        field: 'cost',
+        header: 'Cost ($)',
+        sortable: true,
+        body: (rowData) => (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '16px' }}
+          >
+            <Text>${(rowData.cost || 0).toFixed(2)}</Text>
+          </motion.div>
+        ),
         style: { width: '10%' },
       },
       // Total Cost column
