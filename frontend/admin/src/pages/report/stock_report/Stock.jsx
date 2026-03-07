@@ -250,10 +250,10 @@ const handleExportExcel = useCallback(async () => {
 
       // Format numeric cells
       row.eachCell((cell, colNumber) => {
-        if (colNumber === 7 || colNumber === 9) { // Cost and Total Cost columns (1-based index)
+        if (colNumber === 6 || colNumber === 8) { // Cost and Total Cost columns (1-based index)
           cell.numFmt = '$#,##0.00';
           cell.alignment = { horizontal: 'right' };
-        } else if (colNumber === 8) { // Stock column (1-based index)
+        } else if (colNumber === 7) { // Stock column (1-based index)
           cell.numFmt = '#,##0';
           cell.alignment = { horizontal: 'right' };
         } else if (colNumber === 1) { // Row number column
@@ -275,7 +275,7 @@ const handleExportExcel = useCallback(async () => {
 
     // Add totals row
     const totalRow = worksheet.addRow([
-      '', '', '', '', '', '', '', totalStock, totalCostSum.toFixed(2)
+      '', '', '', '', '', '', totalStock, totalCostSum.toFixed(2)
     ]);
 
     // Style the totals row
