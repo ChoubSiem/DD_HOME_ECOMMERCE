@@ -14,6 +14,7 @@ import {
   Statistic,
   Tag,
   Alert,
+  
 } from 'antd';
 import {
   SearchOutlined,
@@ -26,6 +27,8 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
 } from '@ant-design/icons';
+import { message } from 'antd';
+
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
@@ -201,15 +204,16 @@ const handleExportExcel = useCallback(async () => {
     worksheet.addRow([`Generated: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`]);
     worksheet.addRow([]); // Spacer
 
-    // Column Headers
+    // Column Headers - Added Cost and Total Cost columns
     const headers = [
       'No.',
       'Product Code',
-      'Barcode',
       'Product Name',
       'Category',
       'UOM',
+      'Cost ($)',
       'Stock',
+      'Total Cost ($)',
     ];
 
     const headerRow = worksheet.addRow(headers);
@@ -231,19 +235,25 @@ const handleExportExcel = useCallback(async () => {
 
     // Data Rows
     products.forEach((product, index) => {
+      const totalCost = (product.cost || 0) * (product.stock || 0);
+      
       const row = worksheet.addRow([
         index + 1,
         product.code || 'N/A',
-        product.barcode || 'N/A',
         product.name || 'N/A',
         product.category || 'N/A',
         product.unit || 'N/A',
+        (product.cost || 0).toFixed(2),
         product.stock || 0,
+        totalCost.toFixed(2),
       ]);
 
       // Format numeric cells
       row.eachCell((cell, colNumber) => {
-        if (colNumber === 7) { // Stock column (1-based index)
+        if (colNumber === 7 || colNumber === 9) { // Cost and Total Cost columns (1-based index)
+          cell.numFmt = '$#,##0.00';
+          cell.alignment = { horizontal: 'right' };
+        } else if (colNumber === 8) { // Stock column (1-based index)
           cell.numFmt = '#,##0';
           cell.alignment = { horizontal: 'right' };
         } else if (colNumber === 1) { // Row number column
@@ -261,39 +271,38 @@ const handleExportExcel = useCallback(async () => {
 
     // Calculate totals
     const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
+    const totalCostSum = products.reduce((sum, p) => sum + ((p.cost || 0) * (p.stock || 0)), 0);
 
     // Add totals row
     const totalRow = worksheet.addRow([
-      '', '', '', '', '', '', totalStock
+      '', '', '', '', '', '', '', totalStock, totalCostSum.toFixed(2)
     ]);
 
-    // Style the totals row cells (UOM and Stock columns only)
-    const uomCell = totalRow.getCell(6); // UOM column (1-based index)
-    const stockCell = totalRow.getCell(7); // Stock column
-
-    // Apply top border to both cells
+    // Style the totals row
     const topBorderStyle = { style: 'medium', color: { argb: 'FF000000' } };
     
-    uomCell.border = {
-      top: topBorderStyle
-    };
-    
-    stockCell.border = {
-      top: topBorderStyle
-    };
-    stockCell.font = { bold: true };
-    stockCell.numFmt = '#,##0';
-    stockCell.alignment = { horizontal: 'right' };
+    [8, 9].forEach(colNum => {
+      const cell = totalRow.getCell(colNum);
+      cell.border = { top: topBorderStyle };
+      cell.font = { bold: true };
+      if (colNum === 9) {
+        cell.numFmt = '$#,##0.00';
+      } else {
+        cell.numFmt = '#,##0';
+      }
+      cell.alignment = { horizontal: 'right' };
+    });
 
     // Set column widths
     worksheet.columns = [
       { key: 'no', width: 5 },          // No.
       { key: 'code', width: 12 },       // Product Code
-      { key: 'barcode', width: 15 },    // Barcode
-      { key: 'name', width: 40 },       // Product Name
+      { key: 'name', width: 40 },       // Product 
       { key: 'category', width: 20 },   // Category
       { key: 'uom', width: 8 },         // UOM
+      { key: 'cost', width: 12 },       // Cost
       { key: 'stock', width: 12 },      // Current Stock
+      { key: 'total_cost', width: 15 }, // Total Cost
     ];
 
     // Set row heights for data rows
@@ -307,20 +316,16 @@ const handleExportExcel = useCallback(async () => {
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), `stock-report-${dayjs().format('YYYY-MM-DD-HHmm')}.xlsx`);
     
-    toast.current.show({ 
-      severity: 'success', 
-      summary: 'Success', 
-      detail: 'Stock report exported successfully', 
-      life: 3000 
-    });
+    // toast.current.show({ 
+    //   severity: 'success', 
+    //   summary: 'Success', 
+    //   detail: 'Stock report exported successfully', 
+    //   life: 3000 
+    // });
+    message.success('Stock report exported successfully', 3);
   } catch (error) {
     console.error('Export error:', error);
-    toast.current.show({ 
-      severity: 'error', 
-      summary: 'Error', 
-      detail: 'Failed to export stock report', 
-      life: 3000 
-    });
+    message.error('Failed to export stock report', 3);
   } finally {
     setExportLoading(false);
   }
@@ -349,6 +354,7 @@ const handleExportExcel = useCallback(async () => {
         <p>Warehouse: ${userData.warehouse_name || 'N/A'} (ID: ${userData.warehouse_id || 'N/A'})</p>
         <p>Generated: ${dayjs().format('YYYY-MM-DD HH:mm:ss')}</p>
         <p>Filters: Search="${filters.search_term || 'None'}", Status=${filters.status}, Category=${filters.category}, Stock Level=${filters.stock_level}, Date Range=${filters.date_range ? filters.date_range.map(d => d.format('YYYY-MM-DD')).join(' to ') : 'None'}</p>
+        <p>Total Cost: $${meta?.total_cost?.toFixed(2) || '0.00'}</p>
       `;
       tableRef.current.prepend(header);
 
@@ -367,7 +373,7 @@ const handleExportExcel = useCallback(async () => {
       }
       setExportLoading(false);
     }
-  }, [products, userData, filters]);
+  }, [products, userData, filters, meta]);
 
   const handleExportImage = useCallback(async () => {
     setExportLoading(true);
@@ -401,7 +407,7 @@ const handleExportExcel = useCallback(async () => {
     }
   }, [products]);
 
-  // Column definitions with animations
+  // Column definitions with animations - Added Cost and Total Cost columns
   const columns = useMemo(
     () => [
         {
@@ -418,13 +424,13 @@ const handleExportExcel = useCallback(async () => {
             <Text>{rowData.code}</Text>
           </motion.div>
         ),
-        style: { width: '20%' },
+        style: { width: '12%' },
       },
       {
       field: 'product_name',
       header: 'Name',
       sortable: true,
-      style: { width: '20%', minWidth: '150px' },
+      style: { width: '18%', minWidth: '150px' },
       body: (rowData) => (
         <Text strong style={{ 
           fontFamily: "'Noto Sans Khmer', 'Khmer OS', Arial, sans-serif",
@@ -435,7 +441,6 @@ const handleExportExcel = useCallback(async () => {
         </Text>
       ),
     },
-    
       {
         field: 'category',
         header: 'Category',
@@ -450,10 +455,10 @@ const handleExportExcel = useCallback(async () => {
             <Text>{rowData.category}</Text>
           </motion.div>
         ),
-        style: { width: '15%' },
+        style: { width: '10%' },
       },
       {
-        field: 'category',
+        field: 'unit',
         header: 'Unit',
         sortable: true,
         body: (rowData) => (
@@ -466,14 +471,31 @@ const handleExportExcel = useCallback(async () => {
             <Text>{rowData.unit}</Text>
           </motion.div>
         ),
-        style: { width: '15%' },
+        style: { width: '8%' },
+      },
+      // Cost column
+      {
+        field: 'cost',
+        header: 'Cost ($)',
+        sortable: true,
+        body: (rowData) => (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '16px' }}
+          >
+            <Text>${(rowData.cost || 0).toFixed(2)}</Text>
+          </motion.div>
+        ),
+        style: { width: '10%' },
       },
       {
         field: 'stock',
         header: 'Stock',
         sortable: true,
         body: (rowData) => {
-          const status = rowData.stock === 0 ? 'out' : rowData.stock <= (rowData.alert_qty || 0) ? 'low' : 'normal';
+          const status = rowData.stock === 0 ? 'out' : rowData.stock <= (rowData.alertQty || 0) ? 'low' : 'normal';
           const color = status === 'out' ? '#f5222d' : status === 'low' ? '#faad14' : '#52c41a';
           return (
             <motion.div
@@ -488,7 +510,27 @@ const handleExportExcel = useCallback(async () => {
               
             </motion.div>
         )},
-        style: { width: '20%' },
+        style: { width: '10%' },
+      },
+      // Total Cost column
+      {
+        field: 'total_cost',
+        header: 'Total Cost ($)',
+        sortable: true,
+        body: (rowData) => {
+          const totalCost = (rowData.cost || 0) * (rowData.stock || 0);
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: '16px' }}
+            >
+              <Text>${totalCost.toFixed(2)}</Text>
+            </motion.div>
+          );
+        },
+        style: { width: '12%' },
       },
       {
         field: 'value',
@@ -505,7 +547,7 @@ const handleExportExcel = useCallback(async () => {
               </div>
           </motion.div>
         ),
-        style: { width: '20%' },
+        style: { width: '10%' },
       },
     ],
     []
@@ -518,29 +560,30 @@ const handleExportExcel = useCallback(async () => {
         <div className="table-footer d-flex justify-content-between">
           <div>Total Products: {meta.total_products || 0}</div>
           <div>Total Value: ${(meta.total_value || 0).toFixed(2)}</div>
+          <div>Total Cost: ${(meta.total_cost || 0).toFixed(2)}</div>
           <div>Total Records: {meta.total_records || 0}</div>
           <div className="d-flex gap-2">
             <Button
               icon={<FileExcelOutlined />}
               onClick={handleExportExcel}
-              loading={exportLoading.excel}
-              disabled={isLoading || exportLoading.pdf || exportLoading.image}
+              loading={exportLoading}
+              disabled={isLoading}
             >
               Excel
             </Button>
             <Button
               icon={<FilePdfOutlined />}
               onClick={handleExportPDF}
-              loading={exportLoading.pdf}
-              disabled={isLoading || exportLoading.excel || exportLoading.image}
+              loading={exportLoading}
+              disabled={isLoading}
             >
               PDF
             </Button>
             <Button
               icon={<FileImageOutlined />}
               onClick={handleExportImage}
-              loading={exportLoading.image}
-              disabled={isLoading || exportLoading.excel || exportLoading.pdf}
+              loading={exportLoading}
+              disabled={isLoading}
             >
               Image
             </Button>
@@ -549,6 +592,52 @@ const handleExportExcel = useCallback(async () => {
       ) : null,
     [meta, isLoading, exportLoading, handleExportExcel, handleExportPDF, handleExportImage]
   );
+
+  // Summary cards with cost metrics
+  const SummaryCards = useMemo(() => {
+    if (!meta) return null;
+    
+    return (
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Total Products"
+              value={meta.total_products || 0}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Total Stock Value"
+              value={meta.total_value || 0}
+              precision={2}
+              prefix="$"
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Total Cost"
+              value={meta.total_cost || 0}
+              precision={2}
+              prefix="$"
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Total Records"
+              value={meta.total_records || 0}
+            />
+          </Card>
+        </Col>
+      </Row>
+    );
+  }, [meta]);
 
   // Error UI
   if (error) {
@@ -606,6 +695,9 @@ const handleExportExcel = useCallback(async () => {
             </Col>
           </Row>
         </Card>
+
+        {/* Summary Cards */}
+        {SummaryCards}
 
         {/* Filter Section */}
         <Card className="filter-card">
@@ -668,11 +760,21 @@ const handleExportExcel = useCallback(async () => {
               <Option value="normal">Normal</Option>
               <Option value="low">Low Stock</Option>
               <Option value="out">Out of Stock</Option>
-              <Option value="debt">Stock Owed</Option> {/* or "Stock Debt" */}
+              <Option value="debt">Stock Owed</Option>
             </Select>
           </Tooltip>
         </Col>
-
+        <Col xs={24} sm={12} md={6}>
+          <Tooltip title="Filter by date range">
+            <RangePicker
+              style={{ width: '100%' }}
+              value={filters.date_range}
+              onChange={(dates) => handleFilterChange('date_range', dates)}
+              format="YYYY-MM-DD"
+              allowClear
+            />
+          </Tooltip>
+        </Col>
           </Row>
           <Row justify="start" gutter={[16, 16]} className="filter-buttons">
             <Col>
@@ -752,7 +854,7 @@ const handleExportExcel = useCallback(async () => {
               sortOrder={sortOrder}
               className="stock-data-table"
               rowClassName={(rowData) =>
-                `stock-row ${rowData.stock === 0 ? 'out-of-stock' : rowData.stock <= (rowData.alert_qty || 0) ? 'low-stock' : ''}`
+                `stock-row ${rowData.stock === 0 ? 'out-of-stock' : rowData.stock <= (rowData.alertQty || 0) ? 'low-stock' : ''}`
               }
               emptyMessage="No stock data found. Apply filters or refresh to load data."
               footer={CustomFooter}

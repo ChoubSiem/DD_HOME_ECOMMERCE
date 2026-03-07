@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, Button, message, Spin, Space, Typography, Row, Col, Input } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { Card, Button, message, Spin, Space, Typography, Row, Col, Input, Tooltip } from 'antd';
+import { PlusOutlined, SearchOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 import SupplierModal from '../../../components/supplier/EditSupplierModal';
 import CreateSupplier from '../../../components/supplier/create/SupplierCreate';
 import SupplierTable from '../../../components/supplier/SupplierTable';
@@ -21,18 +22,19 @@ const Supplier = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const { handleSuppliers,handleDeleteSupplier } = useUser();
+  const { handleSuppliers, handleDeleteSupplier } = useUser();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const userData = JSON.parse(Cookies.get("user"));
   const [permissions, setPermission] = useState([]);
   const { handleRolePermission } = usePolicy();
 
-
   const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+    supplier.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.contactPerson?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const fetchSuppliersData = async () => {
@@ -54,11 +56,10 @@ const Supplier = () => {
 
   const fetchPermisson = async () => {
     let result = await handleRolePermission(userData.role_id);
-      
     if (result.success) {
       setPermission(result.rolePermissions);
     }
-  }  
+  };
 
   useEffect(() => {
     fetchSuppliersData();
@@ -68,6 +69,51 @@ const Supplier = () => {
   const hasSupplierPermission = permissions.some(
     (p) => p.name === "Supplier.create"
   );
+
+  const hasExportPermission = permissions.some(
+    (p) => p.name === "Supplier.export"
+  );
+
+  // Export to Excel function
+  const exportToExcel = () => {
+    if (!filteredSuppliers.length) {
+      message.warning('No suppliers to export');
+      return;
+    }
+
+    // Prepare data for export
+    const data = filteredSuppliers.map(supplier => ({
+      'Name': supplier.username || '-',
+      'Company': supplier.company || '-',
+      'Phone': supplier.phone || '-',
+      'Address': supplier.address || '-',
+    }));
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+    
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 25 }, // Name
+      { wch: 30 }, // Email
+      { wch: 18 }, // Phone
+      { wch: 35 }, // Address
+    ];
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Suppliers');
+
+    // Generate Excel file
+    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([buffer], { type: 'application/octet-stream' });
+    
+    // Save file
+    const fileName = `suppliers_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    saveAs(blob, fileName);
+
+    message.success(`Successfully exported ${filteredSuppliers.length} suppliers`);
+  };
 
   const handleAddSupplier = () => {
     setSelectedSupplier(null);
@@ -89,33 +135,32 @@ const Supplier = () => {
   };
 
   const handleSaveSupplier = async (isEditing) => {
-    await fetchSuppliersData();
+    await fetchSuppliersData();    
     if (isEditing) {
       setIsEditModalVisible(false);
       setSelectedSupplier(null);
-      message.success('Supplier updated successfully');
     } else {
       setIsCreateModalVisible(false);
       message.success('Supplier added successfully');
     }
   };
 
- const handleDeleteSupplierData = async (supplierId) => {
-  try {
-    const result = await handleDeleteSupplier(supplierId,token);
-    if (result?.success) {
-      setSuppliers((prevSuppliers) =>
-        prevSuppliers.filter((supplier) => supplier.id !== supplierId)
-      );
-      message.success('Supplier deleted successfully');
-    } else {
+  const handleDeleteSupplierData = async (supplierId) => {
+    try {
+      const result = await handleDeleteSupplier(supplierId, token);
+      if (result?.success) {
+        setSuppliers((prevSuppliers) =>
+          prevSuppliers.filter((supplier) => supplier.id !== supplierId)
+        );
+        message.success('Supplier deleted successfully');
+      } else {
+        message.error('Failed to delete supplier.');
+      }
+    } catch (error) {
+      console.error('Error deleting supplier:', error);
       message.error('Failed to delete supplier.');
     }
-  } catch (error) {
-    console.error('Error deleting supplier:', error);
-    message.error('Failed to delete supplier.');
-  }
-};
+  };
 
   return (
     <div className="supplier-container">
@@ -141,17 +186,30 @@ const Supplier = () => {
               </motion.div>
             </Col>
             <Col>
-              { hasSupplierPermission && (
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleAddSupplier}
-                size="large"
-                style={{ borderRadius: '8px' }}
-              >
-                Add New Supplier
-              </Button>
-              )}
+              <Space>
+                  <Tooltip title="Export to Excel">
+                    <Button
+                      icon={<DownloadOutlined />}
+                      onClick={exportToExcel}
+                      size="large"
+                      disabled={!filteredSuppliers.length}
+                      style={{ borderRadius: '8px' }}
+                    >
+                      Export
+                    </Button>
+                  </Tooltip>
+                {hasSupplierPermission && (
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={handleAddSupplier}
+                    size="large"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    Add New Supplier
+                  </Button>
+                )}
+              </Space>
             </Col>
           </Row>
         </Card>
@@ -165,7 +223,7 @@ const Supplier = () => {
             <Row gutter={[16, 16]} justify="space-between" align="middle">
               <Col xs={24} md={12}>
                 <Input
-                  placeholder="Search suppliers..."
+                  placeholder="Search suppliers by name, email, phone, address..."
                   prefix={<SearchOutlined />}
                   size="large"
                   allowClear
@@ -198,6 +256,7 @@ const Supplier = () => {
           onSave={() => handleSaveSupplier(true)}
           initialData={selectedSupplier}
           isEditing={true}
+          
         />
       </Spin>
     </div>

@@ -42,7 +42,7 @@ const SupplierModal = ({ visible, onCancel, onSave, initialData, isEditing }) =>
           form.resetFields();
         }
         onCancel();
-        location.reload();
+        // location.reload();
         message.success(isEditing ? 'Supplier updated successfully' : 'Supplier created successfully');
       } else {
         message.error(isEditing ? 'Failed to update supplier.' : 'Failed to create supplier.');

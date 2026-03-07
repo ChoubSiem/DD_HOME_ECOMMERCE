@@ -118,7 +118,7 @@ const SupplierTable = ({ suppliers, onEdit, onDelete, onCreate, loading, permiss
   const handleEditSave = () => {
     setIsEditModalOpen(false);
     setSelectedSupplier(null);
-    onCreate(); 
+    // onCreate(); 
   };
 
   const customStyles = {
@@ -162,7 +162,7 @@ const SupplierTable = ({ suppliers, onEdit, onDelete, onCreate, loading, permiss
       </Space>
 
       <SupplierModal
-        visible={isEditModalOpen}
+        // visible={isEditModalOpen}
         onCancel={handleEditModalClose}
         onSave={handleEditSave}
         initialData={selectedSupplier}
